@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "./dist/es6",
+    "module": "es6",
+    "target": "es6",
+    "downlevelIteration": false
+  }
+}
