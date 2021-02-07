@@ -1,0 +1,360 @@
+import { pipe, Arr, first, second, identity, Result } from '../src'
+
+describe('Array.head', () => {
+  it('should return first value when not empty', () => {
+    const a = [1, 2, 2, 3, 5]
+    const b = Arr.head(a)
+    const expected = 1
+    expect(b).toEqual(expected)
+  })
+  it('should return undefined when empty', () => {
+    const a: number[] = []
+    const b = Arr.head(a)
+    const expected = undefined
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.last', () => {
+  it('should return last value when not empty', () => {
+    const a = [1, 2, 2, 3, 5]
+    const b = Arr.last(a)
+    const expected = 5
+    expect(b).toEqual(expected)
+  })
+  it('should return undefined when empty', () => {
+    const a: number[] = []
+    const b = Arr.last(a)
+    const expected = undefined
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.map', () => {
+  const a = [1, 2, 3]
+  const b = pipe(
+    a,
+    Arr.map((a) => a + 1)
+  )
+  const expected = [2, 3, 4]
+
+  it('should create a new array', () => {
+    expect(a).not.toBe(b)
+  })
+
+  it('should return expected values', () => {
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.mapIndexed', () => {
+  const a = [1, 2, 3]
+  const b = pipe(
+    a,
+    Arr.mapIndexed((value, index, arr) => ({ index, value, arr }))
+  )
+  const expected = [
+    { index: 0, value: 1, arr: a },
+    { index: 1, value: 2, arr: a },
+    { index: 2, value: 3, arr: a }
+  ]
+
+  it('should create a new array', () => {
+    expect(a).not.toBe(b)
+  })
+
+  it('should return expected values', () => {
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.flatten', () => {
+  const a = [
+    [
+      [1, 2],
+      [3, 4]
+    ],
+    [[5, 6]]
+  ]
+  const b = [
+    [1, 2],
+    [3, 4],
+    [5, 6]
+  ]
+  const c = [1, 2, 3, 4, 5, 6]
+
+  it('should flatten array', () => {
+    expect(pipe(b, Arr.flatten)).toEqual(c)
+  })
+
+  it('should flatten only one depth', () => {
+    expect(pipe(a, Arr.flatten)).toEqual(b)
+  })
+})
+
+describe('Array.chain', () => {
+  const a = [1, 2, 3]
+  const b = pipe(
+    a,
+    Arr.chain((a) => [a, a])
+  )
+  const expected = [1, 1, 2, 2, 3, 3]
+
+  it('should return expected values', () => {
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.chainIndexed', () => {
+  const a = [1, 2, 3]
+  const b = pipe(
+    a,
+    Arr.chainIndexed((value, index, arr) => [{ index, value, arr }])
+  )
+  const expected = [
+    { index: 0, value: 1, arr: a },
+    { index: 1, value: 2, arr: a },
+    { index: 2, value: 3, arr: a }
+  ]
+
+  it('should create a new array', () => {
+    expect(a).not.toBe(b)
+  })
+
+  it('should return expected values', () => {
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.filter', () => {
+  const a = [1, 4, 2, 3, 5]
+  const b = pipe(
+    a,
+    Arr.filter((a) => a > 2)
+  )
+  const expected = [4, 3, 5]
+
+  it('should return expected values', () => {
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.reject', () => {
+  const a = [1, 4, 2, 3, 5]
+  const b = pipe(
+    a,
+    Arr.reject((a) => a > 2)
+  )
+  const expected = [1, 2]
+
+  it('should return expected values', () => {
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.filterMap', () => {
+  const a = [1, 4, 2, 3, 5]
+  const b = pipe(
+    a,
+    Arr.filterMap((a) => (a > 2 ? a : undefined))
+  )
+  const expected = [4, 3, 5]
+
+  it('should return expected values', () => {
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.partition', () => {
+  const a = [1, 4, 2, 3, 5]
+  const b = pipe(
+    a,
+    Arr.partition((a) => a > 2)
+  )
+  const expected = [
+    [4, 3, 5],
+    [1, 2]
+  ]
+
+  it('should return expected values', () => {
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.partitionMap', () => {
+  const a = [1, 4, 2, 3, 5]
+  const b = pipe(
+    a,
+    Arr.partitionMap((a) => (a > 2 ? Result.ok(a) : Result.ko(a)))
+  )
+  const expected = [
+    [4, 3, 5],
+    [1, 2]
+  ]
+
+  it('should return expected values', () => {
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.groupBy', () => {
+  it('should return expected values', () => {
+    const a = [1, 2, 2, 3, 5, 5, 2, 1, 4]
+    const b = pipe(
+      a,
+      Arr.groupBy((a) => a % 2)
+    )
+    const expected = {
+      0: [2, 2, 2, 4],
+      1: [1, 3, 5, 5, 1]
+    }
+
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.indexBy', () => {
+  it('should return expected values with first', () => {
+    const a = [
+      {
+        id: 1,
+        name: 'A'
+      },
+      {
+        id: 2,
+        name: 'B'
+      },
+      {
+        id: 1,
+        name: 'C'
+      }
+    ]
+
+    const b = pipe(
+      a,
+      Arr.indexBy(first, (a) => a.id)
+    )
+    const expected = {
+      1: a[0],
+      2: a[1]
+    }
+
+    expect(b).toEqual(expected)
+  })
+
+  it('should return expected values with last', () => {
+    const a = [
+      {
+        id: 1,
+        name: 'A'
+      },
+      {
+        id: 2,
+        name: 'B'
+      },
+      {
+        id: 1,
+        name: 'C'
+      }
+    ]
+
+    const b = pipe(
+      a,
+      Arr.indexBy(second, (a) => a.id)
+    )
+    const expected = {
+      1: a[2],
+      2: a[1]
+    }
+
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.countBy', () => {
+  it('should return expected values', () => {
+    const a = [1, 2, 2, 3, 5, 5, 2, 1, 4]
+    const b = pipe(a, Arr.countBy(identity))
+    const expected = {
+      1: 2,
+      2: 3,
+      3: 1,
+      5: 2,
+      4: 1
+    }
+
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.chunksOf', () => {
+  it('should return expected values', () => {
+    const a = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    const b = pipe(a, Arr.chunksOf(4))
+    const expected = [
+      [1, 2, 3, 4],
+      [5, 6, 7, 8],
+      [9, 10]
+    ]
+
+    expect(b).toEqual(expected)
+  })
+
+  it('should not return empty chunk', () => {
+    const a: number[] = []
+    const b = pipe(a, Arr.chunksOf(4))
+    const expected: number[][] = []
+
+    expect(b).toEqual(expected)
+  })
+
+  it('should not create additional chunks on exact length', () => {
+    const a = [1, 2, 3, 4, 5, 6, 7, 8]
+    const b = pipe(a, Arr.chunksOf(4))
+    const expected = [
+      [1, 2, 3, 4],
+      [5, 6, 7, 8]
+    ]
+
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.uniq', () => {
+  it('should return expected values', () => {
+    const a = [1, 2, 2, 3, 5, 5, 2, 1, 4]
+    const b = pipe(a, Arr.uniq(identity))
+    const expected = [1, 2, 3, 5, 4]
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.union', () => {
+  it('should return expected values', () => {
+    const a = [1, 2, 2, 3, 5]
+    const b = [5, 2, 1, 4]
+    const c = pipe(a, Arr.union(identity, b))
+    const expected = [1, 2, 3, 5, 4]
+    expect(c).toEqual(expected)
+  })
+})
+
+describe('Array.intersection', () => {
+  it('should return expected values', () => {
+    const a = [1, 2, 2, 3, 5]
+    const b = [5, 2, 1, 4]
+    const c = pipe(a, Arr.intersect(identity, b))
+    const expected = [1, 2, 5]
+    expect(c).toEqual(expected)
+  })
+})
+
+describe('Array.difference', () => {
+  it('should return expected values', () => {
+    const a = [1, 2, 2, 3, 5]
+    const b = [5, 2, 1, 4]
+    const c = pipe(a, Arr.difference(identity, b))
+    const expected = [3]
+    expect(c).toEqual(expected)
+  })
+})

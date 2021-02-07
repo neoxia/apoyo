@@ -1,9 +1,9 @@
 import { Dict, values } from './Dict'
-import { first, identity, InverseRefinement, not, pipe, Predicate, Refinement } from './function'
+import { incrementBy, constant, first, identity, InverseRefinement, not, pipe, Predicate, Refinement } from './function'
 import { NonEmptyArray } from './NonEmptyArray'
 import { isSome, Option } from './Option'
 import { Ord } from './Ord'
-import { Result, isOk } from './Result'
+import { Result, isOk, ok, ko } from './Result'
 
 export const isArray = (arr: unknown): arr is unknown[] => Array.isArray(arr)
 
@@ -11,7 +11,7 @@ export const isEmpty = <A>(arr: A[]): arr is [] => arr.length === 0
 
 export const length = <A>(arr: A[]) => arr.length
 
-export const of = <A>(value: A) => [value]
+export const of = <A>(value: A): NonEmptyArray<A> => [value]
 
 export const head = <A>(arr: A[]): Option<A> => (arr.length > 0 ? arr[0] : undefined)
 export const last = <A>(arr: A[]): Option<A> => (arr.length > 0 ? arr[arr.length - 1] : undefined)
@@ -37,7 +37,7 @@ export const flatten = <A>(arr: A[][]): A[] => ([] as A[]).concat.apply([], arr)
 
 export const chain = <A, B>(fn: (value: A) => B[]) => (arr: A[]) => pipe(arr, map(fn), flatten)
 
-export const chainIndexed = <A, B>(fn: (value: A, index: number) => B[]) => (arr: A[]) =>
+export const chainIndexed = <A, B>(fn: (value: A, index: number, arr: A[]) => B[]) => (arr: A[]) =>
   pipe(arr, mapIndexed(fn), flatten)
 
 export const some = <A>(fn: (value: A) => boolean) => (arr: A[]) => arr.some(fn)
@@ -57,10 +57,36 @@ export function reject(fn: any) {
   return (arr: any[]) => arr.filter(not(fn))
 }
 
+export const reduce = <A, B>(fn: (acc: B, current: A) => B, initial: B) => (arr: A[]) => arr.reduce(fn, initial)
+
 export const slice = (start?: number, end?: number) => <A>(arr: A[]) => arr.slice(start, end)
 
 export const sort = <A>(ord: Ord<A>) => (arr: A[]) => arr.slice().sort(ord)
 export const reverse = <A>(arr: A[]) => arr.slice().reverse()
+
+export const toDict = <A, B>(
+  fn: (value: A, index: number) => string | number,
+  reducer: (acc: B, current: A) => B,
+  initial: (value: A) => B
+) => (arr: A[]) => {
+  const res: Dict<B> = {}
+  for (let i = 0; i < arr.length; ++i) {
+    const value = arr[i]
+    const key = fn(value, i)
+    const curr = res[key]
+    res[key] = isSome(curr) ? reducer(curr, value) : initial(value)
+  }
+  return res
+}
+
+export const groupBy = <A>(fn: (value: A, index: number) => string | number) =>
+  toDict<A, NonEmptyArray<A>>(fn, (arr, value) => (arr.push(value), arr), of)
+
+export const indexBy = <A>(strategy: (a: A, b: A) => A, fn: (value: A, index: number) => string | number) =>
+  toDict<A, A>(fn, strategy, identity)
+
+export const countBy = <A>(fn: (value: A, index: number) => string | number) =>
+  toDict<A, number>(fn, incrementBy(1), constant(1))
 
 export const chunksOf = (size: number) => <A>(arr: A[]) => {
   const count = Math.ceil(arr.length / size)
@@ -73,92 +99,31 @@ export const chunksOf = (size: number) => <A>(arr: A[]) => {
   return chunks
 }
 
-export const groupBy = <A>(fn: (value: A) => string | number) => (arr: A[]) => {
-  const res: Dict<NonEmptyArray<A>> = {}
-  for (let i = 0; i < arr.length; ++i) {
-    const value = arr[i]
-    const key = fn(value)
-    const sublist = res[key]
-    if (!sublist) {
-      res[key] = [value]
-    } else {
-      sublist.push(value)
-    }
-  }
-  return res
-}
-
-export const indexBy = <A>(semigroup: (a: A, b: A) => A, fn: (value: A) => string | number) => (arr: A[]) => {
-  const res: Dict<A> = {}
-  for (let i = 0; i < arr.length; ++i) {
-    const value = arr[i]
-    const key = fn(value)
-    const prev = res[key]
-    const next = isSome(prev) ? semigroup(prev, value) : value
-    if (prev !== next) {
-      res[key] = next
-    }
-  }
-  return res
-}
-
 export const uniq = <A>(fn: (value: A) => string | number) => (arr: A[]): A[] => pipe(arr, indexBy(first, fn), values)
 
-export const countBy = <A>(fn: (value: A) => string | number) => (arr: A[]) => {
-  const res: Dict<number> = {}
-  for (let i = 0; i < arr.length; ++i) {
-    const value = arr[i]
-    const key = fn(value)
-    res[key] = (res[key] || 0) + 1
-  }
-  return res
-}
+export const union = <A>(fn: (value: A) => string | number, member: A[]) => (arr: A[]): A[] =>
+  pipe([arr, member], flatten, uniq(fn))
 
-export const union = <A>(fn: (value: A) => string | number, ...unions: A[][]) => (arr: A[]): A[] => {
-  if (!unions.length) {
-    return arr
-  }
-  const map: Dict<A> = {}
-  const all = [arr, ...unions]
-  for (let j = 0; j < all.length; ++j) {
-    const chunk = all[j]
-    for (let i = 0; i < chunk.length; ++i) {
-      const value = chunk[i]
-      const key = fn(value)
-      if (!map[key]) {
-        map[key] = value
-      }
-    }
-  }
-  return values(map)
-}
-
-export const intersection = <A>(fn: (value: A) => string | number, ...unions: A[][]) => (arr: A[]): A[] => {
-  if (!unions.length) {
-    return arr
-  }
-  const maps = pipe(unions, map(indexBy(first, fn)))
+export const intersect = <A>(fn: (value: A) => string | number, member: A[]) => (arr: A[]): A[] => {
+  const map = pipe(member, indexBy(first, fn))
   const obj: Dict<A> = {}
   for (let i = 0; i < arr.length; ++i) {
     const value = arr[i]
     const key = fn(value)
-    if (!obj[key] && maps.every((map) => map[key])) {
+    if (!obj[key] && map[key]) {
       obj[key] = value
     }
   }
   return values(obj)
 }
 
-export const difference = <A>(fn: (value: A) => string | number, ...unions: A[][]) => (arr: A[]): A[] => {
-  if (!unions.length) {
-    return arr
-  }
-  const maps = pipe(unions, map(indexBy(first, fn)))
+export const difference = <A>(fn: (value: A) => string | number, member: A[]) => (arr: A[]): A[] => {
+  const map = pipe(member, indexBy(first, fn))
   const obj: Dict<A> = {}
   for (let i = 0; i < arr.length; ++i) {
     const value = arr[i]
     const key = fn(value)
-    if (!obj[key] && !maps.some((map) => map[key])) {
+    if (!obj[key] && !map[key]) {
       obj[key] = value
     }
   }
@@ -170,12 +135,7 @@ export const pluck = <K extends string>(key: K) => <A extends Record<K, any>>(ar
 export function partition<A, B extends A>(fn: Refinement<A, B>): (arr: A[]) => [B[], InverseRefinement<A, B>[]]
 export function partition<A>(fn: Predicate<A>): (arr: A[]) => [A[], A[]]
 export function partition(fn: any) {
-  return (arr: any[]): [any[], any[]] =>
-    pipe(
-      arr,
-      groupBy((value) => (fn(value) ? 'ok' : 'ko')),
-      (dict) => [dict.ok, dict.ko]
-    )
+  return partitionMap((value) => (fn(value) ? ok(value) : ko(value)))
 }
 
 export const partitionMap = <A, B, C>(fn: (value: A) => Result<B, C>) => (arr: Array<A>): [B[], C[]] => {
@@ -222,6 +182,9 @@ export const Arr = {
   countBy,
   indexBy,
   uniq,
+  union,
+  intersect,
+  difference,
   pluck,
   partition,
   partitionMap,

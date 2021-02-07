@@ -19,7 +19,7 @@
     "prettier": "prettier --list-different \"./{src,test,examples,scripts}/**/*.ts\"",
     "fix-prettier": "prettier --write \"./{src,test,examples,scripts}/**/*.ts\"",
     "test": "npm run lint && npm run prettier && npm run test:unit",
-    "test:unit": "jest --clearCache && jest",
+    "test:unit": "jest --clearCache && jest --verbose",
     "clean": "rimraf ./dist",
     "prebuild": "npm run clean",
     "build": "tsc -p ./tsconfig.build.json && tsc -p ./tsconfig.build-es6.json && ts-node scripts/build",
