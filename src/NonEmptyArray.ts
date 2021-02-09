@@ -1,12 +1,12 @@
 import { isNonEmpty } from './Array'
 import { pipe } from './function'
 import { Option } from './Option'
-import { Ord, getDual } from './Ord'
+import { Ord, inverse } from './Ord'
 
 export type NonEmptyArray<A> = [A, ...A[]]
 
 export const of = <A>(value: A): NonEmptyArray<A> => [value]
-export const fromArray = <A>(arr: A[]): Option<NonEmptyArray<A>> => isNonEmpty(arr) ? arr : undefined
+export const fromArray = <A>(arr: A[]): Option<NonEmptyArray<A>> => (isNonEmpty(arr) ? arr : undefined)
 
 export const head = <A>(arr: NonEmptyArray<A>): A => arr[0]
 export const last = <A>(arr: NonEmptyArray<A>): A => arr[arr.length - 1]
@@ -35,7 +35,7 @@ export const min = <A>(ord: Ord<A>) => (arr: NonEmptyArray<A>): A => {
   return val
 }
 
-export const max = <A>(ord: Ord<A>) => min(getDual(ord))
+export const max = <A>(ord: Ord<A>) => min(inverse(ord))
 
 export const NonEmptyArray = {
   map,

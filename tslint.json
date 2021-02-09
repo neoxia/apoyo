@@ -6,6 +6,7 @@
     "variable-name": false,
     "quotemark": [true, "single", "jsx-double"],
     "no-console": true,
-    "strict-type-predicates": false
+    "strict-type-predicates": false,
+    "no-floating-promises": false
   }
 }

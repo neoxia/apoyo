@@ -16,10 +16,10 @@
   },
   "scripts": {
     "lint": "tslint -p .",
-    "prettier": "prettier --list-different \"./{src,test,examples,scripts}/**/*.ts\"",
-    "fix-prettier": "prettier --write \"./{src,test,examples,scripts}/**/*.ts\"",
+    "prettier": "prettier --list-different \"./{src,tests,examples,scripts}/**/*.ts\"",
+    "fix-prettier": "prettier --write \"./{src,tests,examples,scripts}/**/*.ts\"",
     "test": "npm run lint && npm run prettier && npm run test:unit",
-    "test:unit": "jest --clearCache && jest --verbose",
+    "test:unit": "jest --clearCache && jest --verbose --runInBand",
     "clean": "rimraf ./dist",
     "prebuild": "npm run clean",
     "build": "tsc -p ./tsconfig.build.json && tsc -p ./tsconfig.build-es6.json && ts-node scripts/build",

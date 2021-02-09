@@ -324,7 +324,7 @@ describe('Array.uniq', () => {
   it('should return expected values', () => {
     const a = [1, 2, 2, 3, 5, 5, 2, 1, 4]
     const b = pipe(a, Arr.uniq(identity))
-    const expected = [1, 2, 3, 5, 4]
+    const expected = [1, 2, 3, 5, 4].sort()
     expect(b).toEqual(expected)
   })
 })
@@ -334,7 +334,7 @@ describe('Array.union', () => {
     const a = [1, 2, 2, 3, 5]
     const b = [5, 2, 1, 4]
     const c = pipe(a, Arr.union(identity, b))
-    const expected = [1, 2, 3, 5, 4]
+    const expected = [1, 2, 3, 5, 4].sort()
     expect(c).toEqual(expected)
   })
 })

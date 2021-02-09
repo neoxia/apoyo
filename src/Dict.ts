@@ -1,5 +1,6 @@
 import { identity, pipe } from './function'
-import { Option } from './Option'
+import * as Obj from './Object'
+import { isSome, Option } from './Option'
 
 export type Dict<A = unknown> = Record<string, A>
 
@@ -7,35 +8,42 @@ export const isDict = (input: unknown): input is Dict<unknown> => typeof input =
 
 export const lookup = (key: string | number) => <A>(dict: Dict<A>): Option<A> => dict[key]
 
-export const mapIndexed = <A, B>(fn: (value: A, key: string) => B) => (dict: Dict<A>): Dict<B> => {
-  const result: Dict<B> = {}
+export const reduce = <A, B>(fn: (acc: B, value: A, key: string) => B, initial: B) => (dict: Dict<A>): B => {
+  let result: B = initial
   const props = Object.keys(dict)
   const len = props.length
   for (let i = 0; i < len; ++i) {
     const key = props[i]
     const value = dict[key]
-    result[key] = fn(value, key)
+    result = fn(result, value, key)
   }
   return result
 }
 
-export const map = <A, B>(fn: (value: A) => B) => (dict: Dict<A>): Dict<B> =>
+export const mapIndexed = <A, B>(fn: (value: A, key: string) => B) => (dict: Dict<A>) =>
   pipe(
     dict,
-    mapIndexed((v) => fn(v))
+    reduce<A, Dict<B>>((acc, value, key) => ((acc[key] = fn(value, key)), acc), {})
   )
 
-export const collect = <A, B>(fn: (value: A, key: string) => B) => (dict: Dict<A>): B[] => {
-  const props = Object.keys(dict)
-  const len = props.length
-  const arr: B[] = new Array(len)
-  for (let i = 0; i < len; ++i) {
-    const key = props[i]
-    const value = dict[key]
-    arr[i] = fn(value, key)
-  }
-  return arr
-}
+export const map = <A, B>(fn: (value: A) => B) => mapIndexed<A, B>((v) => fn(v))
+
+export const filterMap = <A, B>(fn: (value: A, key: string) => Option<B>) => (dict: Dict<A>) =>
+  pipe(
+    dict,
+    reduce<A, Dict<B>>(
+      (acc, value, key) => pipe(fn(value, key), (value) => (isSome(value) ? ((acc[key] = value), acc) : acc)),
+      {}
+    )
+  )
+
+export const compact = filterMap(identity)
+
+export const collect = <A, B>(fn: (value: A, key: string) => B) => (dict: Dict<A>) =>
+  pipe(
+    dict,
+    reduce<A, B[]>((acc, value, key) => (acc.push(fn(value, key)), acc), [])
+  )
 
 export const values = <A>(dict: Dict<A>): Array<A> => pipe(dict, collect(identity))
 
@@ -56,14 +64,33 @@ export const toPairs = <A>(dict: Dict<A>) =>
     collect<A, [string, A]>((value, key) => [key, value])
   )
 
+export const union = <A>(member: Dict<A>) => (dict: Dict<A>): Dict<A> => Obj.merge(member, dict)
+export const intersect = <A>(member: Dict<A>) => (dict: Dict<A>): Dict<A> =>
+  pipe(
+    dict,
+    filterMap((value, key) => (isSome(member[key]) ? value : undefined))
+  )
+
+export const difference = <A>(member: Dict<A>) => (dict: Dict<A>): Dict<A> =>
+  pipe(
+    dict,
+    filterMap((value, key) => (isSome(member[key]) ? undefined : value))
+  )
+
 export const Dict = {
   map,
   mapIndexed,
+  filterMap,
+  compact,
+  reduce,
   collect,
   isDict,
   lookup,
   keys,
   values,
   fromPairs,
-  toPairs
+  toPairs,
+  union,
+  intersect,
+  difference
 }

@@ -1,8 +1,8 @@
-import { Dict, values } from './Dict'
+import * as Dict from './Dict'
 import { incrementBy, constant, first, identity, InverseRefinement, not, pipe, Predicate, Refinement } from './function'
-import { NonEmptyArray } from './NonEmptyArray'
+import * as NEA from './NonEmptyArray'
 import { isSome, Option } from './Option'
-import { Ord } from './Ord'
+import { inverse, Ord } from './Ord'
 import { Result, isOk, ok, ko } from './Result'
 
 export const isArray = (arr: unknown): arr is unknown[] => Array.isArray(arr)
@@ -11,7 +11,7 @@ export const isEmpty = <A>(arr: A[]): arr is [] => arr.length === 0
 
 export const length = <A>(arr: A[]) => arr.length
 
-export const of = <A>(value: A): NonEmptyArray<A> => [value]
+export const of = <A>(value: A): NEA.NonEmptyArray<A> => [value]
 
 export const head = <A>(arr: A[]): Option<A> => (arr.length > 0 ? arr[0] : undefined)
 export const last = <A>(arr: A[]): Option<A> => (arr.length > 0 ? arr[arr.length - 1] : undefined)
@@ -71,7 +71,7 @@ export const toDict = <A, B>(
   reducer: (acc: B, current: A) => B,
   initial: (value: A) => B
 ) => (arr: A[]) => {
-  const res: Dict<B> = {}
+  const res: Dict.Dict<B> = {}
   for (let i = 0; i < arr.length; ++i) {
     const value = arr[i]
     const key = fn(value, i)
@@ -82,7 +82,7 @@ export const toDict = <A, B>(
 }
 
 export const groupBy = <A>(fn: (value: A, index: number) => string | number) =>
-  toDict<A, NonEmptyArray<A>>(fn, (arr, value) => (arr.push(value), arr), of)
+  toDict<A, NEA.NonEmptyArray<A>>(fn, (arr, value) => (arr.push(value), arr), of)
 
 export const indexBy = <A>(strategy: (a: A, b: A) => A, fn: (value: A, index: number) => string | number) =>
   toDict<A, A>(fn, strategy, identity)
@@ -92,45 +92,26 @@ export const countBy = <A>(fn: (value: A, index: number) => string | number) =>
 
 export const chunksOf = (size: number) => <A>(arr: A[]) => {
   const count = Math.ceil(arr.length / size)
-  const chunks: Array<NonEmptyArray<A>> = Array(count)
+  const chunks: Array<NEA.NonEmptyArray<A>> = Array(count)
   for (let i = 0; i < count; ++i) {
     const start = i * size
     const end = Math.min(start + size, arr.length)
-    chunks[i] = arr.slice(start, end) as NonEmptyArray<A>
+    chunks[i] = arr.slice(start, end) as NEA.NonEmptyArray<A>
   }
   return chunks
 }
 
-export const uniq = <A>(fn: (value: A) => string | number) => (arr: A[]): A[] => pipe(arr, indexBy(first, fn), values)
+export const uniq = <A>(fn: (value: A) => string | number) => (arr: A[]): A[] =>
+  pipe(arr, indexBy(first, fn), Dict.values)
 
 export const union = <A>(fn: (value: A) => string | number, member: A[]) => (arr: A[]): A[] =>
-  pipe([arr, member], flatten, uniq(fn))
+  pipe(arr, indexBy(first, fn), Dict.union(pipe(member, indexBy(first, fn))), Dict.values)
 
-export const intersect = <A>(fn: (value: A) => string | number, member: A[]) => (arr: A[]): A[] => {
-  const map = pipe(member, indexBy(first, fn))
-  const obj: Dict<A> = {}
-  for (let i = 0; i < arr.length; ++i) {
-    const value = arr[i]
-    const key = fn(value)
-    if (!obj[key] && map[key]) {
-      obj[key] = value
-    }
-  }
-  return values(obj)
-}
+export const intersect = <A>(fn: (value: A) => string | number, member: A[]) => (arr: A[]): A[] =>
+  pipe(arr, indexBy(first, fn), Dict.intersect(pipe(member, indexBy(first, fn))), Dict.values)
 
-export const difference = <A>(fn: (value: A) => string | number, member: A[]) => (arr: A[]): A[] => {
-  const map = pipe(member, indexBy(first, fn))
-  const obj: Dict<A> = {}
-  for (let i = 0; i < arr.length; ++i) {
-    const value = arr[i]
-    const key = fn(value)
-    if (!obj[key] && !map[key]) {
-      obj[key] = value
-    }
-  }
-  return values(obj)
-}
+export const difference = <A>(fn: (value: A) => string | number, member: A[]) => (arr: A[]): A[] =>
+  pipe(arr, indexBy(first, fn), Dict.difference(pipe(member, indexBy(first, fn))), Dict.values)
 
 export const pluck = <K extends string>(key: K) => <A extends Record<K, any>>(arr: A[]) => arr.map((v) => v[key])
 
@@ -157,7 +138,11 @@ export const partitionMap = <A, B, C>(fn: (value: A) => Result<B, C>) => (arr: A
 
 export const separate = <A, E>(arr: Array<Result<A, E>>) => pipe(arr, partitionMap(identity))
 
-export const isNonEmpty = <A>(arr: A[]): arr is NonEmptyArray<A> => arr.length > 0
+export const isNonEmpty = <A>(arr: A[]): arr is NEA.NonEmptyArray<A> => arr.length > 0
+
+export const min = <A>(ord: Ord<A>) => (arr: A[]): Option<A> => (isNonEmpty(arr) ? pipe(arr, NEA.min(ord)) : undefined)
+
+export const max = <A>(ord: Ord<A>) => min(inverse(ord))
 
 export type Arr<A> = Array<A>
 export const Arr = {

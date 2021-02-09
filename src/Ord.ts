@@ -14,13 +14,13 @@ export const number: Ord<number> = (a: number, b: number) => (a > b ? 1 : a === 
 
 export const boolean: Ord<boolean> = (a: boolean, b: boolean) => (a > b ? 1 : a === b ? 0 : -1)
 
-export const date: Ord<string|Date> = (a: string|Date, b: string|Date) => number(new Date(a).valueOf(), new Date(b).valueOf())
+export const date: Ord<Date> = (a: Date, b: Date) => number(a.valueOf(), b.valueOf())
 
 export const contramap = <A, B>(fn: (value: A) => B) => (ord: Ord<B>): Ord<A> => (a, b) => ord(fn(a), fn(b))
 
-export const getDual = <A>(ord: Ord<A>): Ord<A> => (a, b) => ord(b, a)
+export const inverse = <A>(ord: Ord<A>): Ord<A> => (a, b) => ord(b, a)
 
-export const getOptional = <A>(ord: Ord<A>): Ord<Option<A>> => (a, b) => {
+export const option = <A>(ord: Ord<A>): Ord<Option<A>> => (a, b) => {
   const da = isSome(a)
   const db = isSome(b)
   if (da && db) {
@@ -52,7 +52,7 @@ export const Ord = {
   boolean,
   date,
   contramap,
-  getDual,
-  getOptional,
+  inverse,
+  option,
   concat
 }
