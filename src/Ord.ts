@@ -14,7 +14,7 @@ export const number: Ord<number> = (a: number, b: number) => (a > b ? 1 : a === 
 
 export const boolean: Ord<boolean> = (a: boolean, b: boolean) => (a > b ? 1 : a === b ? 0 : -1)
 
-export const date: Ord<Date> = (a: Date, b: Date) => number(a.valueOf(), b.valueOf())
+export const date: Ord<string|Date> = (a: string|Date, b: string|Date) => number(new Date(a).valueOf(), new Date(b).valueOf())
 
 export const contramap = <A, B>(fn: (value: A) => B) => (ord: Ord<B>): Ord<A> => (a, b) => ord(fn(a), fn(b))
 
@@ -35,12 +35,7 @@ export const getOptional = <A>(ord: Ord<A>): Ord<Option<A>> => (a, b) => {
   return 0
 }
 
-export const concat = <A>(ord2: Ord<A>) => (ord1: Ord<A>): Ord<A> => (a, b) => {
-  const result = ord1(a, b)
-  return result === 0 ? ord2(a, b) : result
-}
-
-export const concatAll = <A>(ords: Ord<A>[]): Ord<A> => (a, b) => {
+export const concat = <A>(...ords: [Ord<A>, Ord<A>, ...Ord<A>[]]): Ord<A> => (a, b) => {
   for (let i = 0; i < ords.length; ++i) {
     const ord = ords[i]
     const result = ord(a, b)
@@ -58,6 +53,6 @@ export const Ord = {
   date,
   contramap,
   getDual,
-  concat,
-  concatAll
+  getOptional,
+  concat
 }

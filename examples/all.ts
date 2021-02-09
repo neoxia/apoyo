@@ -132,3 +132,5 @@ export const testUtils = async () => {
   const arrayResult = await pipe([], TaskDecoder.validate(EntryList), Task.run)
   console.log('TaskDecode array result', arrayResult)
 }
+
+testUtils()

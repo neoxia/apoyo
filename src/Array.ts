@@ -60,6 +60,8 @@ export function reject(fn: any) {
 export const reduce = <A, B>(fn: (acc: B, current: A) => B, initial: B) => (arr: A[]) => arr.reduce(fn, initial)
 
 export const slice = (start?: number, end?: number) => <A>(arr: A[]) => arr.slice(start, end)
+export const take = (nb: number) => slice(0, nb)
+export const skip = (nb: number) => slice(nb)
 
 export const sort = <A>(ord: Ord<A>) => (arr: A[]) => arr.slice().sort(ord)
 export const reverse = <A>(arr: A[]) => arr.slice().reverse()
@@ -176,6 +178,8 @@ export const Arr = {
   compact,
   flatten,
   slice,
+  take,
+  skip,
   sort,
   chunksOf,
   groupBy,

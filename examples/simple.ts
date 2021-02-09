@@ -22,3 +22,5 @@ export const testUtils = async () => {
 
   console.log('Task results', { ok, errors })
 }
+
+testUtils()
