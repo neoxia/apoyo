@@ -16,17 +16,17 @@
   },
   "scripts": {
     "lint": "npx eslint '{src,tests}/**/*.{ts,tsx,json,yml}'",
-    "prettier": "prettier --list-different \"./{src,tests,examples,scripts}/**/*.ts\"",
-    "fix-prettier": "prettier --write \"./{src,tests,examples,scripts}/**/*.ts\"",
+    "prettier": "npx prettier --list-different \"./{src,tests,examples,scripts}/**/*.ts\"",
+    "fix-prettier": "npx prettier --write \"./{src,tests,examples,scripts}/**/*.ts\"",
     "test": "npm run lint && npm run prettier && npm run test:unit",
-    "test:unit": "jest --clearCache && jest --verbose --runInBand",
-    "clean": "rimraf ./dist",
+    "test:unit": "npx jest --clearCache && jest --verbose --runInBand",
+    "clean": "npx rimraf ./dist",
     "prebuild": "npm run clean",
-    "build": "tsc -p ./tsconfig.build.json && tsc -p ./tsconfig.build-es6.json && ts-node scripts/build",
-    "postbuild": "prettier --loglevel=silent --write \"./dist/**/*.ts\"",
-    "prepublishOnly": "ts-node scripts/pre-publish",
+    "build": "npx tsc -p ./tsconfig.build.json && npx tsc -p ./tsconfig.build-es6.json && npx ts-node scripts/build",
+    "postbuild": "npx prettier --loglevel=silent --write \"./dist/**/*.ts\"",
+    "prepublishOnly": "npx ts-node scripts/pre-publish",
     "prerelease": "npm run build && npm run test",
-    "release": "ts-node scripts/release"
+    "release": "npx ts-node scripts/release"
   },
   "dependencies": {},
   "devDependencies": {
