@@ -1,0 +1,11 @@
+image: node:alpine
+
+cache:
+  paths:
+    - node_modules/
+
+test:
+  script:
+    - npm i
+    - npm run lint
+    - npm run test:unit
