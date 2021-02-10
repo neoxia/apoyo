@@ -91,7 +91,7 @@ const format = (err: Error): FormattedError => {
   }
 }
 
-const toJSON = (err: FormattedError, stackTrace: boolean = true): object => ({
+const toJSON = (err: FormattedError, stackTrace = true): object => ({
   name: err.name,
   message: err.message,
   info: err.info,

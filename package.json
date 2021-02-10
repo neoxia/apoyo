@@ -15,7 +15,7 @@
     "url": "https://github.com/xxxxx/xxxxx.git"
   },
   "scripts": {
-    "lint": "tslint -p .",
+    "lint": "npx eslint '{src,tests}/**/*.{ts,tsx,json,yml}'",
     "prettier": "prettier --list-different \"./{src,tests,examples,scripts}/**/*.ts\"",
     "fix-prettier": "prettier --write \"./{src,tests,examples,scripts}/**/*.ts\"",
     "test": "npm run lint && npm run prettier && npm run test:unit",
@@ -35,15 +35,19 @@
     "@types/node": "^12.6.8",
     "@types/prettier": "1.10.0",
     "@types/underscore": "^1.10.24",
+    "@typescript-eslint/eslint-plugin": "^4.15.0",
+    "@typescript-eslint/parser": "^4.15.0",
+    "eslint": "^7.19.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-prettier": "^3.3.1",
     "fast-check": "^1.25.1",
     "glob": "^7.1.6",
     "jest": "^26.4.2",
-    "prettier": "^2.0.2",
+    "lint-staged": "^10.5.4",
+    "prettier": "^2.2.1",
     "rimraf": "2.6.2",
     "ts-jest": "^26.3.0",
     "ts-node": "^8.0.2",
-    "tslint": "5.11.0",
-    "tslint-config-standard": "8.0.1",
     "typescript": "^4.1.2"
   }
 }

@@ -17,7 +17,7 @@ export const init = <A>(): List<A> => ({
 })
 
 export const map = <A, B>(fn: (value: A) => B) => (list: List<A>): List<B> => {
-  let lb: List<B> = init()
+  const lb: List<B> = init()
   let elem: Option<Node<A>> = list.head
   while (elem) {
     push(lb, fn(elem.value))

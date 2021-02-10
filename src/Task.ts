@@ -38,7 +38,7 @@ export const sequence = <A>(tasks: Task<A>[]): Task<A[]> => async () => {
   return res
 }
 
-export const concurrent = (concurrency: number = 1) => <A>(tasks: Task<A>[]): Task<A[]> => async () => {
+export const concurrent = (concurrency = 1) => <A>(tasks: Task<A>[]): Task<A[]> => async () => {
   if (concurrency < 1) {
     throw new Error(`Concurrency should be above 1 or above`)
   }
@@ -63,7 +63,7 @@ export const concurrent = (concurrency: number = 1) => <A>(tasks: Task<A>[]): Ta
     }
   }
 
-  let p: Promise<void>[] = []
+  const p: Promise<void>[] = []
   for (let i = 0; i < concurrency; ++i) {
     p.push(loop())
   }

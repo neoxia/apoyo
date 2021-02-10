@@ -12,7 +12,7 @@ export const head = <A>(arr: NonEmptyArray<A>): A => arr[0]
 export const last = <A>(arr: NonEmptyArray<A>): A => arr[arr.length - 1]
 
 export const mapIndexed = <A, B>(fn: (value: A, index: number) => B) => (arr: NonEmptyArray<A>): NonEmptyArray<B> => {
-  let res: NonEmptyArray<B> = [fn(arr[0], 0)]
+  const res: NonEmptyArray<B> = [fn(arr[0], 0)]
   for (let i = 1; i < arr.length; ++i) {
     res.push(fn(arr[i], i))
   }

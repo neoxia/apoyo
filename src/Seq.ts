@@ -71,7 +71,7 @@ export function last<A>(seq: Seq<A>) {
 
 export const toArray = <A>(seq: Seq<A>) => Array.from(seq)
 
-export function* range(from: number, to: number, step: number = 1) {
+export function* range(from: number, to: number, step = 1) {
   for (let i = from; i < to; i = i + step) {
     yield i
   }
