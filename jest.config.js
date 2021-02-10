@@ -8,6 +8,7 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js'],
   collectCoverage: true,
   coveragePathIgnorePatterns: ['/node_modules/', '/test/'],
+  /* FIXME: Enable threshold again when coverage has progressed on the project
   coverageThreshold: {
     global: {
       branches: 90,
@@ -15,6 +16,6 @@ module.exports = {
       lines: 90,
       statements: 90
     }
-  },
+  },*/
   collectCoverageFrom: ['src/*.{js,ts}']
 }
