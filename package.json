@@ -8,8 +8,20 @@
   "sideEffects": false,
   "author": "Sascha Braun",
   "license": "MIT",
-  "tags": ["utils", "functional", "fp", "pipable", "typescript"],
-  "keywords": ["utils", "functional", "fp", "pipable", "typescript"],
+  "tags": [
+    "utils",
+    "functional",
+    "fp",
+    "pipable",
+    "typescript"
+  ],
+  "keywords": [
+    "utils",
+    "functional",
+    "fp",
+    "pipable",
+    "typescript"
+  ],
   "repository": {
     "type": "git",
     "url": "https://git.neoxia.com/typescript/ordinary-utils"
@@ -26,7 +38,8 @@
     "postbuild": "npx prettier --loglevel=silent --write \"./dist/**/*.ts\"",
     "prepublishOnly": "npx ts-node scripts/pre-publish",
     "prerelease": "npm run build && npm run test",
-    "release": "npx ts-node scripts/release"
+    "release": "npx ts-node scripts/release",
+    "postinstall": "husky install"
   },
   "dependencies": {},
   "devDependencies": {
@@ -51,16 +64,9 @@
     "ts-node": "^8.0.2",
     "typescript": "^4.1.2"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "pre-push": "npm run lint"
-    }
-  },
   "lint-staged": {
     "*.{js,ts,tsx}": [
-      "npx eslint --fix",
-      "git add"
+      "npx eslint --fix"
     ]
   }
 }
