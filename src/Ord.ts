@@ -1,9 +1,14 @@
 import { isSome, Option } from './Option'
 
-export type Order = -1 | 0 | 1
+export const enum Ordering {
+  UP = 1,
+  DOWN = -1,
+  EQ = 0
+}
+
 export interface IOrd<A> {
   name: string
-  (a: A, b: A): Order
+  (a: A, b: A): Ordering
 }
 
 export type Ord<A> = IOrd<A>
@@ -20,20 +25,11 @@ export const contramap = <A, B>(fn: (value: A) => B) => (ord: Ord<B>): Ord<A> =>
 
 export const inverse = <A>(ord: Ord<A>): Ord<A> => (a, b) => ord(b, a)
 
-export const option = <A>(ord: Ord<A>): Ord<Option<A>> => (a, b) => {
-  const da = isSome(a)
-  const db = isSome(b)
-  if (da && db) {
-    return ord(a!, b!)
-  }
-  if (da && !db) {
-    return 1
-  }
-  if (!da && db) {
-    return -1
-  }
-  return 0
-}
+export const option = <A>(ord: Ord<A>): Ord<Option<A>> => (a, b) =>
+  a === b ? 0 : isSome(a) ? (isSome(b) ? ord(a, b) : -1) : 1
+
+export const nullable = <A>(ord: Ord<A>): Ord<A | null> => (a, b) =>
+  a === b ? 0 : a !== null ? (b !== null ? ord(a, b) : -1) : 1
 
 export const concat = <A>(...ords: [Ord<A>, Ord<A>, ...Ord<A>[]]): Ord<A> => (a, b) => {
   for (let i = 0; i < ords.length; ++i) {
@@ -54,5 +50,6 @@ export const Ord = {
   contramap,
   inverse,
   option,
+  nullable,
   concat
 }

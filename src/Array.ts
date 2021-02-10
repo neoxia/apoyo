@@ -2,7 +2,7 @@ import * as Dict from './Dict'
 import { incrementBy, constant, first, identity, InverseRefinement, not, pipe, Predicate, Refinement } from './function'
 import * as NEA from './NonEmptyArray'
 import { isSome, Option } from './Option'
-import { inverse, Ord } from './Ord'
+import { contramap, inverse, Ord } from './Ord'
 import { Result, isOk, ok, ko } from './Result'
 
 export const isArray = (arr: unknown): arr is unknown[] => Array.isArray(arr)
@@ -63,7 +63,12 @@ export const slice = (start?: number, end?: number) => <A>(arr: A[]) => arr.slic
 export const take = (nb: number) => slice(0, nb)
 export const skip = (nb: number) => slice(nb)
 
-export const sort = <A>(ord: Ord<A>) => (arr: A[]) => arr.slice().sort(ord)
+export const sort = <A>(ord: Ord<A>) => (arr: A[]) =>
+  arr
+    .map(of)
+    .sort(pipe(ord, contramap(NEA.head)))
+    .map(NEA.head)
+
 export const reverse = <A>(arr: A[]) => arr.slice().reverse()
 
 export const toDict = <A, B>(
