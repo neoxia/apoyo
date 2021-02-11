@@ -92,3 +92,14 @@ export const add = (a: number, b: number) => {
 export const incrementBy = (a: number) => (b: number) => {
   return a + b
 }
+
+export interface FCurry2<A, B, C> {
+  (x: A, y: B): C
+  (y: B): (x: A) => C
+}
+
+export function fcurry2<A, B, C>(fn: (x: A, y: B) => C): FCurry2<A, B, C> {
+  return function (...args: any[]) {
+    return args.length === 1 ? (x: A) => fn(x, args[0]) : fn(args[0], args[1])
+  } as FCurry2<A, B, C>
+}

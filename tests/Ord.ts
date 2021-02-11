@@ -1,5 +1,34 @@
 import { Arr, Ord, Ordering, pipe } from '../src'
 
+describe('Ord.string', () => {
+  it('should return correct ordering', () => {
+    expect(Ord.string('B', 'A')).toBe(Ordering.UP)
+    expect(Ord.string('A', 'B')).toBe(Ordering.DOWN)
+    expect(Ord.string('A', 'A')).toBe(Ordering.EQ)
+  })
+
+  it('should return expected results', () => {
+    const sorted = ['Bread', 'Nutella', 'Butter'].sort(Ord.string)
+    const expected = ['Bread', 'Butter', 'Nutella']
+    expect(sorted).toEqual(expected)
+  })
+})
+
+describe('Ord.boolean', () => {
+  it('should return correct ordering', () => {
+    expect(Ord.boolean(true, false)).toBe(Ordering.UP)
+    expect(Ord.boolean(false, true)).toBe(Ordering.DOWN)
+    expect(Ord.boolean(false, false)).toBe(Ordering.EQ)
+    expect(Ord.boolean(true, true)).toBe(Ordering.EQ)
+  })
+
+  it('should return expected results', () => {
+    const sorted = [true, false, true].sort(Ord.boolean)
+    const expected = [false, true, true]
+    expect(sorted).toEqual(expected)
+  })
+})
+
 describe('Ord.date', () => {
   it('should return correct ordering', () => {
     expect(Ord.date(new Date(10), new Date(0))).toBe(Ordering.UP)
@@ -262,5 +291,126 @@ describe('Ord.concat + Ord.option', () => {
     const sorted = pipe(contacts, Arr.sort(ordContact))
     const expected = [contacts[1], contacts[0], contacts[2], contacts[3], contacts[4]]
     expect(sorted).toEqual(expected)
+  })
+})
+
+describe('Ord.eq', () => {
+  const eqNumber = pipe(Ord.number, Ord.eq)
+
+  it('should be equal', () => {
+    expect(eqNumber(10, 10)).toBe(true)
+  })
+
+  it('should be different', () => {
+    expect(eqNumber(7, 10)).toBe(false)
+  })
+
+  it('should be curriable', () => {
+    const res = [1, 2, 3, 4].find(eqNumber(3))
+    expect(res).toBe(3)
+  })
+})
+
+describe('Ord.lt', () => {
+  const ltNumber = pipe(Ord.number, Ord.lt)
+
+  it('should be true', () => {
+    expect(ltNumber(5, 10)).toBe(true)
+  })
+
+  it('should be false', () => {
+    expect(ltNumber(15, 10)).toBe(false)
+    expect(ltNumber(10, 10)).toBe(false)
+  })
+
+  it('should be curriable', () => {
+    const res = [1, 2, 3, 4].filter(ltNumber(3))
+    expect(res).toEqual([1, 2])
+  })
+})
+
+describe('Ord.lte', () => {
+  const lteNumber = pipe(Ord.number, Ord.lte)
+
+  it('should be true', () => {
+    expect(lteNumber(5, 10)).toBe(true)
+    expect(lteNumber(10, 10)).toBe(true)
+  })
+
+  it('should be false', () => {
+    expect(lteNumber(15, 10)).toBe(false)
+  })
+
+  it('should be curriable', () => {
+    const res = [1, 2, 3, 4].filter(lteNumber(3))
+    expect(res).toEqual([1, 2, 3])
+  })
+})
+
+describe('Ord.gt', () => {
+  const gtNumber = pipe(Ord.number, Ord.gt)
+
+  it('should be true', () => {
+    expect(gtNumber(15, 10)).toBe(true)
+  })
+
+  it('should be false', () => {
+    expect(gtNumber(5, 10)).toBe(false)
+    expect(gtNumber(10, 10)).toBe(false)
+  })
+
+  it('should be curriable', () => {
+    const res = [1, 2, 3, 4].filter(gtNumber(3))
+    expect(res).toEqual([4])
+  })
+})
+
+describe('Ord.gte', () => {
+  const gteNumber = pipe(Ord.number, Ord.gte)
+
+  it('should be true', () => {
+    expect(gteNumber(15, 10)).toBe(true)
+    expect(gteNumber(10, 10)).toBe(true)
+  })
+
+  it('should be false', () => {
+    expect(gteNumber(5, 10)).toBe(false)
+  })
+
+  it('should be curriable', () => {
+    const res = [1, 2, 3, 4].filter(gteNumber(3))
+    expect(res).toEqual([3, 4])
+  })
+})
+
+describe('Ord.min', () => {
+  const minNumber = pipe(Ord.number, Ord.min)
+
+  it('should return expected results', () => {
+    expect(minNumber(15, 10)).toBe(10)
+    expect(minNumber(5, 10)).toBe(5)
+    expect(minNumber(10, 10)).toBe(10)
+  })
+
+  it('should be curriable', () => {
+    const arr = [1, 2, 3, 4]
+    const res = arr.reduce(minNumber, arr[0])
+    expect(res).toEqual(1)
+  })
+})
+
+describe('Ord.max', () => {
+  const maxNumber = pipe(Ord.number, Ord.max)
+
+  it('should return expected results', () => {
+    expect(maxNumber(15, 10)).toBe(15)
+    expect(maxNumber(5, 10)).toBe(10)
+    expect(maxNumber(10, 10)).toBe(10)
+  })
+
+  it('should be curriable', () => {
+    const arr = [1, 2, 3, 4]
+    const res = arr.reduce(maxNumber, arr[0])
+    expect(res).toEqual(4)
   })
 })

@@ -1,7 +1,7 @@
 import { isNonEmpty } from './Array'
 import { pipe } from './function'
 import { Option } from './Option'
-import { Ord, inverse } from './Ord'
+import * as Ord from './Ord'
 
 export type NonEmptyArray<A> = [A, ...A[]]
 
@@ -25,17 +25,8 @@ export const map = <A, B>(fn: (value: A) => B) => (arr: NonEmptyArray<A>): NonEm
     mapIndexed((value) => fn(value))
   )
 
-export const min = <A>(ord: Ord<A>) => (arr: NonEmptyArray<A>): A => {
-  let val = arr[0]
-  for (let i = 1; i < arr.length; ++i) {
-    if (ord(val, arr[i]) > 0) {
-      val = arr[i]
-    }
-  }
-  return val
-}
-
-export const max = <A>(ord: Ord<A>) => min(inverse(ord))
+export const min = <A>(ord: Ord.Ord<A>) => (arr: NonEmptyArray<A>): A => arr.reduce(Ord.min(ord), arr[0])
+export const max = <A>(ord: Ord.Ord<A>) => min(Ord.inverse(ord))
 
 export const NonEmptyArray = {
   map,

@@ -1,4 +1,5 @@
 import { isSome, Option } from './Option'
+import { fcurry2 } from './function'
 
 export const enum Ordering {
   UP = 1,
@@ -42,6 +43,15 @@ export const concat = <A>(...ords: [Ord<A>, Ord<A>, ...Ord<A>[]]): Ord<A> => (a,
   return 0
 }
 
+export const eq = <A>(ord: Ord<A>) => fcurry2((x: A, y: A) => ord(x, y) === Ordering.EQ)
+export const lt = <A>(ord: Ord<A>) => fcurry2((x: A, y: A) => ord(x, y) < Ordering.EQ)
+export const lte = <A>(ord: Ord<A>) => fcurry2((x: A, y: A) => ord(x, y) <= Ordering.EQ)
+export const gt = <A>(ord: Ord<A>) => lt(inverse(ord))
+export const gte = <A>(ord: Ord<A>) => lte(inverse(ord))
+
+export const min = <A>(ord: Ord<A>) => fcurry2((x: A, y: A) => (ord(x, y) <= Ordering.EQ ? x : y))
+export const max = <A>(ord: Ord<A>) => min(inverse(ord))
+
 export const Ord = {
   string,
   number,
@@ -51,5 +61,12 @@ export const Ord = {
   inverse,
   option,
   nullable,
-  concat
+  concat,
+  eq,
+  lt,
+  lte,
+  gt,
+  gte,
+  min,
+  max
 }
