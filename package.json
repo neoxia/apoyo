@@ -27,7 +27,7 @@
     "url": "https://git.neoxia.com/typescript/ordinary-utils"
   },
   "scripts": {
-    "lint": "npx eslint '{src,tests}/**/*.{ts,tsx,json,yml}'",
+    "lint": "npx eslint \"{src,tests}/**/*.{ts,tsx,json,yml}\"",
     "prettier": "npx prettier --list-different \"./{src,tests,examples,scripts}/**/*.ts\"",
     "fix-prettier": "npx prettier --write \"./{src,tests,examples,scripts}/**/*.ts\"",
     "test": "npm run lint && npm run prettier && npm run test:unit",

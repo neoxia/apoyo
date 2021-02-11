@@ -13,9 +13,13 @@
     "no-console": "error",
     "no-use-before-define": "off",
     "space-before-function-paren": "off",
-    "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/ban-types": "warn",
-    "@typescript-eslint/no-namespace": "warn",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/no-namespace": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error", { "argsIgnorePattern": "^_" }
+    ],
     "@typescript-eslint/naming-convention": [
       "error",
       {

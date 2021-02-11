@@ -57,7 +57,7 @@ export function reject(fn: any) {
 
 export const getDefault = <A>(alt: A) => (value: Option<A>): A => (isSome(value) ? value : alt)
 
-export function get<never>(onNone: () => never): <A>(value: Option<A>) => A
+export function get(onNone: () => never): <A>(value: Option<A>) => A
 export function get<A>(onNone: () => A): (value: Option<A>) => A
 export function get(onNone: () => unknown) {
   return (value: Option<unknown>): unknown => (isSome(value) ? value : onNone())

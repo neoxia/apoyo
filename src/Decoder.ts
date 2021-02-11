@@ -60,7 +60,7 @@ export function filter(fn: any, message: string, meta: Dict.Dict<unknown> = {}) 
   return parse((input) => (fn(input) ? Result.ok(input) : Result.ko(DE.value(input, message, meta))))
 }
 
-export function reject<I, A, B extends A>(
+export function reject<A, B extends A>(
   fn: Refinement<A, B>,
   message: string,
   meta?: Dict.Dict<unknown>
