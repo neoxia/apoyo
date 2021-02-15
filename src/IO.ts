@@ -2,6 +2,8 @@ export type IO<A> = () => A
 
 export const of = <A>(value: A) => () => value
 
+export const isIO = <A = unknown>(fn: unknown): fn is () => A => typeof fn === 'function' && fn.length === 0
+
 export const map = <A, B>(fn: (value: A) => B) => (ma: IO<A>): IO<B> => () => fn(ma())
 export const mapError = (fn: (err: any) => any) => <A>(ma: IO<A>): IO<A> => () => {
   try {

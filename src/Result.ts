@@ -1,31 +1,34 @@
 import { identity, pipe, throwError } from './function'
 import { isSome, Option } from './Option'
+import { isObject } from './types'
 
 export interface Ok<T> {
-  _tag: 'Ok'
+  _tag: 'Result.Ok'
   ok: T
 }
 export interface Ko<T> {
-  _tag: 'Ko'
+  _tag: 'Result.Ko'
   ko: T
 }
 
 export type Result<A, E = never> = Ok<A> | Ko<E>
 
 export const ok = <T>(value: T): Ok<T> => ({
-  _tag: 'Ok',
+  _tag: 'Result.Ok',
   ok: value
 })
 export const ko = <T>(value: T): Ko<T> => ({
-  _tag: 'Ko',
+  _tag: 'Result.Ko',
   ko: value
 })
 
 export const fromOption = <E = unknown>(onNone: () => E) => <A>(option: Option<A>): Result<A, E> =>
   isSome(option) ? ok(option) : ko(onNone())
 
-export const isOk = <A, B>(result: Result<A, B>): result is Ok<A> => result._tag === 'Ok'
-export const isKo = <A, B>(result: Result<A, B>): result is Ko<B> => result._tag === 'Ko'
+export const isOk = <A, B>(result: Result<A, B>): result is Ok<A> => result._tag === 'Result.Ok'
+export const isKo = <A, B>(result: Result<A, B>): result is Ko<B> => result._tag === 'Result.Ko'
+export const isResult = <A = unknown, B = unknown>(result: unknown): result is Result<A, B> =>
+  isObject(result) && (result._tag === 'Result.Ok' || result._tag === 'Result.Ko')
 
 export const get = <A, E = unknown>(result: Result<A, E>) => (isOk(result) ? result.ok : throwError(result.ko))
 
@@ -47,6 +50,15 @@ export const fold = <R, A, E = unknown>(onOk: (value: A) => R, onKo: (value: E) 
   return isOk(result) ? onOk(result.ok) : onKo(result.ko)
 }
 
+export const swap = <A, E>(result: Result<A, E>) =>
+  pipe(
+    result,
+    fold(
+      (value): Result<E, A> => ko(value),
+      (err) => ok(err)
+    )
+  )
+
 export const tryCatch = <A>(fn: () => A): Result<A, unknown> => {
   try {
     return ok(fn())
@@ -61,11 +73,13 @@ export const Result = {
   isOk,
   isKo,
   fromOption,
+  get,
   map,
   mapError,
   join,
   chain,
   alt,
   fold,
+  swap,
   tryCatch
 }

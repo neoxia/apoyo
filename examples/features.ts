@@ -1,5 +1,5 @@
 // import _ from 'underscore'
-import { Arr, Decoder, Err, identity, IO, Ord, pipe, Prom, Task } from '../src'
+import { Arr, Decode, Err, identity, IO, Ord, pipe, Prom, Task } from '../src'
 import { fromDate } from '../src/Option'
 
 IO.run(() => {
@@ -126,17 +126,6 @@ interface Job {
 }
 
 IO.run(() => {
-  // const mostRecentInteractions = pipe(
-  //   interactions,
-  //   Arr.groupBy(interaction => interaction.contactId),
-  //   Dict.map(NonEmptyArray.max(pipe(
-  //     Ord.date,
-  //     Ord.contramap(c => c.createdAt)
-  //   )))
-  // )
-
-  // const ordByInteraction =
-
   const ordByPriority = pipe(
     Ord.number,
     Ord.option,
@@ -149,25 +138,22 @@ IO.run(() => {
     Ord.contramap((job: Job) => fromDate(new Date(job.createdAt)))
   )
 
-  // @ts-ignore
   const ordJob = Ord.concat(ordByPriority, ordByCreatedAtDesc)
 })
 
 IO.run(async () => {
   // Decoder
 
-  // @ts-ignore
-  const TodoDecoder = Decoder.struct({
-    id: Decoder.uuid,
-    title: Decoder.string,
-    text: Decoder.string,
-    done: Decoder.boolean,
-    createdAt: Decoder.datetime,
-    finishedAt: Decoder.datetime
+  const TodoDecoder = Decode.struct({
+    id: Decode.uuid,
+    title: Decode.string,
+    text: Decode.string,
+    done: Decode.boolean,
+    createdAt: Decode.datetime,
+    finishedAt: Decode.datetime
   })
 
-  // @ts-ignore
-  interface Todo extends Decoder.TypeOf<typeof TodoDecoder> {}
+  interface Todo extends Decode.TypeOf<typeof TodoDecoder> {}
 })
 
 IO.run(async () => {

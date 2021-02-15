@@ -1,7 +1,7 @@
 import {
   Arr,
   DecodeError,
-  Decoder,
+  Decode,
   Dict,
   IO,
   Key,
@@ -11,7 +11,7 @@ import {
   Prom,
   Result,
   Task,
-  TaskDecoder,
+  TaskDecode,
   TaskResult
 } from '../src'
 
@@ -67,25 +67,25 @@ export const testUtils = async () => {
 
   // Decoder Demo - Lightweight and customisable synchroneous validation
 
-  const TodoDecoder = Decoder.struct({
-    id: Decoder.uuid,
-    title: Decoder.string,
-    text: Decoder.string,
-    done: Decoder.boolean,
-    created_at: Decoder.datetime,
-    finished_at: Decoder.datetime
+  const TodoDecoder = Decode.struct({
+    id: Decode.uuid,
+    title: Decode.string,
+    text: Decode.string,
+    done: Decode.boolean,
+    created_at: Decode.datetime,
+    finished_at: Decode.datetime
   })
 
-  interface Todo extends Decoder.TypeOf<typeof TodoDecoder> {}
+  interface Todo extends Decode.TypeOf<typeof TodoDecoder> {}
 
-  const Todo = Decoder.ref<Todo>(TodoDecoder)
+  const Todo = Decode.ref<Todo>(TodoDecoder)
 
-  const result = pipe({}, Decoder.validate(Todo))
+  const result = pipe({}, Decode.validate(Todo))
   console.log('Decode result', result)
 
   // TaskDecoder Demo - Asynchroneous validation
 
-  const checkCountryCode = (input: string) => async () => {
+  const checkCountryCode = async (input: string) => {
     await Prom.sleep(2000)
     const codes = ['DE', 'FR']
     return codes.includes(input)
@@ -96,7 +96,7 @@ export const testUtils = async () => {
           })
         )
   }
-  const checkBrand = (input: string) => async () => {
+  const checkBrand = async (input: string) => {
     await Prom.sleep(5000)
     const codes = ['Brand1', 'Brand2']
     return codes.includes(input)
@@ -108,28 +108,28 @@ export const testUtils = async () => {
         )
   }
 
-  const EntryDecoder = TaskDecoder.struct({
-    name: Decoder.string,
-    u2: pipe(Decoder.union(Decoder.string, Decoder.number), Decoder.option),
-    country_code: pipe(Decoder.string, TaskDecoder.parse(checkCountryCode)),
-    brand: pipe(Decoder.string, TaskDecoder.parse(checkBrand))
+  const EntryDecoder = TaskDecode.struct({
+    name: Decode.string,
+    u2: pipe(Decode.union(Decode.string, Decode.number), Decode.option),
+    country_code: pipe(Decode.string, TaskDecode.chainAsync(checkCountryCode)),
+    brand: pipe(Decode.string, TaskDecode.chainAsync(checkBrand))
   })
 
-  interface Entry extends TaskDecoder.TypeOf<typeof EntryDecoder> {}
+  interface Entry extends TaskDecode.TypeOf<typeof EntryDecoder> {}
 
   const entryResult = await pipe(
     {
       country_code: '??',
       brand: 'Brand1'
     } as Entry,
-    TaskDecoder.validate<Entry>(EntryDecoder),
+    TaskDecode.validate<Entry>(EntryDecoder),
     Task.run
   )
   console.log('TaskDecode result', entryResult)
 
-  const EntryList = TaskDecoder.array<Entry>(EntryDecoder)
+  const EntryList = TaskDecode.array<Entry>(EntryDecoder)
 
-  const arrayResult = await pipe([], TaskDecoder.validate(EntryList), Task.run)
+  const arrayResult = await pipe([], TaskDecode.validate(EntryList), Task.run)
   console.log('TaskDecode array result', arrayResult)
 }
 
