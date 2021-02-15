@@ -11,6 +11,7 @@ export const resolve = of
 export const reject = <A>(value: A) => Promise.reject(value)
 
 export const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
+export const delay = (ms: number) => <A>(prom: Promise<A>) => prom.then((value) => sleep(ms).then(() => value))
 
 export const map = <A, B>(fn: (value: A) => Prom.Not<B>) => (promise: Promise<A>): Promise<B> => promise.then(fn)
 
@@ -19,7 +20,7 @@ export const mapError = <A>(fn: (err: any) => Prom.Not<any>) => (promise: Promis
 
 export const chain = <A, B>(fn: (value: A) => Promise<B>) => (promise: Promise<A>): Promise<B> => promise.then(fn)
 
-export const chainError = <A, B>(fn: (err: any) => Promise<B>) => (promise: Promise<A>): Promise<A | B> =>
+export const catchError = <A, B>(fn: (err: any) => Promise<B>) => (promise: Promise<A>): Promise<A | B> =>
   promise.catch((err) => fn(err))
 
 export const then = <A, B>(fn: (value: A) => B | Promise<B>) => (promise: Promise<A>): Promise<B> => promise.then(fn)
@@ -36,10 +37,11 @@ export const Prom = {
   reject,
   fromIO,
   sleep,
+  delay,
   map,
   mapError,
   chain,
-  chainError,
+  catchError,
   then,
   all,
   tryCatch

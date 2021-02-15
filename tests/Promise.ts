@@ -21,6 +21,20 @@ describe('Promise.reject', () => {
   })
 })
 
+describe('Promise.sleep', () => {
+  it('should sleep', async () => {
+    const result = Prom.sleep(10)
+    expect(result).resolves.toBe(undefined)
+  })
+})
+
+describe('Promise.delay', () => {
+  it('should sleep', async () => {
+    const result = pipe(Prom.of('hello'), Prom.delay(10))
+    expect(result).resolves.toBe('hello')
+  })
+})
+
 describe('Promise.map', () => {
   it('should return expected value', async () => {
     const result = pipe(
@@ -77,11 +91,11 @@ describe('Promise.chain', () => {
   })
 })
 
-describe('Promise.chainError', () => {
+describe('Promise.catchError', () => {
   it('should resolve value', async () => {
     const result = pipe(
       Prom.reject(10),
-      Prom.chainError((a: number) => Prom.of(a + 1))
+      Prom.catchError((a: number) => Prom.of(a + 1))
     )
     expect(result).resolves.toBe(11)
   })
@@ -89,7 +103,7 @@ describe('Promise.chainError', () => {
   it('should re-reject value', async () => {
     const result = pipe(
       Prom.reject(10),
-      Prom.chainError((a: number) => Prom.reject(a + 1))
+      Prom.catchError((a: number) => Prom.reject(a + 1))
     )
     expect(result).rejects.toBe(11)
   })
