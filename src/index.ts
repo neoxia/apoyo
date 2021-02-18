@@ -1,3 +1,4 @@
+export * from './types'
 export * from './function'
 export { Arr } from './Array'
 export { NonEmptyArray } from './NonEmptyArray'

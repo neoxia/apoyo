@@ -3,7 +3,7 @@ import * as DE from './DecodeError'
 import * as D from './Decode'
 import { Dict, collect, fromPairs, toPairs } from './Dict'
 import { pipe } from './function'
-import { ConvertOptions } from './Option'
+import { Option } from './Option'
 import * as Result from './Result'
 import * as Task from './Task'
 import * as TaskResult from './TaskResult'
@@ -17,8 +17,8 @@ export interface ITaskDecode<I, O> {
 export type TaskDecode<I, O> = ITaskDecode<I, O>
 
 export namespace TaskDecode {
-  export type TypeOf<A> = A extends TaskDecode<unknown, infer B> ? ConvertOptions<B> : never
-  export type InputOf<A> = A extends TaskDecode<infer B, unknown> ? ConvertOptions<B> : never
+  export type TypeOf<A> = A extends TaskDecode<unknown, infer B> ? Option.Struct<B> : never
+  export type InputOf<A> = A extends TaskDecode<infer B, unknown> ? Option.Struct<B> : never
   export type T<I, O> = TaskDecode<I, O> | D.Decode<I, O>
   export type Strategy = <A>(tasks: Task.Task<A>[]) => Task.Task<A[]>
 }

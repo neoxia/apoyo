@@ -1,5 +1,4 @@
-import { pipe, Prom, Result, Task } from '../src'
-import { isNumber } from '../src/types'
+import { isNumber, pipe, Prom, Result, Task } from '../src'
 
 describe('Task.of', () => {
   it('should return expected value', async () => {

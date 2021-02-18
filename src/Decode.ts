@@ -2,7 +2,6 @@ import * as A from './Array'
 import * as DE from './DecodeError'
 import * as Dict from './Dict'
 import { InverseRefinement, pipe, Predicate, Refinement } from './function'
-import * as O from './Option'
 import * as Result from './Result'
 import {
   isBoolean,
@@ -17,6 +16,7 @@ import {
   isUUID
 } from './types'
 import * as Obj from './Object'
+import { isSome, Option } from './Option'
 
 export type DecodeResult<A> = Result.Result<A, DE.DecodeError>
 export interface IDecode<I, O> {
@@ -26,8 +26,8 @@ export interface IDecode<I, O> {
 export type Decode<I, O> = IDecode<I, O>
 
 export namespace Decode {
-  export type TypeOf<A> = A extends Decode<unknown, infer B> ? O.ConvertOptions<B> : never
-  export type InputOf<A> = A extends Decode<infer B, unknown> ? O.ConvertOptions<B> : never
+  export type TypeOf<A> = A extends Decode<unknown, infer B> ? Option.Struct<B> : never
+  export type InputOf<A> = A extends Decode<infer B, unknown> ? Option.Struct<B> : never
 }
 
 type Struct<A extends Dict.Dict<unknown>> = {
@@ -166,8 +166,8 @@ export const type = <A extends Dict.Dict<unknown>>(props: Struct<A>, name?: stri
 export const nullable = <I, O>(decoder: Decode<I, O>): Decode<I, O | null> => (input: I) =>
   input !== null ? decoder(input) : Result.ok(null)
 
-export const option = <I, O>(decoder: Decode<I, O>): Decode<I, O.Option<O>> => (input: I) =>
-  O.isSome(input) ? decoder(input) : Result.ok(undefined)
+export const option = <I, O>(decoder: Decode<I, O>): Decode<I, Option<O>> => (input: I) =>
+  isSome(input) ? decoder(input) : Result.ok(undefined)
 
 export const ref = <A>(decoder: Decode<unknown, A>) => decoder
 
