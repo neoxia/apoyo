@@ -1,5 +1,5 @@
 import * as Dict from './Dict'
-import { incrementBy, constant, first, identity, InverseRefinement, not, pipe, Predicate, Refinement } from './function'
+import { constant, first, identity, InverseRefinement, not, pipe, Predicate, Refinement, add } from './function'
 import * as NEA from './NonEmptyArray'
 import { isSome, Option } from './Option'
 import { contramap, inverse, Ord } from './Ord'
@@ -93,7 +93,7 @@ export const indexBy = <A>(strategy: (a: A, b: A) => A, fn: (value: A, index: nu
   toDict<A, A>(fn, strategy, identity)
 
 export const countBy = <A>(fn: (value: A, index: number) => string | number) =>
-  toDict<A, number>(fn, incrementBy(1), constant(1))
+  toDict<A, number>(fn, add(1), constant(1))
 
 export const chunksOf = (size: number) => <A>(arr: A[]) => {
   const count = Math.ceil(arr.length / size)
