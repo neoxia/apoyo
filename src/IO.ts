@@ -1,6 +1,9 @@
+import { throwError } from './function'
+
 export type IO<A> = () => A
 
 export const of = <A>(value: A) => () => value
+export const reject = (value: unknown) => () => throwError(value)
 
 export const isIO = <A = unknown>(fn: unknown): fn is () => A => typeof fn === 'function' && fn.length === 0
 
@@ -9,7 +12,7 @@ export const mapError = (fn: (err: any) => any) => <A>(ma: IO<A>): IO<A> => () =
   try {
     return ma()
   } catch (err) {
-    return fn(err)
+    throw fn(err)
   }
 }
 
@@ -19,6 +22,7 @@ export const run = <A>(fn: IO<A>) => fn()
 
 export const IO = {
   of,
+  reject,
   map,
   mapError,
   chain,
