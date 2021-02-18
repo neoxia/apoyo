@@ -19,22 +19,30 @@ export interface FormattedError {
 
 export type Err = IErr
 
-export const of = (msg: string, info?: Dict<any>): Err => {
+export const of = (msg: string, info?: Dict<any>, cause?: Error): Error => {
   const message = pipe(msg, template(info || {}))
   const e: Err = new Error(message)
+  if (info && info.name) {
+    e.name = info.name
+  }
   e.info = info
+  e.cause = cause
   return e
 }
+
 export const create = of
 
-export const wrap = (msg: string, info?: Dict<any>) => (err: Error): Err => {
-  const error = of(msg, info)
-  error.cause = err
-  return error
+export const fromUnknown = (err: unknown): Error => (err instanceof Error ? err : of(String(err)))
+
+export const wrap = (msg: string, info?: Dict<any>) => (e: unknown): Error => {
+  const err = fromUnknown(e)
+  return of(msg, info, err)
 }
 
-export const chain = (msg: string, info?: Dict<any>) => (err: Error): Err =>
-  pipe(err, wrap(`${msg}: ${err.message}`, info))
+export const chain = (msg: string, info?: Dict<any>) => (e: unknown): Error => {
+  const err = fromUnknown(e)
+  return of(`${msg}: ${err.message}`, info, err)
+}
 
 export const toArray = (err: Error) => {
   const errors: Err[] = []
@@ -46,7 +54,7 @@ export const toArray = (err: Error) => {
   return errors
 }
 
-export const find = (fn: (info: Dict<any>) => boolean) => (err: Error): O.Option<Err> => {
+export const find = (fn: (info: Dict<any>) => boolean) => (err: Error): O.Option<Error> => {
   let cur: O.Option<Err> = err
   while (cur) {
     const found = pipe(cur.info, O.map(fn))
@@ -61,9 +69,10 @@ export const find = (fn: (info: Dict<any>) => boolean) => (err: Error): O.Option
 export const has = (fn: (info: Dict<any>) => boolean) => (err: Error): boolean =>
   pipe(err, find(fn), (value) => (value ? true : false))
 
-export const info = (err: Error) => {
+export const info = (err: unknown) => {
   const infos = pipe(
     err,
+    fromUnknown,
     toArray,
     A.filterMap((err) => err.info),
     A.reverse
@@ -71,15 +80,19 @@ export const info = (err: Error) => {
   return merge(...infos)
 }
 
-const fullStack = (err: Error) =>
+const cause = (err: unknown): O.Option<Error> => err && (err as any).cause
+
+const fullStack = (err: unknown) =>
   pipe(
     err,
+    fromUnknown,
     toArray,
     A.filterMap((err) => err.stack),
     A.join(`\ncaused by: `)
   )
 
-const format = (err: Error): FormattedError => {
+const format = (e: unknown): FormattedError => {
+  const err = fromUnknown(e)
   const i = info(err)
   return {
     message: err.message,
@@ -101,11 +114,13 @@ const toJSON = (err: FormattedError, stackTrace = true) => ({
 export const Err = {
   of,
   create,
+  fromUnknown,
   wrap,
   chain,
   find,
   has,
   info,
+  cause,
   fullStack,
   format,
   toArray,
