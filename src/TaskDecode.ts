@@ -129,7 +129,7 @@ export const struct = <A extends Dict<unknown>>(
 export const type = <A extends Dict<unknown>>(
   props: Struct<A>,
   name?: string,
-  strategy: TaskDecode.Strategy = Task.all
+  strategy?: TaskDecode.Strategy
 ): TaskDecode<unknown, A> => {
   const decoder = struct(props, name, strategy)
   return pipe(

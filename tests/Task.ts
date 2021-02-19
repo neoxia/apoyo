@@ -172,6 +172,11 @@ describe('Task.sequence', () => {
 })
 
 describe('Task.concurrent', () => {
+  it('should work with empty tasks', async () => {
+    const result = pipe([], Task.concurrent(2))
+    expect(pipe(result, Task.run)).resolves.toEqual([])
+  })
+
   it('should await all tasks', async () => {
     const result = pipe([Task.of(10), Task.of(12), Task.of(5)], Task.concurrent(2))
     expect(pipe(result, Task.run)).resolves.toEqual([10, 12, 5])
@@ -187,8 +192,18 @@ describe('Task.concurrent', () => {
     expect(pipe(result, Task.run)).rejects.toThrow()
   })
 
+  it('should throw if concurrency is negative', async () => {
+    const result = pipe([Task.of(10), Task.of(12), Task.of(5), Task.of(7)], Task.concurrent(-Infinity))
+    expect(pipe(result, Task.run)).rejects.toThrow()
+  })
+
   it('should set max concurrency', async () => {
     const result = pipe([Task.of(10), Task.of(12), Task.of(5), Task.of(7)], Task.concurrent(100))
+    expect(pipe(result, Task.run)).resolves.toEqual([10, 12, 5, 7])
+  })
+
+  it('should set max concurrency when infinity is used', async () => {
+    const result = pipe([Task.of(10), Task.of(12), Task.of(5), Task.of(7)], Task.concurrent(Infinity))
     expect(pipe(result, Task.run)).resolves.toEqual([10, 12, 5, 7])
   })
 

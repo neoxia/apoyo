@@ -1,4 +1,4 @@
-import { Decode, DecodeError, pipe, Result } from '../src'
+import { Decode, DecodeError, isNull, pipe, Result } from '../src'
 
 describe('Decode.string', () => {
   it('should succeed', () => {
@@ -193,6 +193,19 @@ describe('Decode.reject', () => {
   })
   it('should fail', () => {
     expect(pipe(decoder(''), Result.isKo)).toBe(true)
+  })
+
+  it('should exclude type on true', () => {
+    const decoderRefine = pipe(
+      Decode.string,
+      Decode.nullable,
+      Decode.reject(isNull, `value should not be null`, {
+        nullable: false
+      })
+    )
+
+    expect(pipe(decoderRefine('42'), Result.isOk)).toBe(true)
+    expect(pipe(decoderRefine(null), Result.isOk)).toBe(false)
   })
 })
 

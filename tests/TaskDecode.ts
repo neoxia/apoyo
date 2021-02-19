@@ -210,6 +210,46 @@ describe('TaskDecode.struct', () => {
     }
     expect(await pipe(decodeTodo(todo), Task.map(Result.isKo), Task.run)).toBe(true)
   })
+
+  it('should work with custom async strategy', async () => {
+    const results: number[] = []
+
+    const decodeCustom = pipe(
+      Decode.number,
+      TaskDecode.chainAsync(async (ms) => {
+        await Prom.sleep(ms)
+        results.push(ms)
+        return Result.ok(ms)
+      })
+    )
+
+    const decodeTodoConcurrent = TaskDecode.struct(
+      {
+        field1: decodeCustom,
+        field2: decodeCustom,
+        field3: decodeCustom,
+        field4: decodeCustom,
+        field5: decodeCustom,
+        field6: decodeCustom
+      },
+      undefined,
+      Task.concurrent(4)
+    )
+
+    const items = {
+      field1: 100,
+      field2: 100,
+      field3: 20,
+      field4: 20,
+      field5: 5,
+      field6: 5
+    }
+
+    const ok = await pipe(items, decodeTodoConcurrent, Task.run)
+    expect(pipe(ok, Result.isOk)).toBe(true)
+    expect(pipe(ok, Result.get)).toEqual(items)
+    expect(results).toEqual([20, 20, 5, 5, 100, 100])
+  })
 })
 
 describe('TaskDecode.type', () => {
@@ -237,8 +277,8 @@ describe('TaskDecode.type', () => {
       }
     ]
 
-    expect(await pipe(todos[0], decodeTodo, Task.map(Result.isOk), Task.run)).toBe(true)
-    expect(await pipe(todos[1], decodeTodo, Task.map(Result.isOk), Task.run)).toBe(true)
+    expect(await pipe(todos[0], TaskDecode.validate<Todo>(decodeTodo), Task.map(Result.isOk), Task.run)).toBe(true)
+    expect(await pipe(todos[1], TaskDecode.validate<Todo>(decodeTodo), Task.map(Result.isOk), Task.run)).toBe(true)
   })
 
   it('should not strip additional fields', async () => {

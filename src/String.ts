@@ -37,7 +37,7 @@ export const htmlUnescape = (htmlString: string) =>
     .replace(/&amp;/g, '&')
 
 export const template = (info: Dict<any>) => (str: string) => {
-  return str.replace(BRACE_REGEXP, (_, key) => pipe(info, property(key)))
+  return str.replace(BRACE_REGEXP, (_, key) => pipe(info, property(key), of))
 }
 
 export const Str = {

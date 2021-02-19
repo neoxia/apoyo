@@ -1,4 +1,4 @@
-import { pipe, Arr, first, second, identity, Result } from '../src'
+import { pipe, Arr, first, second, identity, Result, Ord } from '../src'
 
 describe('Array.head', () => {
   it('should return first value when not empty', () => {
@@ -356,5 +356,82 @@ describe('Array.difference', () => {
     const c = pipe(a, Arr.difference(identity, b))
     const expected = [3]
     expect(c).toEqual(expected)
+  })
+})
+
+describe('Array.min', () => {
+  it('should return smallest', () => {
+    expect(pipe([5, 2, 8, 1, 9], Arr.min(Ord.number))).toBe(1)
+  })
+
+  it('should return undefined on empty array', () => {
+    expect(pipe([], Arr.min(Ord.number))).toBe(undefined)
+  })
+})
+
+describe('Array.max', () => {
+  it('should return greatest', () => {
+    expect(pipe([5, 2, 8, 1, 9], Arr.max(Ord.number))).toBe(9)
+  })
+
+  it('should return undefined on empty array', () => {
+    expect(pipe([], Arr.max(Ord.number))).toBe(undefined)
+  })
+})
+
+describe('Array.reverse', () => {
+  it('should work', () => {
+    const a = [1, 2, 3, 4]
+    const b = pipe(a, Arr.reverse)
+    expect(a).toEqual([1, 2, 3, 4])
+    expect(b).toEqual([4, 3, 2, 1])
+  })
+})
+
+describe('Array.slice', () => {
+  it('should work', () => {
+    const a = [1, 2, 3, 4]
+    const b = pipe(a, Arr.slice(1, 2))
+    expect(a).toEqual([1, 2, 3, 4])
+    expect(b).toEqual([2])
+  })
+})
+
+describe('Array.take', () => {
+  it('should work', () => {
+    const a = [1, 2, 3, 4]
+    const b = pipe(a, Arr.take(2))
+    expect(a).toEqual([1, 2, 3, 4])
+    expect(b).toEqual([1, 2])
+  })
+})
+
+describe('Array.skip', () => {
+  it('should work', () => {
+    const a = [1, 2, 3, 4]
+    const b = pipe(a, Arr.skip(2))
+    expect(a).toEqual([1, 2, 3, 4])
+    expect(b).toEqual([3, 4])
+  })
+})
+
+describe('Array.sort', () => {
+  it('should work', () => {
+    const a = [1, 9, 3, 2, 7, 3, 4]
+    const aCopy = a.slice()
+    const b = pipe(a, Arr.sort(Ord.number))
+    expect(a).toEqual(aCopy)
+    expect(b).toEqual([1, 2, 3, 3, 4, 7, 9])
+  })
+
+  // JS sort always puts undefined at last AFTER the sort... which breaks specific order inversions if not handled correctly
+  it('should work with undefined values', () => {
+    const a = [1, undefined, 9, 3, undefined, 2, 7, 3, 4]
+    const aCopy = a.slice()
+
+    const ordArr = pipe(Ord.number, Ord.option, Ord.inverse)
+    const b = pipe(a, Arr.sort(ordArr))
+    expect(a).toEqual(aCopy)
+    expect(b).toEqual([undefined, undefined, 9, 7, 4, 3, 3, 2, 1])
   })
 })

@@ -182,5 +182,8 @@ export const Arr = {
   pluck,
   partition,
   partitionMap,
-  separate
+  separate,
+  min,
+  max,
+  reverse
 }
