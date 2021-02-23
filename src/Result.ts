@@ -7,24 +7,22 @@ const enum Tags {
   Ko = 'Result.Ko'
 }
 
-export namespace Result {
-  export interface Ok<T> {
-    _tag: Tags.Ok
-    ok: T
-  }
-  export interface Ko<T> {
-    _tag: Tags.Ko
-    ko: T
-  }
+export interface Ok<T> {
+  _tag: Tags.Ok
+  ok: T
+}
+export interface Ko<T> {
+  _tag: Tags.Ko
+  ko: T
 }
 
-export type Result<A, E = never> = Result.Ok<A> | Result.Ko<E>
+export type Result<A, E = never> = Ok<A> | Ko<E>
 
-export const ok = <T>(value: T): Result.Ok<T> => ({
+export const ok = <T>(value: T): Ok<T> => ({
   _tag: Tags.Ok,
   ok: value
 })
-export const ko = <T>(value: T): Result.Ko<T> => ({
+export const ko = <T>(value: T): Ko<T> => ({
   _tag: Tags.Ko,
   ko: value
 })
@@ -32,8 +30,8 @@ export const ko = <T>(value: T): Result.Ko<T> => ({
 export const fromOption = <E = unknown>(onNone: () => E) => <A>(option: Option<A>): Result<A, E> =>
   isSome(option) ? ok(option) : ko(onNone())
 
-export const isOk = <A, B>(result: Result<A, B>): result is Result.Ok<A> => result._tag === Tags.Ok
-export const isKo = <A, B>(result: Result<A, B>): result is Result.Ko<B> => result._tag === Tags.Ko
+export const isOk = <A, B>(result: Result<A, B>): result is Ok<A> => result._tag === Tags.Ok
+export const isKo = <A, B>(result: Result<A, B>): result is Ko<B> => result._tag === Tags.Ko
 export const isResult = <A = unknown, B = unknown>(result: unknown): result is Result<A, B> =>
   isObject(result) && (result._tag === Tags.Ok || result._tag === Tags.Ko)
 
