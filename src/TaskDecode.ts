@@ -28,19 +28,19 @@ type Struct<A extends Dict<unknown>> = {
 }
 
 export const chain = <B, C>(fn: TaskDecode.T<B, C>) => <A>(decoder: TaskDecode.T<A, B>): TaskDecode<A, C> => (input) =>
-  pipe(decoder(input), TaskResult.fromResult, TaskResult.chainResult(fn))
+  pipe(decoder(input), TaskResult.from, TaskResult.chain(fn))
 
 export const chainAsync = <B, C>(fn: (input: B) => Promise<D.DecodeResult<C>>) => <A>(
   decoder: TaskDecode.T<A, B>
 ): TaskDecode<A, C> => (input) =>
   pipe(
     decoder(input),
-    TaskResult.fromResult,
+    TaskResult.from,
     TaskResult.chain((i) => () => fn(i))
   )
 
 export const map = <A, B>(fn: (input: A) => B) => <I>(decoder: TaskDecode.T<I, A>): TaskDecode<I, B> => (input) =>
-  pipe(decoder(input), TaskResult.fromResult, TaskResult.map(fn))
+  pipe(decoder(input), TaskResult.from, TaskResult.map(fn))
 
 /* Collection types */
 
@@ -57,7 +57,7 @@ export const array = <A>(
         A.mapIndexed((value, index) =>
           pipe(
             decoder(value),
-            TaskResult.fromResult,
+            TaskResult.from,
             TaskResult.mapError((err) => DE.index(index, err))
           )
         ),
@@ -82,7 +82,7 @@ export const dict = <A>(
         collect((source, key) =>
           pipe(
             decoder(source),
-            TaskResult.fromResult,
+            TaskResult.from,
             TaskResult.map((value) => [key, value] as [string, A]),
             TaskResult.mapError((err) => DE.key(key, err))
           )
@@ -111,7 +111,7 @@ export const struct = <A extends Dict<unknown>>(
         A.map(([key, decoder]) =>
           pipe(
             decoder(input[key]),
-            TaskResult.fromResult,
+            TaskResult.from,
             TaskResult.map((value) => [key, value] as [string, unknown]),
             TaskResult.mapError((err) => DE.key(key, err))
           )
@@ -165,7 +165,7 @@ export function union<I>(...members: NonEmptyArray<TaskDecode.T<I, unknown>>): T
       const member = members[index]
       const result = await pipe(
         member(input),
-        TaskResult.fromResult,
+        TaskResult.from,
         TaskResult.mapError((err) => DE.member(index, err)),
         Task.run
       )
@@ -203,7 +203,7 @@ export function merge<I>(...members: NonEmptyArray<TaskDecode.T<I, Dict>>): Task
       A.mapIndexed((member, index) =>
         pipe(
           member(input),
-          TaskResult.fromResult,
+          TaskResult.from,
           TaskResult.mapError((err) => DE.member(index, err))
         )
       ),
