@@ -1,4 +1,4 @@
-import { Arr, Err, pipe, Prom, Task, TaskResult } from '../src'
+import { Arr, Err, pipe, Prom, Task, TaskResult } from '../dist'
 
 export const main = async () => {
   const someTask: Task<number> = async () => {
