@@ -9,8 +9,68 @@ export function values<E extends Enum<E>>(enumType: E) {
 export const toPairs = <E extends Enum<E>>(enumType: E) =>
   keys(enumType).map((key) => [key, enumType[key]]) as Array<[keyof E, E[keyof E]]>
 
+/**
+ * @namespace Enum
+ *
+ * @description
+ * This namespace contains utilities for Typescript enums.
+ */
 export const Enum = {
+  /**
+   * @description
+   * Get all keys for the given enum.
+   *
+   * @example
+   * ```ts
+   * enum Color {
+   *   RED = "red",
+   *   BLUE = "blue",
+   *   GREEN = "green"
+   * }
+   * const keys = Enum.keys(Color)
+   *
+   * expect(keys).toEqual(["RED", "BLUE", "GREEN"])
+   * ```
+   */
   keys,
+
+  /**
+   * @description
+   * Get all values for the given enum.
+   *
+   * @example
+   * ```ts
+   * enum Color {
+   *   RED = "red",
+   *   BLUE = "blue",
+   *   GREEN = "green"
+   * }
+   * const values = Enum.values(Color)
+   *
+   * expect(values).toEqual(["red", "blue", "green"])
+   * ```
+   */
   values,
+
+  /**
+   * @description
+   * Get all key/value pairs for the given enum.
+   *
+   * @example
+   * ```ts
+   * enum Color {
+   *   RED = "red",
+   *   BLUE = "blue",
+   *   GREEN = "green"
+   * }
+   * const pairs = Enum.toPairs(Color)
+   *
+   * expect(pairs).toEqual([
+   *   ["RED", "red"],
+   *   ["BLUE", "blue"],
+   *   ["GREEN", "green"]
+   * ])
+   * ```
+   */
   toPairs
 }
