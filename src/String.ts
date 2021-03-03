@@ -40,11 +40,95 @@ export const template = (info: Dict<any>) => (str: string) => {
   return str.replace(BRACE_REGEXP, (_, key) => pipe(info, property(key), of))
 }
 
+/**
+ * @namespace Str
+ *
+ * @description
+ * This namespace contains commonly used utilities for Strings, as well as pipeable versions of already existing String methods.
+ */
 export const Str = {
+  /**
+   * @description
+   * Transform value to string
+   */
   of,
+
+  /**
+   * @description
+   * Split string by given separator.
+   * This function is the pipeable equivalent to the native split function.
+   *
+   * @example
+   * ```ts
+   * const fileName = pipe(
+   *   'path/to/file.txt',
+   *   Str.split('/'),
+   *   Arr.last
+   * )
+   *
+   * expect(fileName).toBe('file.txt')
+   * ```
+   */
   split,
+
+  /**
+   * @description
+   * Replace occurences in a string.
+   * This function is the pipeable equivalent to the native replace function.
+   *
+   * @example
+   * ```ts
+   * const str = pipe(
+   *   'Hello John',
+   *   Str.replace('John', 'Doe')
+   * )
+   *
+   * expect(str).toBe('Hello Doe')
+   * ```
+   */
   replace,
+
+  /**
+   * @description
+   * Simple string templating
+   *
+   * @example
+   * ```ts
+   * const message = Str.template(`Hello {name}!`, {
+   *   name: "John"
+   * })
+   * ```
+   */
   template,
+
+  /**
+   * @description
+   * Escape HTML sensible characters
+   *
+   * @see `Str.htmlUnescape`
+   *
+   * @example
+   * ```ts
+   * const escaped = Str.htmlEscape(`<script>window.alert("Hello")</script>`)
+   *
+   * expect(escaped).toBe('&lt;script&gt;window.alert(&quot;Hello&quot;)&lt;/script&gt;')
+   * ```
+   */
   htmlEscape,
+
+  /**
+   * @description
+   *
+   * Unescape an HTML escaped string
+   *
+   * @see `Str.htmlEscape`
+   *
+   * @example
+   * ```ts
+   * const unescaped = Str.htmlUnescape('&lt;script&gt;window.alert(&quot;Hello&quot;)&lt;/script&gt;')
+   *
+   * expect(unescaped).toBe(`<script>window.alert("Hello")</script>`)
+   * ```
+   */
   htmlUnescape
 }
