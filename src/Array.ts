@@ -671,6 +671,7 @@ export const Arr = {
    * The returned array will be automatically sorted by the unique identifiers used for each value
    *
    * @param fn - Return an unique identifier for each array value
+   * @param member - The array with all values to remove from the original array
    *
    * @see `Arr.union`
    * @see `Arr.intersect`

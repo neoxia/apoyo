@@ -35,6 +35,10 @@ describe('String.truncate', () => {
   it('should add given suffix', () => {
     expect(pipe(line, Str.truncate(20, '... (truncated)'))).toBe(beginning + '... (truncated)')
   })
+
+  it('should do nothing when string under max length', () => {
+    expect(pipe('Hello world', Str.truncate(80, '... (truncated)'))).toBe('Hello world')
+  })
 })
 
 describe('String.template', () => {

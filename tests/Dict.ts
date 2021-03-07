@@ -1,5 +1,19 @@
 import { pipe, Dict, isNull, or, isUndefined, Option, identity } from '../src'
 
+describe('Dict.isEmpty', () => {
+  it('should be true when empty', () => {
+    expect(Dict.isEmpty({})).toBe(true)
+  })
+
+  it('should be false when not empty', () => {
+    expect(
+      Dict.isEmpty({
+        firstName: 'John'
+      })
+    ).toBe(false)
+  })
+})
+
 describe('Dict.mapIndexed', () => {
   it('should map with key', () => {
     const res = pipe(
