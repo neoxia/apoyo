@@ -23,7 +23,7 @@ export const mapIndexed = <A, B>(fn: (value: A, index: number, arr: A[]) => B) =
 
 export const map = <A, B>(fn: (value: A) => B) => (arr: A[]) => arr.map((value) => fn(value))
 
-export const filterMap = <A, B>(fn: (value: A) => Option<B>) => (arr: A[]) => {
+export const filterMap = <A, B>(fn: (value: A) => Option<B>) => (arr: A[]): B[] => {
   const out: B[] = []
   for (let i = 0; i < arr.length; ++i) {
     const result = fn(arr[i])
@@ -34,7 +34,7 @@ export const filterMap = <A, B>(fn: (value: A) => Option<B>) => (arr: A[]) => {
   return out
 }
 
-export const compact = <A>(arr: Option<A>[]) => pipe(arr, filterMap(identity))
+export const compact = <A>(arr: Option<A>[]): A[] => pipe(arr, filterMap(identity))
 
 export const flatten = <A>(arr: A[][]): A[] => ([] as A[]).concat.apply([], arr)
 
@@ -151,6 +151,10 @@ export const isNonEmpty = <A>(arr: A[]): arr is NEA.NonEmptyArray<A> => arr.leng
 export const min = <A>(ord: Ord<A>) => (arr: A[]): Option<A> => (isNonEmpty(arr) ? pipe(arr, NEA.min(ord)) : undefined)
 
 export const max = <A>(ord: Ord<A>) => min(inverse(ord))
+
+export const find = <A>(fn: (value: A, index: number) => boolean) => (arr: A[]): Option<A> => arr.find(fn)
+
+export const includes = <A>(fn: (value: A, index: number) => boolean) => (arr: A[]): boolean => isSome(arr.find(fn))
 
 /**
  * @namespace Arr
@@ -824,5 +828,47 @@ export const Arr = {
    * expect(nbs).toEqual([3,2,1])
    * ```
    */
-  reverse
+  reverse,
+
+  /**
+   * @description
+   * Find the first element in the array matching the given predicate
+   *
+   * @param fn - How to find the value
+   *
+   * @example
+   * ```ts
+   * const nb = pipe(
+   *   [1, 2, 3],
+   *   Arr.find(a => a === 1)
+   * )
+   *
+   * expect(nb).toEqual(1)
+   * ```
+   */
+  find,
+
+  /**
+   * @description
+   * Check if the array includes a specific element
+   *
+   * @param value - The value to find
+   * @param eq - Optional function to customize comparison function
+   *
+   * @example
+   * ```ts
+   * const eqNumber = pipe(
+   *   Ord.number,
+   *   Ord.eq
+   * )
+   *
+   * const hasNumber = pipe(
+   *   [1, 2, 3],
+   *   Arr.includes(eqNumber(2))
+   * )
+   *
+   * expect(hasNumber).toBe(true)
+   * ```
+   */
+  includes
 }

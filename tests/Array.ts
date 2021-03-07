@@ -165,6 +165,15 @@ describe('Array.filterMap', () => {
   })
 })
 
+describe('Array.compact', () => {
+  it('should return expected values', () => {
+    const a = [1, 4, undefined, null, 2, 3, 5]
+    const b: Array<number | null> = pipe(a, Arr.compact)
+    const expected = [1, 4, null, 2, 3, 5]
+    expect(b).toEqual(expected)
+  })
+})
+
 describe('Array.partition', () => {
   const a = [1, 4, 2, 3, 5]
   const b = pipe(

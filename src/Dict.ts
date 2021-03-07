@@ -1,10 +1,23 @@
-import { identity, pipe } from './function'
+import * as A from './Array'
+import { identity, InverseRefinement, not, pipe } from './function'
 import * as Obj from './Object'
 import { isSome, Option } from './Option'
 
 export type Dict<A = unknown> = Record<string, A>
+export namespace Dict {
+  export interface Predicate<A> {
+    (value: A, key: string): boolean
+  }
+  export interface Refinement<A, B extends A> {
+    (value: A, key: string): value is B
+  }
+}
 
 export const isDict = (input: unknown): input is Dict<unknown> => typeof input === 'object' && input !== null
+
+export const isEmpty = (dict: Dict<unknown>): boolean => pipe(dict, keys, A.isEmpty)
+
+export const set = <A>(key: string | number, value: A) => (dict: Dict<A>): Dict<A> => ((dict[key] = value), dict)
 
 export const lookup = (key: string | number) => <A>(dict: Dict<A>): Option<A> => dict[key]
 
@@ -23,21 +36,37 @@ export const reduce = <A, B>(fn: (acc: B, value: A, key: string) => B, initial: 
 export const mapIndexed = <A, B>(fn: (value: A, key: string) => B) => (dict: Dict<A>) =>
   pipe(
     dict,
-    reduce<A, Dict<B>>((acc, value, key) => ((acc[key] = fn(value, key)), acc), {})
+    reduce<A, Dict<B>>((acc, value, key) => pipe(acc, set(key, fn(value, key))), {})
   )
 
 export const map = <A, B>(fn: (value: A) => B) => mapIndexed<A, B>((v) => fn(v))
 
-export const filterMap = <A, B>(fn: (value: A, key: string) => Option<B>) => (dict: Dict<A>) =>
+export function filter<A, B extends A>(fn: Dict.Refinement<A, B>): (dict: Dict<A>) => Dict<B>
+export function filter<A>(fn: Dict.Predicate<A>): (arr: Dict<A>) => Dict<A>
+export function filter(fn: any) {
+  return (arr: Dict<unknown>) =>
+    pipe(
+      arr,
+      reduce<unknown, Dict>((acc, value, key) => (fn(value, key) ? pipe(acc, set(key, value)) : acc), {})
+    )
+}
+
+export function reject<A, B extends A>(fn: Dict.Refinement<A, B>): (arr: Dict<A>) => Dict<InverseRefinement<A, B>>
+export function reject<A>(fn: Dict.Predicate<A>): (arr: Dict<A>) => Dict<A>
+export function reject(fn: any) {
+  return filter(not(fn))
+}
+
+export const filterMap = <A, B>(fn: (value: A, key: string) => Option<B>) => (dict: Dict<A>): Dict<B> =>
   pipe(
     dict,
     reduce<A, Dict<B>>(
-      (acc, value, key) => pipe(fn(value, key), (value) => (isSome(value) ? ((acc[key] = value), acc) : acc)),
+      (acc, value, key) => pipe(fn(value, key), (value) => (isSome(value) ? pipe(acc, set(key, value)) : acc)),
       {}
     )
   )
 
-export const compact = filterMap(identity)
+export const compact = <A>(value: Dict<Option<A>>): Dict<A> => pipe(value, filterMap(identity))
 
 export const collect = <A, B>(fn: (value: A, key: string) => B) => (dict: Dict<A>) =>
   pipe(
@@ -78,14 +107,18 @@ export const difference = <A>(member: Dict<A>) => (dict: Dict<A>): Dict<A> =>
   )
 
 export const Dict = {
+  isEmpty,
+  lookup,
+  set,
   map,
   mapIndexed,
+  filter,
+  reject,
   filterMap,
   compact,
   reduce,
   collect,
   isDict,
-  lookup,
   keys,
   values,
   fromPairs,

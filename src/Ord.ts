@@ -1,6 +1,17 @@
 import { isSome, Option } from './Option'
 import { fcurry2 } from './function'
 
+/**
+ * @description
+ * A constant enum for possible `Ord` results
+ *
+ * @example
+ * ```ts
+ * expect(Ord.number(1, 0)).toBe(Ordering.UP)
+ * expect(Ord.number(0, 1)).toBe(Ordering.DOWN)
+ * expect(Ord.number(0, 0)).toBe(Ordering.EQ)
+ * ```
+ */
 export const enum Ordering {
   UP = 1,
   DOWN = -1,

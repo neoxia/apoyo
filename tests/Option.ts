@@ -1,4 +1,4 @@
-import { isNaN, isUInt, Option, pipe, throwError } from '../src'
+import { and, isNaN, isNull, isUInt, isUndefined, not, Option, pipe, throwError } from '../src'
 
 describe('Option.isSome', () => {
   it('should be true for any other value than undefined', () => {
@@ -74,6 +74,35 @@ describe('Option.fromDate', () => {
   })
   it('should not change any other date', () => {
     expect(pipe(new Date('2020'), Option.fromDate)).toEqual(new Date('2020'))
+  })
+})
+
+describe('Option.from', () => {
+  it('should get option with predicate when true', () => {
+    const value = 42
+    const refined: Option<number> = pipe(
+      value,
+      Option.from((nb) => nb >= 0)
+    )
+    expect(refined).toBe(42)
+  })
+  it('should get option with predicate when false', () => {
+    const value = -42
+    const refined: Option<number> = pipe(
+      value,
+      Option.from((nb) => nb >= 0)
+    )
+    expect(refined).toBe(undefined)
+  })
+  it('should refine when true', () => {
+    const value = NaN as number | undefined | null
+    const refined: Option<number> = pipe(value, Option.from(and(not(isUndefined), not(isNull), not(isNaN))))
+    expect(refined).toBe(undefined)
+  })
+  it('should refine when false', () => {
+    const value = 42 as number | undefined | null
+    const refined: Option<number> = pipe(value, Option.from(and(not(isUndefined), not(isNull), not(isNaN))))
+    expect(refined).toBe(42)
   })
 })
 

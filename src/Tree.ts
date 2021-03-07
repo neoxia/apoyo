@@ -10,7 +10,7 @@ export const of = <A>(value: A, forest: Tree<A>[] = []): Tree<A> => ({
 
 export const draw = (tree: Tree<string>): string => tree.value + drawForest('\n', tree.forest)
 
-export const drawForest = (indentation: string, forest: Tree<string>[]): string => {
+const drawForest = (indentation: string, forest: Tree<string>[]): string => {
   let r = ''
   const len = forest.length
   let tree: Tree<string>

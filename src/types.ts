@@ -4,6 +4,7 @@ declare const _date: unique symbol
 declare const _datetime: unique symbol
 declare const _int: unique symbol
 declare const _uint: unique symbol
+declare const _NaN: unique symbol
 
 interface UUIDBrand {
   readonly [_uuid]: unknown
@@ -22,6 +23,10 @@ interface IntBrand {
 }
 interface UIntBrand {
   readonly [_uint]: unknown
+}
+
+interface NaNBrand {
+  readonly [_NaN]: unknown
 }
 
 /**
@@ -58,6 +63,8 @@ export type int = number & IntBrand
  */
 export type uint = number & UIntBrand
 
+export type NaN = number & NaNBrand
+
 const REGEXP_EMAIL = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/
 const REGEXP_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const REGEXP_DATE = /^([0-9]{4}[-](0?[1-9]|1[0-2])[-](0?[1-9]|[12][0-9]|3[01]))$/
@@ -75,9 +82,10 @@ export const isNumber = (value: unknown): value is number => typeof value === 'n
 export const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean'
 export const isDate = (value: unknown): value is Date => value instanceof Date
 
-export const isNaN = (value: number) => Number.isNaN(value)
+export const isNaN = (value: number): value is NaN => Number.isNaN(value)
 export const isNull = <A>(value: A | null): value is null => value === null
 export const isUndefined = <A>(value: A | undefined): value is undefined => value === undefined
+
 export const isObject = (input: unknown): input is Record<string | number | symbol, unknown> =>
   typeof input === 'object' && input !== null
 

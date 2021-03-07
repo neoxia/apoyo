@@ -1,5 +1,42 @@
 import { pipe, Str } from '../src'
 
+describe('String.length', () => {
+  it('should return expected length', () => {
+    expect(pipe('Hello', Str.length)).toBe(5)
+  })
+})
+
+describe('String.lower', () => {
+  it('should return expected results', () => {
+    expect(pipe('HellO', Str.lower)).toBe('hello')
+  })
+})
+
+describe('String.upper', () => {
+  it('should return expected results', () => {
+    expect(pipe('HellO', Str.upper)).toBe('HELLO')
+  })
+})
+
+describe('String.capitalize', () => {
+  it('should return expected results', () => {
+    expect(pipe('HelLO', Str.capitalize)).toBe('Hello')
+  })
+})
+
+describe('String.truncate', () => {
+  const line = `Lorem quis sit duis cupidatat elit ut fugiat ea enim exercitation.`
+  const beginning = `Lorem quis sit duis `
+
+  it('should return expected results', () => {
+    expect(pipe(line, Str.truncate(20))).toBe(beginning + '...')
+  })
+
+  it('should add given suffix', () => {
+    expect(pipe(line, Str.truncate(20, '... (truncated)'))).toBe(beginning + '... (truncated)')
+  })
+})
+
 describe('String.template', () => {
   it('should resolve variable', () => {
     expect(pipe(`Hello {name}`, Str.template({ name: 'John' }))).toBe('Hello John')
@@ -14,11 +51,40 @@ describe('String.template', () => {
   it('should resolve sub-object variables', () => {
     expect(pipe(`Hello {user.name}`, Str.template({ user: { name: 'John' } }))).toBe('Hello John')
   })
+
+  it('should escape html on double braces', () => {
+    expect(pipe(`Hello {{name}}`, Str.template({ name: '<b>John</b>' }))).toBe('Hello &lt;b&gt;John&lt;/b&gt;')
+  })
+
+  it('should not replace non-valid js identifiers', () => {
+    const str = '"*.{json,md,css,graphql,html}"'
+    expect(pipe(str, Str.template({}))).toBe(str)
+  })
 })
 
 describe('String.replace', () => {
   it('should return expected result', () => {
     expect(pipe('Hello world', Str.replace(/o/g, 'a'))).toBe('Hella warld')
+  })
+})
+
+describe('String.regexpEscape', () => {
+  it('should escape regexp sensible characters', () => {
+    const str = Str.regexpEscape('\\ ^ $ * + ? . ( ) | { } [ ]')
+    const expected = '\\\\ \\^ \\$ \\* \\+ \\? \\. \\( \\) \\| \\{ \\} \\[ \\]'
+    expect(str).toBe(expected)
+  })
+
+  it('should escape `-` in a way compatible with PCRE', () => {
+    const str = Str.regexpEscape('foo - bar')
+    const expected = 'foo \\x2d bar'
+    expect(str).toBe(expected)
+  })
+
+  it('should escape `-` in a way compatible with the Unicode flag', () => {
+    const str = Str.regexpEscape('-')
+    const reg = new RegExp(str, 'u')
+    expect(reg.test('John-Smith')).toBe(true)
   })
 })
 

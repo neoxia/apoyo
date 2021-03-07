@@ -1,20 +1,22 @@
 /**
+ * @description
  * Pipes the value of an expression into a pipeline of functions.
  *
- * See also [`flow`](#flow).
+ * @see `flow`
  *
  * @example
- *
+ * ```ts
  * const len = (s: string): number => s.length
  * const double = (n: number): number => n * 2
  *
  * // without pipe
- * assert.strictEqual(double(len('aaa')), 6)
+ * const result1 = double(len('aaa'))
+ * expect(result1).toBe(6)
  *
  * // with pipe
- * assert.strictEqual(pipe('aaa', len, double), 6)
- *
- * @since 2.6.3
+ * const result2 = pipe('aaa', len, double)
+ * expect(result2).toBe(6)
+ * ```
  */
 export function pipe<A>(a: A): A
 export function pipe<A, B>(a: A, ab: (a: A) => B): B

@@ -39,6 +39,12 @@ export const fromNumber = (value: number): Option<number> => (isNaN(value) ? und
 
 export const fromDate = (value: Date): Option<Date> => (isNaN(value.getTime()) ? undefined : value)
 
+export function from<A, B extends A>(fn: Refinement<A, B>): (value: A) => Option<B>
+export function from<A>(fn: Predicate<A>): (value: A) => Option<A>
+export function from<A>(fn: Predicate<A>) {
+  return (value: A) => (fn(value) ? value : undefined)
+}
+
 export const map = <A, B>(fn: (value: A) => Option<B>) => (value: Option<A>): Option<B> =>
   isSome(value) ? fn(value) : undefined
 
@@ -71,6 +77,7 @@ export const Option = {
   reject,
   get,
   fold,
+  from,
   fromNullable,
   fromFalsy,
   fromString,

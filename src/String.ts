@@ -1,7 +1,10 @@
 import { Dict } from './Dict'
+import { flow } from './flow'
 import { property } from './Object'
+import * as O from './Ord'
 import { pipe } from './pipe'
 
+const DOUBLE_BRACE_REGEXP = /{{(\d+|[a-z$_][a-z\d$_]*?(?:\.[a-z\d$_]*?)*?)}}/gi
 const BRACE_REGEXP = /{(\d+|[a-z$_][a-z\d$_]*?(?:\.[a-z\d$_]*?)*?)}/gi
 
 export type Str = string
@@ -12,33 +15,47 @@ export namespace Str {
 
 export const of = (value: any) => String(value)
 
+export const length = (str: string) => str.length
+
 export const split = (sep: string) => (str: string) => str.split(sep)
 
-export function replace(regexp: RegExp | string, replacer: string | Str.Replacer) {
-  return (str: string) => str.replace(regexp, replacer as any)
-}
+export const lower = (str: string) => str.toLowerCase()
+export const upper = (str: string) => str.toUpperCase()
+export const capitalize = (str: string) => str.slice(0, 1).toUpperCase() + str.slice(1).toLowerCase()
 
-export const htmlEscape = (string: string) =>
-  string
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-    .replace(/`/g, '&#x60;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
+export const truncate = (maxLength: number, suffix = '...') => (str: string) =>
+  str.length > maxLength ? str.slice(0, maxLength) + suffix : str
 
-export const htmlUnescape = (htmlString: string) =>
-  htmlString
-    .replace(/&gt;/g, '>')
-    .replace(/&lt;/g, '<')
-    .replace(/&#x60;/g, '`')
-    .replace(/&#0?39;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&')
+export const replace = (regexp: RegExp | string, replacer: string | Str.Replacer) => (str: string) =>
+  str.replace(regexp, replacer as any)
 
-export const template = (info: Dict<any>) => (str: string) => {
-  return str.replace(BRACE_REGEXP, (_, key) => pipe(info, property(key), of))
-}
+export const regexpEscape = flow(replace(/[|\\{}()[\]^$+*?.]/g, '\\$&'), replace(/-/g, '\\x2d'))
+
+export const htmlEscape = flow(
+  replace(/&/g, '&amp;'),
+  replace(/"/g, '&quot;'),
+  replace(/'/g, '&#39;'),
+  replace(/`/g, '&#x60;'),
+  replace(/</g, '&lt;'),
+  replace(/>/g, '&gt;')
+)
+
+export const htmlUnescape = flow(
+  replace(/&gt;/g, '>'),
+  replace(/&lt;/g, '<'),
+  replace(/&#x60;/g, '`'),
+  replace(/&#0?39;/g, "'"),
+  replace(/&quot;/g, '"'),
+  replace(/&amp;/g, '&')
+)
+
+export const template = (info: Dict<any>) =>
+  flow(
+    replace(DOUBLE_BRACE_REGEXP, (_, key) => pipe(info, property(key), of, htmlEscape)),
+    replace(BRACE_REGEXP, (_, key) => pipe(info, property(key), of))
+  )
+
+export const eq = pipe(O.string, O.eq)
 
 /**
  * @namespace Str
@@ -52,6 +69,74 @@ export const Str = {
    * Transform value to string
    */
   of,
+
+  /**
+   * @description
+   * Return length of the string
+   */
+  length,
+
+  /**
+   * @description
+   * Lowercase string
+   *
+   * @see `upper`
+   * @see `capitalize`
+   *
+   * @example
+   * ```
+   * const str = Str.lower('TeST')
+   * expect(str).toBe('test')
+   * ```
+   */
+  lower,
+
+  /**
+   * @description
+   * Uppercase string
+   *
+   * @see `lower`
+   * @see `capitalize`
+   *
+   * @example
+   * ```
+   * const str = Str.upper('TeST')
+   * expect(str).toBe('TEST')
+   * ```
+   */
+  upper,
+
+  /**
+   * @description
+   * Capitalize first character of the string, while lowercasing everything else
+   *
+   * @see `lower`
+   * @see `upper`
+   *
+   * @example
+   * ```
+   * const str = Str.capitalize('teST')
+   * expect(str).toBe('Test')
+   * ```
+   */
+  capitalize,
+
+  /**
+   * @description
+   * Truncate string by given length
+   *
+   * @param maxLength - Max length of the string before being truncated
+   * @param suffix - Chars to append when the string is truncated
+   *
+   * @example
+   * ```ts
+   * const line = `Lorem quis sit duis cupidatat elit ut fugiat ea enim exercitation.`
+   * const truncated = pipe(line, Str.truncate(20))
+   *
+   * expect(truncated).toBe('Lorem quis sit duis ...')
+   * ```
+   */
+  truncate,
 
   /**
    * @description
@@ -92,6 +177,9 @@ export const Str = {
    * @description
    * Simple string templating
    *
+   * This function has been inspired by:
+   * https://github.com/sindresorhus/pupa
+   *
    * @example
    * ```ts
    * const message = Str.template(`Hello {name}!`, {
@@ -103,7 +191,27 @@ export const Str = {
 
   /**
    * @description
+   * Escape regexp string
+   *
+   * This function has been inspired by:
+   * https://github.com/sindresorhus/escape-string-regexp
+   *
+   * @example
+   * ```
+   * const escaped = 'How much $ for a 🦄?'
+   * const regexp = new RegExp(escaped)
+   *
+   * expect(escaped).toBe('How much \\$ for a 🦄\\?')
+   * ```
+   */
+  regexpEscape,
+
+  /**
+   * @description
    * Escape HTML sensible characters
+   *
+   * This function has been inspired by:
+   * https://github.com/sindresorhus/escape-goat
    *
    * @see `Str.htmlUnescape`
    *
@@ -121,6 +229,9 @@ export const Str = {
    *
    * Unescape an HTML escaped string
    *
+   * This function has been inspired by:
+   * https://github.com/sindresorhus/escape-goat
+   *
    * @see `Str.htmlEscape`
    *
    * @example
@@ -130,5 +241,37 @@ export const Str = {
    * expect(unescaped).toBe(`<script>window.alert("Hello")</script>`)
    * ```
    */
-  htmlUnescape
+  htmlUnescape,
+
+  /**
+   * @description
+   * Checks if the element is equal to the given string
+   *
+   * This function is curryable
+   *
+   * @see `Ord.eq` - If you want to compare other types
+   *
+   * @example
+   * ```ts
+   * const isSmith = Str.eq('John', 'Smith')
+   *
+   * expect(isSmith).toBe(false)
+   *
+   * const names = ['John', 'Doe', 'Smith']
+   * const john = pipe(
+   *   names,
+   *   Arr.find(Str.eq('John'))
+   * )
+   *
+   * expect(john).toBe('John')
+   *
+   * const hasDoe = pipe(
+   *   names,
+   *   Arr.includes(Str.eq('Doe'))
+   * )
+   *
+   * expect(hasDoe).toBe(true)
+   * ```
+   */
+  eq
 }

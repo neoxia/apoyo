@@ -1,19 +1,18 @@
 /**
- * Performs left-to-right function composition. The first argument may have any arity, the remaining arguments must be unary.
+ * @description
+ * Performs left-to-right function composition.
  *
- * See also [`pipe`](#pipe).
+ * @see `pipe`
  *
  * @example
- * import { flow } from 'utils/function'
- *
+ * ```ts
  * const len = (s: string): number => s.length
  * const double = (n: number): number => n * 2
  *
  * const f = flow(len, double)
  *
  * assert.strictEqual(f('aaa'), 6)
- *
- * @since 2.0.0
+ * ```
  */
 export function flow<A extends ReadonlyArray<unknown>, B>(ab: (...a: A) => B): (...a: A) => B
 export function flow<A extends ReadonlyArray<unknown>, B, C>(ab: (...a: A) => B, bc: (b: B) => C): (...a: A) => C
