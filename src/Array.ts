@@ -6,6 +6,14 @@ import { contramap, inverse, Ord } from './Ord'
 import { isOk, ko, ok, Result } from './Result'
 
 export type Arr<A> = Array<A>
+export namespace Arr {
+  export interface Predicate<A> {
+    (value: A, index: number): boolean
+  }
+  export interface Refinement<A, B extends A> {
+    (value: A, index: number): value is B
+  }
+}
 
 export const isArray = (arr: unknown): arr is unknown[] => Array.isArray(arr)
 
@@ -48,14 +56,14 @@ export const every = <A>(fn: (value: A) => boolean) => (arr: A[]) => arr.every(f
 
 export const join = (sep?: string) => <A>(arr: A[]) => arr.join(sep)
 
-export function filter<A, B extends A>(fn: Refinement<A, B>): (arr: A[]) => B[]
-export function filter<A>(fn: Predicate<A>): (arr: A[]) => A[]
+export function filter<A, B extends A>(fn: Arr.Refinement<A, B>): (arr: A[]) => B[]
+export function filter<A>(fn: Arr.Predicate<A>): (arr: A[]) => A[]
 export function filter(fn: any) {
   return (arr: any[]) => arr.filter(fn)
 }
 
-export function reject<A, B extends A>(fn: Refinement<A, B>): (arr: A[]) => InverseRefinement<A, B>[]
-export function reject<A>(fn: Predicate<A>): (arr: A[]) => A[]
+export function reject<A, B extends A>(fn: Arr.Refinement<A, B>): (arr: A[]) => InverseRefinement<A, B>[]
+export function reject<A>(fn: Arr.Predicate<A>): (arr: A[]) => A[]
 export function reject(fn: any) {
   return (arr: any[]) => arr.filter(not(fn))
 }

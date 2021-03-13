@@ -47,6 +47,21 @@ describe('Dict.filter', () => {
     })
   })
 
+  it('should be called with value and key', () => {
+    const res = pipe(
+      {
+        firstName: 'John',
+        lastName: null,
+        gender: undefined
+      },
+      Dict.filter((_, key) => key === 'lastName')
+    )
+
+    expect(res).toEqual({
+      lastName: null
+    })
+  })
+
   it('should refine elements', () => {
     const res: Dict<string | null> = pipe(
       {
@@ -76,6 +91,22 @@ describe('Dict.reject', () => {
 
     expect(res).toEqual({
       firstName: 'John'
+    })
+  })
+
+  it('should be called with value and key', () => {
+    const res = pipe(
+      {
+        firstName: 'John',
+        lastName: null,
+        gender: undefined
+      },
+      Dict.reject((_, key) => key === 'lastName')
+    )
+
+    expect(res).toEqual({
+      firstName: 'John',
+      gender: undefined
     })
   })
 })

@@ -1,52 +1,58 @@
 import * as A from './Array'
-import { Dict } from './Dict'
-import { merge } from './Object'
+import * as Dict from './Dict'
+import { merge, omit } from './Object'
 import * as O from './Option'
 import { pipe } from './pipe'
 import { template } from './String'
 
 interface IErr extends Error {
   cause?: IErr
-  info?: Dict<any>
+  [key: string]: any
 }
 
-export interface FormattedError {
-  readonly name: string
-  readonly stack: string
-  message: string
-  info: Dict<any>
+interface FormattedError extends Error {
+  info: Dict.Dict
 }
 
 export type Err = IErr
 
-export const of = (msg: string, info?: Dict<any>, cause?: Error): Error => {
-  const message = pipe(msg, template(info || {}))
+const INFO_RESERVED = new Set(['message', 'stack', 'cause'])
+
+const isNotReserved = (_: unknown, key: string) => !INFO_RESERVED.has(key)
+
+const info = (err: unknown) => {
+  return pipe(merge<Dict.Dict>(toError(err) as any), Dict.filter(isNotReserved))
+}
+
+const fullInfo = (err: unknown) => {
+  const infos = pipe(err, toError, toArray, A.filterMap(info), A.reverse)
+  return merge(...infos)
+}
+
+const fullStack = (err: unknown) =>
+  pipe(
+    err,
+    toError,
+    toArray,
+    A.filterMap((err) => err.stack),
+    A.join(`\ncaused by: `)
+  )
+
+export const of = (msg: string, info: Dict.Dict<any> = {}, cause?: Err, constructorOpt?: Function): Err => {
+  const data = pipe(info, Dict.filter(isNotReserved))
+  const message = pipe(msg, template(data))
   const e: Err = new Error(message)
-  if (info && info.name) {
-    e.name = info.name
-  }
-  e.info = info
   e.cause = cause
+  Object.assign(e, data)
+  Error.captureStackTrace(e, constructorOpt || of)
   return e
 }
 
-export const create = of
+export const toError = (err: unknown): Err => (err instanceof Error ? err : of(String(err)))
 
-export const fromUnknown = (err: unknown): Error => (err instanceof Error ? err : of(String(err)))
-
-export const wrap = (msg: string, info?: Dict<any>) => (e: unknown): Error => {
-  const err = fromUnknown(e)
-  return of(msg, info, err)
-}
-
-export const chain = (msg: string, info?: Dict<any>) => (e: unknown): Error => {
-  const err = fromUnknown(e)
-  return of(`${msg}: ${err.message}`, info, err)
-}
-
-export const toArray = (err: Error) => {
+export const toArray = (err: unknown): Err[] => {
   const errors: Err[] = []
-  let cur: O.Option<Err> = err
+  let cur: O.Option<Err> = toError(err)
   while (cur) {
     errors.push(cur)
     cur = cur.cause
@@ -54,10 +60,24 @@ export const toArray = (err: Error) => {
   return errors
 }
 
-export const find = (fn: (info: Dict<any>) => boolean) => (err: Error): O.Option<Error> => {
-  let cur: O.Option<Err> = err
+export function wrap(msg: string, info?: Dict.Dict<any>) {
+  return function _wrap(e: unknown): Err {
+    const err = toError(e)
+    return of(msg, info, err, _wrap)
+  }
+}
+
+export function chain(msg: string, info?: Dict.Dict<any>) {
+  return function _chain(e: unknown): Err {
+    const err = toError(e)
+    return of(`${msg}: ${err.message}`, info, err, _chain)
+  }
+}
+
+export const find = (fn: (err: Err) => boolean) => (source: unknown): O.Option<Err> => {
+  let cur: O.Option<Err> = toError(source)
   while (cur) {
-    const found = pipe(cur.info, O.map(fn))
+    const found = fn(cur)
     if (found) {
       return cur
     }
@@ -66,63 +86,237 @@ export const find = (fn: (info: Dict<any>) => boolean) => (err: Error): O.Option
   return undefined
 }
 
-export const has = (fn: (info: Dict<any>) => boolean) => (err: Error): boolean =>
-  pipe(err, find(fn), (value) => (value ? true : false))
+export const has = (fn: (err: Err) => boolean) => (source: unknown): boolean =>
+  pipe(source, find(fn), (value) => (value ? true : false))
 
-export const info = (err: unknown) => {
-  const infos = pipe(
-    err,
-    fromUnknown,
-    toArray,
-    A.filterMap((err) => err.info),
-    A.reverse
-  )
-  return merge(...infos)
-}
+export const hasName = (name: string) => has((info) => info.name === name)
 
-const cause = (err: unknown): O.Option<Error> => err && (err as any).cause
-
-const fullStack = (err: unknown) =>
-  pipe(
-    err,
-    fromUnknown,
-    toArray,
-    A.filterMap((err) => err.stack),
-    A.join(`\ncaused by: `)
-  )
-
-const format = (e: unknown): FormattedError => {
-  const err = fromUnknown(e)
-  const i = info(err)
+export const format = (e: unknown): FormattedError => {
+  const err = toError(e)
+  const stack = fullStack(err)
+  const i = fullInfo(err)
   return {
+    name: i.name ? String(i.name) : err.name,
     message: err.message,
-    name: i.name || err.name,
-    info: i,
-    get stack() {
-      return fullStack(err)
-    }
+    stack,
+    info: i
   }
 }
 
-const toJSON = (err: FormattedError, stackTrace = true) => ({
-  name: err.name,
-  message: err.message,
-  info: err.info,
-  stack: stackTrace ? err.stack : undefined
-})
+export const omitStack = omit<FormattedError, 'stack'>(['stack'])
 
+/**
+ * @namespace Err
+ *
+ * @description
+ * This namespace contains utilities to create custom errors.
+ *
+ * This namespace has also heavily been inspired by verror:
+ * https://www.npmjs.com/package/verror
+ *
+ * As such, it contains utilities to create, chain, wrap and format errors.
+ *
+ * However, this package has multiple advantages:
+ * - Easier templating: usage of mustaches instead of printf style
+ * - Better compatibility with errors from other library
+ */
 export const Err = {
+  /**
+   * @description
+   * Create a new error. You can also attach additional properties to the error
+   *
+   * @param msg - Error message with mustach style templating
+   * @param info - Additional properties to add to the error
+   * @param cause - The original error, that has caused this error
+   * @param constructorOpt - Useful if you want to create a custom error factory. For more information, see https://nodejs.org/api/errors.html#errors_error_capturestacktrace_targetobject_constructoropt
+   *
+   * @example
+   * ```ts
+   * const divide = (a, b) => {
+   *   if (b === 0) {
+   *     throw Err.of(`cannot divide {a} by {b}`, { a, b })
+   *   }
+   *   return a / b
+   * }
+   * ```
+   */
   of,
-  create,
-  fromUnknown,
+
+  /**
+   * @description
+   * Returns the error instance or creates a new error if the `err` param is an instance of `Error`.
+   *
+   * @param err
+   */
+  toError,
+
+  /**
+   * @description
+   * Chain an error and override the message with the new one.
+   * This function is mostly used to hide low-level details to an user.
+   *
+   * The original error can be accessed in the `cause` property.
+   *
+   * @see `Err.chain` - To preprend the new message to the previous one
+   *
+   * @example
+   * ```ts
+   * const source = new Error('Database error')
+   * const err = pipe(
+   *   source,
+   *   Err.wrap('Could not find user #{userId}', { userId: 'xxxx' })
+   * )
+   *
+   * expect(source.message).toBe('Database error')
+   * expect(err.message).toBe('Could not find user xxxx')
+   * ```
+   */
   wrap,
+
+  /**
+   * @description
+   * Chain an error and preprend the new message to the previous one.
+   *
+   * The original error can be accessed in the `cause` property.
+   *
+   * @see `Err.wrap` - To override the message of the error
+   *
+   * @example
+   * ```ts
+   * const source = new Error('Database error')
+   * const err = pipe(
+   *   source,
+   *   Err.chain('Could not find user #{userId}', { userId: 'xxxx' })
+   * )
+   *
+   * expect(source.message).toBe('Database error')
+   * expect(err.message).toBe('Could not find user xxxx: Database error')
+   * ```
+   */
   chain,
+
+  /**
+   * @description
+   * Find a specific cause in the error matching the given predicate.
+   *
+   * @see `Err.has`
+   * @see `Err.hasName`
+   *
+   * @example
+   * ```ts
+   * const source = Err.of('cannot divide {a} by {b}', {
+   *   name: 'DivideError',
+   *   code: 'ZeroDivide',
+   *   a: 3,
+   *   b: 0
+   * })
+   *
+   * const err = pipe(
+   *   source,
+   *   Err.chain('Job failed', { name: 'JobError' })
+   * )
+   *
+   * const result = pipe(
+   *   err,
+   *   Err.find(e => e.name === 'DivideError')
+   * )
+   * expect(result === source).toBe(true)
+   * ```
+   */
   find,
+
+  /**
+   * @description
+   * Check if the error contains a specific cause matching the given predicate.
+   *
+   * @see `Err.find`
+   * @see `Err.hasName`
+   *
+   * @example
+   * ```ts
+   * const source = Err.of('cannot divide {a} by {b}', {
+   *   name: 'DivideError',
+   *   code: 'ZeroDivide',
+   *   a: 3,
+   *   b: 0
+   * })
+   *
+   * const err = pipe(
+   *   source,
+   *   Err.chain('Job failed', { name: 'JobError' })
+   * )
+   *
+   * expect(pipe(err, Err.has(e => e.name === 'DivideError'))).toBe(true)
+   * ```
+   */
   has,
-  info,
-  cause,
-  fullStack,
+
+  /**
+   * @description
+   * Check if the error contains a specific cause matching the given name.
+   *
+   * @see `Err.find`
+   * @see `Err.has`
+   *
+   * @example
+   * ```ts
+   * const source = Err.of('cannot divide {a} by {b}', {
+   *   name: 'DivideError',
+   *   code: 'ZeroDivide',
+   *   a: 3,
+   *   b: 0
+   * })
+   *
+   * const err = pipe(
+   *   source,
+   *   Err.chain('Job failed', { name: 'JobError' })
+   * )
+   *
+   * expect(pipe(err, Err.hasName('DivideError'))).toBe(true)
+   * ```
+   */
+  hasName,
+
+  /**
+   * @description
+   * Format the given error.
+   * This combines all informational properties of the errors into one `info` object.
+   * This also creates a full stack trace including the stack traces from all causes.
+   *
+   * @example
+   * ```ts
+   * const source = Err.of('cannot divide {a} by {b}', {
+   *   name: 'DivideError',
+   *   code: 'ZeroDivide',
+   *   a: 3,
+   *   b: 0
+   * })
+   *
+   * const err = pipe(
+   *   source,
+   *   Err.chain('Job failed', { name: 'JobError', code: 'InternalError' })
+   * )
+   *
+   * const formatted = Err.format(err)
+   *
+   * expect(formatted).toEqual({
+   *   name: 'JobError',
+   *   message: 'Job failed: cannot divide 3 by 0',
+   *   stack: '...',
+   *   info: {
+   *     code: 'InternalError',
+   *     name: 'JobError',
+   *     a: 3,
+   *     b: 0
+   *   },
+   * })
+   * ```
+   */
   format,
-  toArray,
-  toJSON
+
+  /**
+   * @description
+   * Omit the stack property from the error.
+   */
+  omitStack
 }

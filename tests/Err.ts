@@ -1,4 +1,4 @@
-import { Err, pipe } from '../src'
+import { Err, Obj, pipe } from '../src'
 
 describe('Err.of', () => {
   it('should create a new error', () => {
@@ -8,7 +8,8 @@ describe('Err.of', () => {
     expect(err).toBeInstanceOf(Error)
     expect(err.name).toBe('Error')
     expect(err.message).toBe('Could not find user xxxx')
-    expect(pipe(err, Err.info)).toEqual(infos)
+    expect(err.id).toEqual('xxxx')
+    expect(pipe(err, Obj.copy)).toEqual(infos)
   })
 
   it('should create a new error with a specific name', () => {
@@ -18,23 +19,24 @@ describe('Err.of', () => {
     expect(err).toBeInstanceOf(Error)
     expect(err.name).toBe('MyError')
     expect(err.message).toBe('Could not find user xxxx')
-    expect(pipe(err, Err.info)).toEqual(infos)
+    expect(err.id).toEqual('xxxx')
+    expect(pipe(err, Obj.copy)).toEqual(infos)
   })
 })
 
-describe('Err.fromUnknown', () => {
+describe('Err.toError', () => {
   it('should return error if instance of Error', () => {
     const source = new Error('error')
-    const err = pipe(source, Err.fromUnknown)
+    const err = pipe(source, Err.toError)
     expect(err).toBe(source)
   })
 
   it('should return new error if not instance of Error', () => {
     const msg = 'error'
-    const err = pipe(msg, Err.fromUnknown)
+    const err = pipe(msg, Err.toError)
     expect(err).toBeInstanceOf(Error)
     expect(err.message).toBe(msg)
-    expect(pipe(err, Err.info)).toEqual({})
+    expect(pipe(err, Obj.copy)).toEqual({})
   })
 })
 
@@ -45,7 +47,7 @@ describe('Err.wrap', () => {
 
     expect(err).toBeInstanceOf(Error)
     expect(err.message).toBe('Could not find user')
-    expect(pipe(err, Err.cause)).toBe(source)
+    expect(err.cause).toBe(source)
   })
 })
 
@@ -56,35 +58,7 @@ describe('Err.chain', () => {
 
     expect(err).toBeInstanceOf(Error)
     expect(err.message).toBe('Could not find user: error')
-    expect(pipe(err, Err.cause)).toBe(source)
-  })
-})
-
-describe('Err.info', () => {
-  it('should return empty object on unknown error', () => {
-    expect(pipe(new Error('error'), Err.info)).toEqual({})
-    expect(pipe(42, Err.info)).toEqual({})
-  })
-
-  it('should combine all infos', () => {
-    const e1 = Err.of('Test {a}', { a: 'Error1' })
-    const e2 = pipe(e1, Err.chain('Chain {b}', { b: 'Error2' }))
-
-    expect(e2.message).toBe('Chain Error2: Test Error1')
-    expect(pipe(e2, Err.info)).toEqual({
-      a: 'Error1',
-      b: 'Error2'
-    })
-  })
-
-  it('should override oldest info', () => {
-    const e1 = Err.of('Test {a}', { a: 'Error1' })
-    const e2 = pipe(e1, Err.chain('Chain {a}', { a: 'Error2' }))
-
-    expect(e2.message).toBe('Chain Error2: Test Error1')
-    expect(pipe(e2, Err.info)).toEqual({
-      a: 'Error2'
-    })
+    expect(err.cause).toBe(source)
   })
 })
 
@@ -126,6 +100,22 @@ describe('Err.has', () => {
   })
 })
 
+describe('Err.hasName', () => {
+  const e1 = Err.of('Test {a}', { name: 'Error1' })
+  const e2 = pipe(e1, Err.chain('Function X'))
+  const e3 = pipe(e2, Err.chain('Chain {a}', { name: 'Error2' }))
+
+  it('should have error in cause with given info', () => {
+    const found = pipe(e3, Err.hasName('Error1'))
+    expect(found).toBe(true)
+  })
+
+  it('should not gave error', () => {
+    const notFound = pipe(e3, Err.hasName('Error0'))
+    expect(notFound).toBe(false)
+  })
+})
+
 describe('Err.format', () => {
   it('should return expected results', () => {
     const e1 = Err.of('Select query failed: invalid characters at xxxx', { name: 'DbError', code: 'QueryError' })
@@ -133,11 +123,9 @@ describe('Err.format', () => {
     const e3 = pipe(e2, Err.chain('Job {jobId} failed', { name: 'JobError', jobId: 'xxxx' }))
 
     const formatted = pipe(e3, Err.format)
-    const withoutStack = Err.toJSON(formatted, false)
-    const withStack = Err.toJSON(formatted)
+    const withoutStack = Err.omitStack(formatted)
 
     expect(typeof formatted.stack).toBe('string')
-    expect(withStack.stack).toBe(formatted.stack)
     expect(withoutStack).toEqual({
       message: 'Job xxxx failed: Could not read data: Select query failed: invalid characters at xxxx',
       name: 'JobError',
@@ -153,7 +141,7 @@ describe('Err.format', () => {
     const e = Err.of('Select query failed: invalid characters at xxxx')
 
     const formatted = pipe(e, Err.format)
-    const withoutStack = Err.toJSON(formatted, false)
+    const withoutStack = Err.omitStack(formatted)
 
     expect(withoutStack).toEqual({
       message: 'Select query failed: invalid characters at xxxx',

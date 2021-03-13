@@ -1,4 +1,4 @@
-import { add, identity, not, pipe, throwError, tuple, tupled, untupled } from '../src'
+import { add, Arr, Dict, identity, not, pipe, throwError, tuple, tupled, untupled } from '../src'
 
 describe('add', () => {
   it('should addition 2 numbers', () => {
@@ -23,6 +23,24 @@ describe('not', () => {
     const isPositive = (a: number) => a >= 0
     expect(pipe(42, isPositive)).toBe(true)
     expect(pipe(42, not(isPositive))).toBe(false)
+  })
+
+  it('should work with Arr.predicate', () => {
+    // @ts-expect-error Should not match Arr.Predicate
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const arrPredErr: Arr.Predicate<number> = not((a: number, _key: string) => a % 2 === 0)
+
+    const arrPred: Arr.Predicate<number> = not((_a: number, index: number) => index % 2 === 0)
+    expect(arrPred(1, 1)).toBe(true)
+  })
+
+  it('should work with Dict.predicate', () => {
+    // @ts-expect-error Should not match Arr.Predicate
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const dictPredErr: Dict.Predicate<number> = not((a: number, _index: number) => a % 2 === 0)
+
+    const dictPred: Dict.Predicate<number> = not((_a: number, key: string) => key === 'key')
+    expect(dictPred(1, 'notkey')).toBe(true)
   })
 })
 

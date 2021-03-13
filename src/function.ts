@@ -1,3 +1,5 @@
+import type { Arr } from './Array'
+import type { Dict } from './Dict'
 import { of } from './IO'
 
 export * from './pipe'
@@ -34,8 +36,10 @@ export const cast = <A>(a: unknown) => a as A
 
 export function not<A, B extends A>(fn: Refinement<A, B>): Refinement<A, InverseRefinement<A, B>>
 export function not<A>(predicate: Predicate<A>): Predicate<A>
-export function not(predicate: any) {
-  return (a: any) => !predicate(a)
+export function not<A>(predicate: Arr.Predicate<A>): Arr.Predicate<A>
+export function not<A>(predicate: Dict.Predicate<A>): Dict.Predicate<A>
+export function not(predicate: Function) {
+  return (value: unknown, indexOrKey?: unknown) => !predicate(value, indexOrKey)
 }
 
 export const tuple = <T extends ReadonlyArray<any>>(...t: T): T => t
@@ -68,7 +72,7 @@ export function or<A1, A2, A3, A4, B1 extends A1, B2 extends A2, B3 extends A3, 
 ): Refinement<A1 | A2 | A3 | A4, B1 | B2 | B3 | B4>
 export function or<A>(...fns: [Predicate<A>, Predicate<A>, ...Predicate<A>[]]): Predicate<A>
 export function or(...fns: any[]) {
-  return (value: any) => fns.some((fn) => fn(value))
+  return (value: any, indexOrKey: number | string) => fns.some((fn) => fn(value, indexOrKey))
 }
 
 export function and<A, B extends A, C extends B>(fn1: Refinement<A, B>, fn2: Refinement<B, C>): Refinement<A, C>
@@ -85,5 +89,5 @@ export function and<A, B extends A, C extends B, D extends C, E extends D>(
 ): Refinement<A, E>
 export function and<A>(...fns: [Predicate<A>, Predicate<A>, ...Predicate<A>[]]): Predicate<A>
 export function and(...fns: any[]) {
-  return (value: any) => fns.every((fn) => fn(value))
+  return (value: any, indexOrKey: number | string) => fns.every((fn) => fn(value, indexOrKey))
 }
