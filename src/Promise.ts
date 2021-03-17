@@ -32,17 +32,184 @@ export const tryCatch = <A, E = unknown>(promise: Promise<A>): Promise<Result<A,
 export const fromIO = <A>(fn: () => Promise<A> | A): Promise<A> => Promise.resolve().then(fn)
 
 export const Prom = {
+  /**
+   * @description
+   * Creates a promise that resolves.
+   */
   of,
+
+  /**
+   * @description
+   * Creates a promise that resolves.
+   */
   resolve,
+
+  /**
+   * @description
+   * Creates a promise that rejects.
+   */
   reject,
+
+  /**
+   * @description
+   * Creates a promise from a thunk.
+   * If the thunk throws, `fromIO` will catch the error and create a promise that rejects.
+   */
   fromIO,
+
+  /**
+   * @description
+   * Creates a promise that waits a specific amount of milliseconds before resolving.
+   *
+   * @see `Prom.delay`
+   */
   sleep,
+
+  /**
+   * @description
+   * Taps the promise and delay the resolving by a specific amount of milliseconds.
+   *
+   * @see `Prom.sleep`
+   *
+   * @example
+   * ```ts
+   * const result = await pipe(
+   *   Prom.of(42),
+   *   Prom.delay(1000) // Waits 1 second before resolving 42
+   * )
+   * ```
+   */
   delay,
+
+  /**
+   * @description
+   * Maps over the value of a resolving promise.
+   *
+   * @see `Prom.mapError`
+   * @see `Prom.chain`
+   *
+   * @example
+   * ```ts
+   * const result = await pipe(
+   *   Prom.of(1),
+   *   Prom.map(a => a + 1)
+   * )
+   *
+   * expect(result).toBe(2)
+   * ```
+   */
   map,
+
+  /**
+   * @description
+   * Maps over the error of a rejecting promise.
+   *
+   * @see `Prom.map`
+   * @see `Prom.catchError`
+   *
+   * @example
+   * ```ts
+   * try {
+   *   await pipe(
+   *     Prom.reject(Err.of('some error')),
+   *     Prom.mapError(Err.chain('could not execute xxxx'))
+   *   )
+   * } catch (err) {
+   *   expect(err.message).toBe("could not execute xxxx: some error")
+   * }
+   * ```
+   */
   mapError,
+
+  /**
+   * @description
+   * Chain another promise to execute when the promise resolves.
+   *
+   * @see `Prom.map`
+   * @see `Prom.catchError`
+   *
+   * @example
+   * ```ts
+   * const result = await pipe(
+   *   Prom.of(1),
+   *   Prom.chain(a => pipe(
+   *     Prom.of(a + 1),
+   *     Prom.delay(1000)
+   *   ))
+   * )
+   *
+   * expect(result).toBe(2)
+   * ```
+   */
   chain,
+
+  /**
+   * @description
+   * Chain another promise to execute when the promise rejects.
+   *
+   * @see `Prom.mapError`
+   * @see `Prom.chain`
+   *
+   * @example
+   * ```ts
+   * const result = await pipe(
+   *   Prom.reject(Err.of('some error', { name: 'SomeError' })),
+   *   Prom.catchError(err =>
+   *     pipe(err, Err.hasName('SomeError'))
+   *      ? Prom.of('success')
+   *      : Prom.reject('reject')
+   *   )
+   * )
+   *
+   * expect(result).toBe('success')
+   * ```
+   */
   catchError,
+
+  /**
+   * @description
+   * Pipeable version of the native Promise.then function.
+   */
   then,
+
+  /**
+   * @description
+   * Combine an array of promises into a single promise.
+   * As promises are eager and executed directly, all promises are executed in parallel.
+   *
+   * To execute promises in sequence / in concurrency, use `Task`s.
+   *
+   * @see `Task.all`
+   * @see `Task.sequence`
+   * @see `Task.concurrency`
+   *
+   * @example
+   * ```ts
+   * const results = await pipe(
+   *   [Prom.of(1), Prom.of(2), Prom.of(3)],
+   *   Prom.all
+   * )
+   *
+   * expect(results).toEqual([1,2,3])
+   * ```
+   */
   all,
+
+  /**
+   * @description
+   * Try/catch a promise:
+   * - A promise that resolves will return an `Ok`.
+   * - A promise that rejects will return a `Ko`.
+   *
+   * @example
+   * ```ts
+   * const result = await pipe(
+   *   Prom.reject(4),
+   *   Prom.tryCatch
+   * )
+   *
+   * expect(result).toEqual(Result.ko(4))
+   * ```
+   */
   tryCatch
 }
