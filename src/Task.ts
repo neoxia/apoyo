@@ -79,21 +79,265 @@ export const tryCatch = <A, E = unknown>(fn: Task<A>): Task<Result<A, E>> => () 
 
 export const fromIO = <A>(fn: () => Promise<A> | A): Task<A> => () => Promise.resolve().then(fn)
 
+/**
+ * @namespace Task
+ *
+ * @description
+ * This namespace contains various utilities for `Task`s.
+ *
+ * A `Task` represents a **lazy** asynchroneous action.
+ *
+ * @see `Prom` - For eager asynchroneous actions.
+ */
 export const Task = {
+  /**
+   * @description
+   * Creates a resolving `Task`
+   */
   of,
+
+  /**
+   * @description
+   * Creates a resolving `Task`
+   */
   resolve,
+
+  /**
+   * @description
+   * Creates a rejecting `Task`
+   */
   reject,
+
+  /**
+   * @description
+   * Runs a `Task`
+   */
   run,
+
+  /**
+   * @description
+   * Creates a `Task` that waits a specific amount of milliseconds before resolving.
+   *
+   * @see `Task.delay`
+   */
   sleep,
+
+  /**
+   * @description
+   * Taps the `Task` and delays the resolving by a specific amount of milliseconds.
+   *
+   * @see `Task.sleep`
+   *
+   * @example
+   * ```ts
+   * const result = await pipe(
+   *   Task.of(42),
+   *   Task.delay(1000), // Waits 1 second before resolving 42
+   *   Task.run
+   * )
+   *
+   * expect(result).toBe(42)
+   * ```
+   */
   delay,
+
+  /**
+   * @description
+   * Maps over the value of a resolving `Task`.
+   *
+   * @see `Task.mapError`
+   * @see `Task.chain`
+   *
+   * @example
+   * ```ts
+   * const result = await pipe(
+   *   Task.of(1),
+   *   Task.map(a => a + 1),
+   *   Task.run
+   * )
+   *
+   * expect(result).toBe(2)
+   * ```
+   */
   map,
+
+  /**
+   * @description
+   * Maps over the error of a rejecting `Task`.
+   *
+   * @see `Task.map`
+   * @see `Task.catchError`
+   *
+   * @example
+   * ```ts
+   * try {
+   *   await pipe(
+   *     Task.reject(Err.of('some error')),
+   *     Task.mapError(Err.chain('could not execute xxxx')),
+   *     Task.run
+   *   )
+   * } catch (err) {
+   *   expect(err.message).toBe("could not execute xxxx: some error")
+   * }
+   * ```
+   */
   mapError,
+
+  /**
+   * @description
+   * Chain another `Task` to execute when the `Task` resolves.
+   *
+   * @see `Task.map`
+   * @see `Task.catchError`
+   *
+   * @example
+   * ```ts
+   * const result = await pipe(
+   *   Task.of(1),
+   *   Task.chain(a => pipe(
+   *     Task.of(a + 1),
+   *     Task.delay(1000)
+   *   )),
+   *   Task.run
+   * )
+   *
+   * expect(result).toBe(2)
+   * ```
+   */
   chain,
+
+  /**
+   * @description
+   * Chain another promise to execute when the `Task` resolves.
+   *
+   * @see `Task.map`
+   * @see `Task.chain`
+   *
+   * @example
+   * ```ts
+   * const result = await pipe(
+   *   Task.of(1),
+   *   Task.chainAsync(async (a) => pipe(
+   *     Prom.of(a + 1),
+   *     Prom.delay(1000)
+   *   )),
+   *   Task.run
+   * )
+   *
+   * expect(result).toBe(2)
+   * ```
+   */
   chainAsync,
+
+  /**
+   * @description
+   * Chain another `Task` to execute when the `Task` rejects.
+   *
+   * @see `Task.mapError`
+   * @see `Task.chain`
+   *
+   * @example
+   * ```ts
+   * const result = await pipe(
+   *   Task.reject(Err.of('some error', { name: 'SomeError' })),
+   *   Task.catchError(err =>
+   *     pipe(err, Err.hasName('SomeError'))
+   *      ? Task.of('success')
+   *      : Task.reject('reject')
+   *   ),
+   *   Task.run
+   * )
+   *
+   * expect(result).toBe('success')
+   * ```
+   */
   catchError,
+
+  /**
+   * @description
+   * Combine an array of `Task`s into a single `Task`.
+   * This function will execute all tasks in parallel.
+   *
+   * @see `Task.sequence`
+   * @see `Task.concurrent`
+   *
+   * @example
+   * ```ts
+   * const results = await pipe(
+   *   [Task.of(1), Task.of(2), Task.of(3)],
+   *   Task.all,
+   *   Task.run
+   * )
+   *
+   * expect(results).toEqual([1,2,3])
+   * ```
+   */
   all,
+
+  /**
+   * @description
+   * Combine an array of `Task`s into a single `Task`.
+   * This function will execute all tasks in sequence.
+   *
+   * @see `Task.all`
+   * @see `Task.concurrent`
+   *
+   * @example
+   * ```ts
+   * const results = await pipe(
+   *   [Task.of(1), Task.of(2), Task.of(3)],
+   *   Task.sequence,
+   *   Task.run
+   * )
+   *
+   * expect(results).toEqual([1,2,3])
+   * ```
+   */
   sequence,
+
+  /**
+   * @description
+   * Combine an array of `Task`s into a single `Task`.
+   * This function will execute all tasks in concurrency.
+   *
+   * @see `Task.all`
+   * @see `Task.sequence`
+   *
+   * @example
+   * ```ts
+   * const results = await pipe(
+   *   [Task.of(1), Task.of(2), Task.of(3)],
+   *   Task.concurrent(2),
+   *   Task.run
+   * )
+   *
+   * expect(results).toEqual([1,2,3])
+   * ```
+   */
   concurrent,
+
+  /**
+   * @description
+   * Try/catch a `Task`:
+   * - A `Task` that resolves will return an `Ok`.
+   * - A `Task` that rejects will return a `Ko` instead of throwing.
+   *
+   * @example
+   * ```ts
+   * const result = await pipe(
+   *   Task.reject(4),
+   *   Task.tryCatch
+   * )
+   *
+   * expect(result).toEqual(Result.ko(4))
+   * ```
+   */
   tryCatch,
+
+  /**
+   * @description
+   * Creates a `Task` from a thunk.
+   * If the thunk throws, `fromIO` will catch the error and create a `Task` that rejects.
+   */
   fromIO
 }

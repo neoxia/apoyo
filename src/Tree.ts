@@ -24,6 +24,15 @@ const drawForest = (indentation: string, forest: Tree<string>[]): string => {
 }
 
 export const Tree = {
+  /**
+   * @description
+   * Create a new tree branch
+   */
   of,
+
+  /**
+   * @description
+   * Draw the `Tree` of strings
+   */
   draw
 }

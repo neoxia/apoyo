@@ -31,6 +31,16 @@ export const tryCatch = <A, E = unknown>(promise: Promise<A>): Promise<Result<A,
 
 export const fromIO = <A>(fn: () => Promise<A> | A): Promise<A> => Promise.resolve().then(fn)
 
+/**
+ * @namespace Prom
+ *
+ * @description
+ * This namespace contains various utilities for `Promise`s, as well as pipeable versions of most native methods.
+ *
+ * A `Promise` represents an **eager** asynchroneous action.
+ *
+ * @see `Task` - For lazy asynchroneous actions.
+ */
 export const Prom = {
   /**
    * @description
@@ -67,7 +77,7 @@ export const Prom = {
 
   /**
    * @description
-   * Taps the promise and delay the resolving by a specific amount of milliseconds.
+   * Taps the promise and delays the resolving by a specific amount of milliseconds.
    *
    * @see `Prom.sleep`
    *
@@ -181,7 +191,7 @@ export const Prom = {
    *
    * @see `Task.all`
    * @see `Task.sequence`
-   * @see `Task.concurrency`
+   * @see `Task.concurrent`
    *
    * @example
    * ```ts
