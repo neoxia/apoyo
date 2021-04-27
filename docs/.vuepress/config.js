@@ -6,7 +6,7 @@ module.exports = {
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide/' },
-      { text: 'Github', link: 'https://github.com' }
+      { text: 'Github', link: 'https://github.com/neoxia/apoyo-std' }
     ],
     sidebar: [
       {

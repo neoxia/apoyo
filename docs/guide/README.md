@@ -1,6 +1,6 @@
 # Guide
 
-**Warning**: This package is still in development and features may still change, be renamed or removed. **DO NOT USE IN PRODUCTION!**
+**Warning**: This package is still in development and features may still change, be renamed or removed.
 
 However, we would appreciate any feedback you have on how to improve this library:
 
