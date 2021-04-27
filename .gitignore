@@ -5,3 +5,8 @@ dev
 .idea
 coverage
 docs-examples
+
+
+# Auto-generate documentation with `npm run docs:generate`
+docs/guide/namespaces
+docs/.vuepress/dist
