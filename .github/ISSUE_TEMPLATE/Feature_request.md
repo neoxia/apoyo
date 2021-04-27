@@ -1,9 +1,9 @@
 ---
 name: "\U0001F680Feature request"
-about: Suggest an idea for fp-ts
+about: Suggest an idea for Apoyo
 ---
 
-## 🚀 Feature request
+## Feature request
 
 ### Current Behavior
 
@@ -35,7 +35,7 @@ about: Suggest an idea for fp-ts
 
 <!-- PLEASE FILL THIS OUT -->
 
-| Software   | Version(s) |
-| ---------- | ---------- |
-| fp-ts      |            |
-| TypeScript |            |
+| Software     | Version(s) |
+| ------------ | ---------- |
+| @apoyo/std   |            |
+| TypeScript   |            |

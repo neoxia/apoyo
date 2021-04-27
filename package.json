@@ -1,7 +1,7 @@
 {
   "name": "@apoyo/std",
-  "version": "0.0.2",
-  "description": "My description",
+  "version": "0.0.3",
+  "description": "Typescript utility library",
   "main": "lib/index.js",
   "module": "es6/index.js",
   "typings": "lib/index.d.ts",
@@ -24,7 +24,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://git.neoxia.com/typescript/ordinary-utils"
+    "url": "https://github.com/neoxia/apoyo-std"
   },
   "scripts": {
     "lint": "npx eslint \"{src,tests}/**/*.{ts,tsx,json,yml}\"",
