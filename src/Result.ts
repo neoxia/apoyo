@@ -16,7 +16,7 @@ export interface Ko<T> {
   ko: T
 }
 
-export type Result<A, E = never> = Ok<A> | Ko<E>
+export type Result<A, E = unknown> = Ok<A> | Ko<E>
 
 export const ok = <T>(value: T): Ok<T> => ({
   _tag: Tags.Ok,
@@ -71,6 +71,9 @@ export const tryCatch = <A>(fn: () => A): Result<A, unknown> => {
     return ko(err)
   }
 }
+
+export const tryCatchFn = <Args extends any[], T>(fun: (...args: Args) => T) => (...args: Args): Result<T, unknown> =>
+  tryCatch(() => fun(...args))
 
 /**
  * @namespace Result
@@ -303,7 +306,7 @@ export const Result = {
    * Swap `Ok` and `Ko` value
    *
    * @example
-   * ```
+   * ```ts
    * const result = pipe(
    *   Result.ok(1),
    *   Result.swap
@@ -318,8 +321,10 @@ export const Result = {
    * @description
    * Try/catch an operation. The return value becomes the `Ok`, and the thrown value becomes the `Ko`
    *
+   * @see `Result.fn`
+   *
    * @example
-   * ```
+   * ```ts
    * const divide = (a, b) => b === 0
    *   ? throwError(Err.of('cannot divide by zero'))
    *   : a / b
@@ -327,5 +332,26 @@ export const Result = {
    * const result = Result.tryCatch(() => divide(1, 0))
    * ```
    */
-  tryCatch
+  tryCatch,
+
+  /**
+   * @description
+   * Resultify the given function, making it return a `Result` instead of throwing / returning a normal value
+   *
+   * @see `Result.tryCatch`
+   *
+   * @example
+   * ```
+   * const divide = (a, b) => b === 0
+   *   ? throwError(Err.of('cannot divide by zero'))
+   *   : a / b
+   *
+   * const [ok, ko] = pipe(
+   *   [ [1,2], [3,0], [2,3], [4,0] ],
+   *   Arr.map(Result.tryCatchFn(([a, b]) => divide(a, b))),
+   *   Arr.separate
+   * )
+   * ```
+   */
+  tryCatchFn
 }

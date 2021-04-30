@@ -1,5 +1,6 @@
 import { Dict } from './Dict'
 import { flow } from './flow'
+import { run } from './IO'
 import { property } from './Object'
 import * as O from './Ord'
 import { pipe } from './pipe'
@@ -16,6 +17,10 @@ export namespace Str {
 export const of = (value: any) => String(value)
 
 export const length = (str: string) => str.length
+
+export const isEmpty = (str: string) => str.length === 0
+
+export const concat = (append: string) => (str: string) => str + append
 
 export const split = (sep: string) => (str: string) => str.split(sep)
 
@@ -57,6 +62,55 @@ export const template = (info: Dict<any>) =>
 
 export const eq = pipe(O.string, O.eq)
 
+const WHITESPACE_CHARS = [
+  ' ',
+  '\f',
+  '\n',
+  '\r',
+  '\t',
+  '\v',
+  '\u00a0',
+  '\u1680',
+  '\u2000',
+  '\u200a',
+  '\u2028',
+  '\u2029',
+  '\u202f',
+  '\u205f',
+  '\u3000',
+  '\ufeff'
+]
+
+export const trimBy = (fn: (char: string) => boolean) => {
+  return (str: string) => {
+    const start = run(() => {
+      for (let i = 0; i < str.length; ++i) {
+        if (!fn(str[i])) {
+          return i
+        }
+      }
+      return str.length
+    })
+    if (start === str.length) {
+      return ''
+    }
+    const end = run(() => {
+      for (let i = str.length - 1; i >= 0; --i) {
+        if (!fn(str[i])) {
+          return i + 1
+        }
+      }
+      return 0
+    })
+    return str.slice(start, end)
+  }
+}
+
+export const trim = run(() => {
+  const set = new Set(WHITESPACE_CHARS)
+  return trimBy((c) => set.has(c))
+})
+
 /**
  * @namespace Str
  *
@@ -75,6 +129,18 @@ export const Str = {
    * Return length of the string
    */
   length,
+
+  /**
+   * @description
+   * Predicate to verify if the string is empty or not
+   */
+  isEmpty,
+
+  /**
+   * @description
+   * Concatenate a second string at the end of the given string
+   */
+  concat,
 
   /**
    * @description
@@ -273,5 +339,41 @@ export const Str = {
    * expect(hasDoe).toBe(true)
    * ```
    */
-  eq
+  eq,
+
+  /**
+   * @description
+   * Trim the start and the end of the string until the predicate returns true.
+   *
+   * @see `Str.trim`
+   *
+   * @example
+   * ```ts
+   * const trimmed = pipe(
+   *   '|Hello|World|||',
+   *   Str.trimBy(Str.eq('|'))
+   * )
+   *
+   * expect(trimmed).toBe('Hello|World')
+   * ```
+   */
+  trimBy,
+
+  /**
+   * @description
+   * Trims all whitespaces characters at the start and the end of the string.
+   *
+   * @see `Str.trimBy`
+   *
+   * @example
+   * ```ts
+   * const trimmed = pipe(
+   *   '    Hello  world   ',
+   *   Str.trim
+   * )
+   *
+   * expect(trimmed).toBe('Hello  world')
+   * ```
+   */
+  trim
 }

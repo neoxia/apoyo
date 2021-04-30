@@ -1,4 +1,4 @@
-import { Arr, Err, pipe, Prom, Task, TaskResult } from '../dist'
+import { Arr, Err, pipe, Prom, Result, Task, TaskResult, throwError } from '../src'
 
 export const main = async () => {
   const someTask: Task<number> = async () => {
@@ -18,6 +18,22 @@ export const main = async () => {
   )
 
   console.log('Task results', { ok, errors })
+
+  const resultA: Result<number, Error> = pipe(
+    Result.ko(new Error('some error')),
+    Result.catchError((err) => (pipe(err, Err.hasName('SomeError')) ? Result.ok(1) : Result.ko(err)))
+  )
+
+  const fn = Result.tryCatchFn((a: number, b: number) =>
+    b === 0 ? throwError(Err.of('cannot divide by zero')) : a / b
+  )
+
+  const resultB = fn(3, 0)
+
+  return {
+    resultA,
+    resultB
+  }
 }
 
 main()

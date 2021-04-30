@@ -9,29 +9,18 @@ const FORMAT_FLAGS =
   TypeFormatFlags.UseStructuralFallback |
   TypeFormatFlags.WriteTypeArgumentsOfSignature |
   TypeFormatFlags.UseFullyQualifiedType |
-  TypeFormatFlags.SuppressAnyReturnType |
   TypeFormatFlags.MultilineObjectLiterals |
   TypeFormatFlags.WriteClassExpressionAsTypeLiteral |
-  TypeFormatFlags.UseTypeOfFunction |
-  TypeFormatFlags.OmitParameterModifiers |
-  TypeFormatFlags.UseAliasDefinedOutsideCurrentScope |
-  TypeFormatFlags.UseSingleQuotesForStringLiteralType |
-  TypeFormatFlags.NoTypeReduction |
-  TypeFormatFlags.AllowUniqueESSymbolType |
-  TypeFormatFlags.AddUndefined |
-  TypeFormatFlags.WriteArrowStyleSignature |
-  TypeFormatFlags.InArrayType |
-  TypeFormatFlags.InElementType |
-  TypeFormatFlags.InFirstTypeArgument |
-  TypeFormatFlags.InTypeAlias
+  TypeFormatFlags.NoTypeReduction
 
 export const getTypeOf = (node: Node): string =>
   pipe(
     node.getType().getText(node, FORMAT_FLAGS),
     Str.replace(/[{}]/g, ''),
     Str.split(';'),
-    Arr.map((str) => str.trim()),
-    (arr) => arr.join('\n')
+    Arr.map(Str.trim),
+    Arr.reject(Str.isEmpty),
+    Arr.join('\n')
   )
 
 export const getDoc = (jsdocs: JSDoc[]) => {

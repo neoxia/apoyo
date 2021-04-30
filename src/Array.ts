@@ -1,9 +1,27 @@
-import * as Dict from './Dict'
-import { add, constant, first, identity, InverseRefinement, not, pipe, Predicate, Refinement } from './function'
+import type { NonEmptyArray } from './NonEmptyArray'
+import type { Dict } from './Dict'
+import type { Option } from './Option'
+import type { Ord } from './Ord'
+import type { Result } from './Result'
+import type { Seq } from './Seq'
+
+import * as D from './Dict'
+import {
+  add,
+  constant,
+  first,
+  identity,
+  InverseRefinement,
+  last as _last2,
+  not,
+  pipe,
+  Predicate,
+  Refinement
+} from './function'
 import * as NEA from './NonEmptyArray'
-import { isSome, Option } from './Option'
-import { contramap, inverse, Ord } from './Ord'
-import { isOk, ko, ok, Result } from './Result'
+import { isSome } from './Option'
+import { contramap, inverse } from './Ord'
+import { isOk, ko, ok } from './Result'
 
 export type Arr<A> = Array<A>
 export namespace Arr {
@@ -21,7 +39,9 @@ export const isEmpty = <A>(arr: A[]): arr is [] => arr.length === 0
 
 export const length = <A>(arr: A[]) => arr.length
 
-export const of = <A>(value: A): NEA.NonEmptyArray<A> => [value]
+export const of = <A>(value: A): NonEmptyArray<A> => [value]
+
+export const from = <A>(value: A[] | Seq<A>) => Array.from(value)
 
 export const head = <A>(arr: A[]): Option<A> => (arr.length > 0 ? arr[0] : undefined)
 
@@ -43,6 +63,8 @@ export const filterMap = <A, B>(fn: (value: A) => Option<B>) => (arr: A[]): B[] 
 }
 
 export const compact = <A>(arr: Option<A>[]): A[] => pipe(arr, filterMap(identity))
+
+export const concat = <A>(value: A | A[]) => (arr: A[]): A[] => arr.concat(value)
 
 export const flatten = <A>(arr: A[][]): A[] => ([] as A[]).concat.apply([], arr)
 
@@ -87,7 +109,7 @@ export const toDict = <A, B>(
   reducer: (acc: B, current: A) => B,
   initial: (value: A) => B
 ) => (arr: A[]) => {
-  const res: Dict.Dict<B> = {}
+  const res: Dict<B> = {}
   for (let i = 0; i < arr.length; ++i) {
     const value = arr[i]
     const key = fn(value, i)
@@ -98,9 +120,9 @@ export const toDict = <A, B>(
 }
 
 export const groupBy = <A>(fn: (value: A, index: number) => string | number) =>
-  toDict<A, NEA.NonEmptyArray<A>>(fn, (arr, value) => (arr.push(value), arr), of)
+  toDict<A, NonEmptyArray<A>>(fn, (arr, value) => (arr.push(value), arr), of)
 
-export const indexBy = <A>(strategy: (a: A, b: A) => A, fn: (value: A, index: number) => string | number) =>
+export const indexBy = <A>(fn: (value: A, index: number) => string | number, strategy: (a: A, b: A) => A = _last2) =>
   toDict<A, A>(fn, strategy, identity)
 
 export const countBy = <A>(fn: (value: A, index: number) => string | number) =>
@@ -108,26 +130,32 @@ export const countBy = <A>(fn: (value: A, index: number) => string | number) =>
 
 export const chunksOf = (size: number) => <A>(arr: A[]) => {
   const count = Math.ceil(arr.length / size)
-  const chunks: Array<NEA.NonEmptyArray<A>> = Array(count)
+  const chunks: Array<NonEmptyArray<A>> = Array(count)
   for (let i = 0; i < count; ++i) {
     const start = i * size
     const end = Math.min(start + size, arr.length)
-    chunks[i] = arr.slice(start, end) as NEA.NonEmptyArray<A>
+    chunks[i] = arr.slice(start, end) as NonEmptyArray<A>
   }
   return chunks
 }
 
-export const uniq = <A>(fn: (value: A) => string | number) => (arr: A[]): A[] =>
-  pipe(arr, indexBy(first, fn), Dict.values)
+export function uniq(arr: string[]): string[]
+export function uniq(arr: number[]): number[]
+export function uniq(arr: any[]) {
+  return from(new Set(arr))
+}
+
+export const uniqBy = <A>(fn: (value: A) => string | number) => (arr: A[]): A[] =>
+  pipe(arr, indexBy(fn, first), D.values)
 
 export const union = <A>(fn: (value: A) => string | number, member: A[]) => (arr: A[]): A[] =>
-  pipe(arr, indexBy(first, fn), Dict.union(pipe(member, indexBy(first, fn))), Dict.values)
+  pipe(arr, indexBy(fn, first), D.union(pipe(member, indexBy(fn, first))), D.values)
 
 export const intersect = <A>(fn: (value: A) => string | number, member: A[]) => (arr: A[]): A[] =>
-  pipe(arr, indexBy(first, fn), Dict.intersect(pipe(member, indexBy(first, fn))), Dict.values)
+  pipe(arr, indexBy(fn, first), D.intersect(pipe(member, indexBy(fn, first))), D.values)
 
 export const difference = <A>(fn: (value: A) => string | number, member: A[]) => (arr: A[]): A[] =>
-  pipe(arr, indexBy(first, fn), Dict.difference(pipe(member, indexBy(first, fn))), Dict.values)
+  pipe(arr, indexBy(fn, first), D.difference(pipe(member, indexBy(fn, first))), D.values)
 
 export const pluck = <K extends string>(key: K) => <A extends Record<K, any>>(arr: A[]) => arr.map((v) => v[key])
 
@@ -154,7 +182,7 @@ export const partitionMap = <A, B, C>(fn: (value: A) => Result<B, C>) => (arr: A
 
 export const separate = <A, E>(arr: Array<Result<A, E>>) => pipe(arr, partitionMap(identity))
 
-export const isNonEmpty = <A>(arr: A[]): arr is NEA.NonEmptyArray<A> => arr.length > 0
+export const isNonEmpty = <A>(arr: A[]): arr is NonEmptyArray<A> => arr.length > 0
 
 export const min = <A>(ord: Ord<A>) => (arr: A[]): Option<A> => (isNonEmpty(arr) ? pipe(arr, NEA.min(ord)) : undefined)
 
@@ -164,6 +192,11 @@ export const find = <A>(fn: (value: A, index: number) => boolean) => (arr: A[]):
 
 export const includes = <A>(fn: (value: A, index: number) => boolean) => (arr: A[]): boolean => isSome(arr.find(fn))
 
+export const empty = <A>(): A[] => []
+
+export const sum = (arr: number[]) => arr.reduce(add, 0)
+export const sumBy = <A>(fn: (value: A) => number) => (arr: A[]) => arr.reduce((a, b) => a + fn(b), 0)
+
 /**
  * @namespace Arr
  *
@@ -171,11 +204,10 @@ export const includes = <A>(fn: (value: A, index: number) => boolean) => (arr: A
  *
  * The `Arr` namespace contains all utilities related to Arrays.
  *
- * They are similar to the array utilities you can find in `underscore` or `lodash`.
+ * The utilities in this namespace are similar to the array utilities you can find in `underscore` or `lodash`.
  *
  * The big difference however is that they are pipeable, which means they can be chained like in the example below.
  *
- * @example
  * ```ts
  * const nb = pipe(
  *   [1,2,-3,4,-5],
@@ -186,6 +218,9 @@ export const includes = <A>(fn: (value: A, index: number) => boolean) => (arr: A
  *
  * expect(nb).toBe(8)
  * ```
+ *
+ * @see `NonEmptyArray` namespace, if you are handling arrays containing at least one element.
+ *
  */
 export const Arr = {
   /**
@@ -193,6 +228,12 @@ export const Arr = {
    * Create array from value
    */
   of,
+
+  /**
+   * @description
+   * Create array from an iterable
+   */
+  from,
 
   /**
    * @description
@@ -220,7 +261,7 @@ export const Arr = {
 
   /**
    * @description
-   * Get first value in the array.
+   * Returns the first value in the array.
    * This function returns `undefined` when the array is empty.
    *
    * @example
@@ -237,7 +278,7 @@ export const Arr = {
 
   /**
    * @description
-   * Get last value in the array.
+   * Returns the last value in the array.
    * This function returns `undefined` when the array is empty.
    *
    * @example
@@ -341,6 +382,59 @@ export const Arr = {
 
   /**
    * @description
+   * Check if at least one element in the array matches the predicate
+   *
+   * @see `Arr.every`
+   *
+   * @example
+   * ```ts
+   * const childrenAges = [8, 11, 19]
+   * const hasAdult = pipe(childrenAges, Arr.some(age => age >= 18))
+   *
+   * expect(hasAdult).toBe(true)
+   * ```
+   */
+  some,
+
+  /**
+   * @description
+   * Check if all elements in the array match the predicate
+   *
+   * @see `Arr.some`
+   *
+   * @example
+   * ```ts
+   * const childrenAges = [8, 11, 19]
+   * const allAdults = pipe(childrenAges, Arr.every(age => age >= 18))
+   *
+   * expect(allAdults).toBe(false)
+   * ```
+   */
+  every,
+
+  /**
+   * @description
+   * Join array values by the given separator
+   */
+  join,
+
+  /**
+   * @description
+   * Aggregate / accumulate all values in the array into a single value
+   *
+   * @example
+   * ```ts
+   * const nbs = [1,2,3,4]
+   * const total = pipe(
+   *   nbs,
+   *   Arr.reduce((a, b) => a + b, 0)
+   * )
+   * ```
+   */
+  reduce,
+
+  /**
+   * @description
    * Filter items out of the array
    *
    * @param fn - Predicate or refinement on which items to remove from the array
@@ -420,6 +514,24 @@ export const Arr = {
    * ```
    */
   compact,
+
+  /**
+   * @description
+   * Concat a value or an array to an existing array. This function does not modify the existing array, but creates a new one.
+   *
+   * @see `Arr.flatten`
+   *
+   * @example
+   * ```ts
+   * const array = pipe(
+   *   [1,2],
+   *   Arr.concat([3,4,5])
+   * )
+   *
+   * expect(array).toEqual([1, 2, 3, 4, 5])
+   * ```
+   */
+  concat,
 
   /**
    * @description
@@ -584,8 +696,8 @@ export const Arr = {
    * @description
    * Index each array element by a given key
    *
-   * @param strategy - Which value to retain when multiple elements are found with the same key
    * @param fn - Returns the key for this element
+   * @param strategy - Which value to retain when multiple elements are found with the same key. By default, the last value is kept
    *
    * @example
    * ```ts
@@ -604,6 +716,26 @@ export const Arr = {
 
   /**
    * @description
+   * Make all array values unique, by removing all value duplicates.
+   *
+   * This is a specialized version of `Arr.uniqBy` and internally uses `Set`s.
+   *
+   * @see `Arr.uniqBy`
+   *
+   * @example
+   * ```ts
+   * const uniqNumbers = pipe(
+   *   [1,4,2,2,2,1,4,3],
+   *   Arr.uniq
+   * )
+   *
+   * expect(uniqNumbers).toEqual([1,4,2,3])
+   * ```
+   */
+  uniq,
+
+  /**
+   * @description
    * Make all array values unique, by removing all value duplicates
    * The returned array will be automatically sorted by the unique identifiers used for each value
    *
@@ -613,13 +745,13 @@ export const Arr = {
    * ```ts
    * const uniqNumbers = pipe(
    *   [1,4,2,2,2,1,4,3],
-   *   Arr.uniq(identity)
+   *   Arr.uniqBy(identity)
    * )
    *
    * expect(uniqNumbers).toEqual([1,2,3,4])
    * ```
    */
-  uniq,
+  uniqBy,
 
   /**
    * @description
@@ -783,7 +915,7 @@ export const Arr = {
 
   /**
    * @description
-   * Get the smallest value in the array.
+   * Returns the smallest value in the array.
    * This function may return undefined if the array is empty.
    *
    * @param ord - The order is used to determine which element is smaller
@@ -804,7 +936,7 @@ export const Arr = {
 
   /**
    * @description
-   * Get the greatest value in the array.
+   * Returns the greatest value in the array.
    * This function may return undefined if the array is empty.
    *
    * @param ord - The order is used to determine which element is greater
@@ -879,5 +1011,49 @@ export const Arr = {
    * expect(hasNumber).toBe(true)
    * ```
    */
-  includes
+  includes,
+
+  /**
+   * @description
+   * Returns a new empty array
+   */
+  empty,
+
+  /**
+   * @description
+   * Sum all numbers in the array
+   *
+   * @see `Arr.sumBy`
+   *
+   * @example
+   * ```ts
+   * const nb = pipe(
+   *   [1,2,3,4],
+   *   Arr.sum
+   * )
+   *
+   * expect(nb).toBe(10)
+   * ```
+   */
+  sum,
+
+  /**
+   * @description
+   * Sum all items in the array
+   *
+   * @param fn - How to sum the items
+   *
+   * @see `Arr.sum`
+   *
+   * @example
+   * ```ts
+   * const nb = pipe(
+   *   [1,2,3,4],
+   *   Arr.sumBy(identity)
+   * )
+   *
+   * expect(nb).toBe(10)
+   * ```
+   */
+  sumBy
 }

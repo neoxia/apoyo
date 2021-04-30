@@ -23,6 +23,7 @@ export const main = async () => {
 
   const files = {
     array: project.getSourceFileOrThrow('Array.ts'),
+    nonEmptyArray: project.getSourceFileOrThrow('NonEmptyArray.ts'),
     dict: project.getSourceFileOrThrow('Dict.ts'),
     result: project.getSourceFileOrThrow('Result.ts'),
     prom: project.getSourceFileOrThrow('Promise.ts'),
@@ -40,6 +41,12 @@ export const main = async () => {
     object: getObjectOrThrow(files.array, 'Arr'),
     title: 'Array overview',
     path: path.join(docsPath, 'Array.md')
+  })
+
+  await markdownObject({
+    object: getObjectOrThrow(files.nonEmptyArray, 'NonEmptyArray'),
+    title: 'NonEmptyArray overview',
+    path: path.join(docsPath, 'NonEmptyArray.md')
   })
 
   await markdownObject({

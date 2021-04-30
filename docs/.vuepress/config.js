@@ -23,6 +23,7 @@ module.exports = {
         sidebarDepth: 0,
         children: [
           ['/guide/namespaces/Array.md', 'Array'],
+          ['/guide/namespaces/NonEmptyArray.md', 'NonEmptyArray'],
           ['/guide/namespaces/Dict.md', 'Dictionnary'],
           ['/guide/namespaces/Result.md', 'Result'],
           ['/guide/namespaces/Promise.md', 'Promise'],
