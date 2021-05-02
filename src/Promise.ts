@@ -44,8 +44,8 @@ export const tryCatch = <A, E = unknown>(promise: Promise<A>): Promise<Result<A,
 export const thunk = <A>(fn: () => Promise<A> | A): Promise<A> => Promise.resolve().then(fn)
 
 export function struct<A extends Dict<Prom>>(obj: A): Prom.Struct<A>
-export function struct(obj: Dict<Prom>): Prom.Struct<Dict>
-export function struct(obj: Dict<Prom>): Prom<Dict> {
+export function struct(obj: Dict<Prom>): Promise<Dict>
+export function struct(obj: Dict<Prom>): Promise<Dict> {
   return pipe(obj, D.map(_IO.of), T.struct(T.all), T.run)
 }
 

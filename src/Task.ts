@@ -101,9 +101,9 @@ export const struct = fcurry2(
   }
 ) as {
   <A extends Dict<Task>>(obj: A, strategy: Task.Strategy): Task.Struct<A>
-  (obj: Dict<Task>, strategy: Task.Strategy): Task.Struct<Dict>
+  (obj: Dict<Task>, strategy: Task.Strategy): Task<Dict>
   (strategy: Task.Strategy): <A extends Dict<Task>>(obj: A) => Task.Struct<A>
-  (strategy: Task.Strategy): (obj: Dict<Task>) => Task.Struct<Dict>
+  (strategy: Task.Strategy): (obj: Dict<Task>) => Task<Dict>
 }
 
 /**

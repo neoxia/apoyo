@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/std",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Typescript utility library",
   "main": "lib/index.js",
   "module": "es6/index.js",

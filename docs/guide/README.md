@@ -94,7 +94,7 @@ const operation = (value) => {
 
 const [ok, ko] = pipe(
   [1,-2,3],
-  Arr.map(Result.tryCatchK(operation)),
+  Arr.map(Result.tryCatchFn(operation)),
   Arr.separate
 )
 
