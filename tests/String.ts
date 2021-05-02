@@ -115,3 +115,16 @@ describe('String.htmlUnescape', () => {
     expect(pipe(from, Str.htmlUnescape)).toBe(to)
   })
 })
+
+describe('String.trim', () => {
+  it('should trim space characters at the start and at the end of the string', () => {
+    const result = pipe('    \n \r \t    Hello \n world      ', Str.trim)
+    expect(result).toBe('Hello \n world')
+  })
+
+  it('should return the original string if unmodified', () => {
+    const str = 'Hello \n world'
+    const result = pipe(str, Str.trim)
+    expect(result).toBe(str)
+  })
+})

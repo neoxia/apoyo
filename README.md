@@ -1,5 +1,9 @@
 # Apoyo - Std
 
+[![npm version](https://badgen.net/npm/v/@apoyo/std)](https://www.npmjs.com/package/@apoyo/std)  
+[![build size](https://badgen.net/bundlephobia/min/@apoyo/std)](https://bundlephobia.com/result?p=@apoyo/std@0.0.3)  
+[![three shaking](https://badgen.net/bundlephobia/tree-shaking/@apoyo/std)](https://bundlephobia.com/result?p=@apoyo/std@0.0.3)
+
 **Warning**: This package is still in development and features may still change, be renamed or removed.
 
 However, we would appreciate any feedback you have on how to improve this library:

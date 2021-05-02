@@ -1,9 +1,21 @@
-import { Result, ko, ok } from './Result'
+import type { Dict } from './Dict'
+import type { Result } from './Result'
 
-export type Prom<A> = Promise<A>
+import { pipe } from './pipe'
+import { ko, ok } from './Result'
+import * as T from './Task'
+import * as D from './Dict'
+import * as _IO from './IO'
+
+export type Prom<A = any> = Promise<A>
 export namespace Prom {
   export type Unwrap<A> = A extends Promise<infer I> ? I : A
   export type Not<A> = A extends Promise<unknown> ? never : A
+  export type Struct<A extends Dict<Prom>> = Prom<
+    {
+      [P in keyof A]: A[P] extends Prom<infer I> ? I : never
+    }
+  >
 }
 
 export const of = <A>(value: A) => Promise.resolve(value)
@@ -29,7 +41,13 @@ export const all = <A>(promises: Promise<A>[]): Promise<A[]> => Promise.all(prom
 
 export const tryCatch = <A, E = unknown>(promise: Promise<A>): Promise<Result<A, E>> => promise.then(ok, ko)
 
-export const fromIO = <A>(fn: () => Promise<A> | A): Promise<A> => Promise.resolve().then(fn)
+export const thunk = <A>(fn: () => Promise<A> | A): Promise<A> => Promise.resolve().then(fn)
+
+export function struct<A extends Dict<Prom>>(obj: A): Prom.Struct<A>
+export function struct(obj: Dict<Prom>): Prom.Struct<Dict>
+export function struct(obj: Dict<Prom>): Prom<Dict> {
+  return pipe(obj, D.map(_IO.of), T.struct(T.all), T.run)
+}
 
 /**
  * @namespace Prom
@@ -65,7 +83,7 @@ export const Prom = {
    * Creates a promise from a thunk.
    * If the thunk throws, `fromIO` will catch the error and create a promise that rejects.
    */
-  fromIO,
+  thunk,
 
   /**
    * @description
@@ -221,5 +239,26 @@ export const Prom = {
    * expect(result).toEqual(Result.ko(4))
    * ```
    */
-  tryCatch
+  tryCatch,
+
+  /**
+   * @description
+   * Merge a struct of `Promise`s into a single `Promise`.
+   *
+   * @see `Task.struct` if you want to limit concurrency
+   *
+   * @example
+   * ```ts
+   * const relations = await pipe(
+   *   {
+   *     profiles: findProfilesByUserId(userId),
+   *     permissions: findPermissionsByUserId(userId),
+   *     posts: findPostsByUserId(userId),
+   *     friends: findFriendsByUserId(userId),
+   *   },
+   *   Prom.struct
+   * )
+   * ```
+   */
+  struct
 }

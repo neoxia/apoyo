@@ -1,11 +1,22 @@
-import { identity, pipe } from './function'
+import type { Dict } from './Dict'
+
+import * as D from './Dict'
+import * as A from './Array'
+import { fcurry2, identity, pipe } from './function'
 import { fromArray, shift } from './List'
 import * as P from './Promise'
 import { Result } from './Result'
 
-export type Task<A> = () => Promise<A>
+export type Task<A = any> = () => Promise<A>
 export namespace Task {
+  export type Strategy<A = any> = (tasks: Array<Task<A>>) => Task<Array<A>>
   export type Unwrap<A> = A extends Task<infer I> ? I : A
+
+  export type Struct<A extends Dict<Task>> = Task<
+    {
+      [P in keyof A]: A[P] extends Task<infer I> ? I : never
+    }
+  >
 }
 
 export const of = <A>(value: A): Task<A> => () => P.of(value)
@@ -77,7 +88,23 @@ export const concurrent = (concurrency: number) => <A>(tasks: Task<A>[]): Task<A
 
 export const tryCatch = <A, E = unknown>(fn: Task<A>): Task<Result<A, E>> => () => P.tryCatch(fn())
 
-export const fromIO = <A>(fn: () => Promise<A> | A): Task<A> => () => Promise.resolve().then(fn)
+export const thunk = <A>(fn: () => Promise<A> | A): Task<A> => () => Promise.resolve().then(fn)
+
+export const struct = fcurry2(
+  (obj: Dict<Task>, strategy: Task.Strategy): Task<Dict> => {
+    const toPairs = ([key, task]: [string, Task]) =>
+      pipe(
+        task,
+        map((v) => [key, v] as [string, unknown])
+      )
+    return pipe(D.toPairs(obj), A.map(toPairs), strategy, map(D.fromPairs))
+  }
+) as {
+  <A extends Dict<Task>>(obj: A, strategy: Task.Strategy): Task.Struct<A>
+  (obj: Dict<Task>, strategy: Task.Strategy): Task.Struct<Dict>
+  (strategy: Task.Strategy): <A extends Dict<Task>>(obj: A) => Task.Struct<A>
+  (strategy: Task.Strategy): (obj: Dict<Task>) => Task.Struct<Dict>
+}
 
 /**
  * @namespace Task
@@ -339,5 +366,27 @@ export const Task = {
    * Creates a `Task` from a thunk.
    * If the thunk throws, `fromIO` will catch the error and create a `Task` that rejects.
    */
-  fromIO
+  thunk,
+
+  /**
+   * @description
+   * Merge a struct of `Task`s into a single `Task`.
+   *
+   * @see `Prom.struct`
+   *
+   * @example
+   * ```ts
+   * const relations = await pipe(
+   *   {
+   *     profiles: () => findProfilesByUserId(userId),
+   *     permissions: () => findPermissionsByUserId(userId),
+   *     posts: () => findPostsByUserId(userId),
+   *     friends: () => findFriendsByUserId(userId),
+   *   },
+   *   Task.struct(Task.concurrent(2)),
+   *   Task.run
+   * )
+   * ```
+   */
+  struct
 }

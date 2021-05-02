@@ -23,7 +23,7 @@ import { isSome } from './Option'
 import { contramap, inverse } from './Ord'
 import { isOk, ko, ok } from './Result'
 
-export type Arr<A> = Array<A>
+export type Arr<A = any> = Array<A>
 export namespace Arr {
   export interface Predicate<A> {
     (value: A, index: number): boolean

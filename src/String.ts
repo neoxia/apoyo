@@ -1,4 +1,5 @@
-import { Dict } from './Dict'
+import type { Dict } from './Dict'
+
 import { flow } from './flow'
 import { run } from './IO'
 import { property } from './Object'
@@ -81,34 +82,20 @@ const WHITESPACE_CHARS = [
   '\ufeff'
 ]
 
-export const trimBy = (fn: (char: string) => boolean) => {
+export const trimWhile = (fn: (char: string) => boolean) => {
   return (str: string) => {
-    const start = run(() => {
-      for (let i = 0; i < str.length; ++i) {
-        if (!fn(str[i])) {
-          return i
-        }
-      }
-      return str.length
-    })
-    if (start === str.length) {
-      return ''
-    }
-    const end = run(() => {
-      for (let i = str.length - 1; i >= 0; --i) {
-        if (!fn(str[i])) {
-          return i + 1
-        }
-      }
-      return 0
-    })
-    return str.slice(start, end)
+    let start = 0
+    let end = str.length
+
+    while (start < end && fn(str[start])) ++start
+    while (end > start && fn(str[end - 1])) --end
+    return start > 0 || end < str.length ? str.substring(start, end) : str
   }
 }
 
 export const trim = run(() => {
   const set = new Set(WHITESPACE_CHARS)
-  return trimBy((c) => set.has(c))
+  return trimWhile((c) => set.has(c))
 })
 
 /**
@@ -351,19 +338,19 @@ export const Str = {
    * ```ts
    * const trimmed = pipe(
    *   '|Hello|World|||',
-   *   Str.trimBy(Str.eq('|'))
+   *   Str.trimWhile(Str.eq('|'))
    * )
    *
    * expect(trimmed).toBe('Hello|World')
    * ```
    */
-  trimBy,
+  trimWhile,
 
   /**
    * @description
    * Trims all whitespaces characters at the start and the end of the string.
    *
-   * @see `Str.trimBy`
+   * @see `Str.trimWhile`
    *
    * @example
    * ```ts

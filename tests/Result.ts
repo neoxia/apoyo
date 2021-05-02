@@ -1,4 +1,4 @@
-import { pipe, Result } from '../src'
+import { Arr, Err, pipe, Result, throwError } from '../src'
 
 describe('Result.ok', () => {
   it('should create ok', () => {
@@ -214,5 +214,23 @@ describe('Result.tryCatch', () => {
       throw 1
     }, Result.tryCatch)
     expect(v).toEqual(Result.ko(1))
+  })
+})
+
+describe('Result.tryCatchFn', () => {
+  const divide = (a: number, b: number) => (b === 0 ? throwError(Err.of('cannot divide by zero')) : a / b)
+  const divideBy = (b: number) => (a: number) => divide(a, b)
+
+  it('should work in pipe', () => {
+    const [, ko] = pipe([1, 2, 3], Arr.map(Result.tryCatchFn(divideBy(0))), Arr.separate)
+    expect(ko.length).toEqual(3)
+  })
+  it('should work with multiple arguments', () => {
+    const safeDivide = Result.tryCatchFn(divide)
+    const a = safeDivide(3, 0)
+    const b = safeDivide(3, 1)
+
+    expect(Result.isKo(a)).toEqual(true)
+    expect(Result.isOk(b)).toEqual(true)
   })
 })

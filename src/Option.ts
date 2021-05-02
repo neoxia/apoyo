@@ -1,5 +1,5 @@
 import { Dict } from './Dict'
-import { not, Predicate, Refinement } from './function'
+import { not, Predicate, Refinement, throwError as throwErr } from './function'
 import { isIO, of } from './IO'
 
 export type Falsy = null | undefined | '' | 0 | false
@@ -7,6 +7,7 @@ export type Option<A> = A | undefined
 
 export type None = undefined
 export type Some<A> = A extends undefined ? never : A
+
 export namespace Option {
   type OptionProps<A extends Dict<unknown>> = {
     [P in keyof A]: A[P] extends Some<A[P]> ? never : P
@@ -39,12 +40,6 @@ export const fromNumber = (value: number): Option<number> => (isNaN(value) ? und
 
 export const fromDate = (value: Date): Option<Date> => (isNaN(value.getTime()) ? undefined : value)
 
-export function from<A, B extends A>(fn: Refinement<A, B>): (value: A) => Option<B>
-export function from<A>(fn: Predicate<A>): (value: A) => Option<A>
-export function from<A>(fn: Predicate<A>) {
-  return (value: A) => (fn(value) ? value : undefined)
-}
-
 export const map = <A, B>(fn: (value: A) => Option<B>) => (value: Option<A>): Option<B> =>
   isSome(value) ? fn(value) : undefined
 
@@ -68,21 +63,198 @@ export function get(fn: unknown | (() => unknown)) {
   return (value: Option<unknown>): unknown => (isSome(value) ? value : io())
 }
 
-export const fold = <A, B, C>(onSome: (value: A) => B, onNone: () => C) => (option: Option<A>): B | C =>
-  isSome(option) ? onSome(option) : onNone()
+export const throwError = (err: Error) => <A>(value: Option<A>) => (isSome(value) ? value : throwErr(err))
 
+/**
+ * @namespace Option
+ *
+ * @description
+ *
+ * The `Option` namespace contains utilities to improve the handling of optional values.
+ * The `Option` type is expressed as following:
+ *
+ * ```ts
+ * type Option<A> = A | undefined
+ * ```
+ *
+ * **Note**: In other libraries, the `Option` type is often either `Some` value, or `None` / `Nothing`.
+ *
+ */
 export const Option = {
-  map,
-  filter,
-  reject,
-  get,
-  fold,
-  from,
-  fromNullable,
-  fromFalsy,
-  fromString,
-  fromNumber,
-  fromDate,
+  /**
+   * @description
+   * Check if an optional value is not `undefined`
+   */
   isSome,
-  isNone
+
+  /**
+   * @description
+   * Check if an optional value is `undefined`
+   */
+  isNone,
+
+  /**
+   * @description
+   * Map over an optional value, without worrying about the value being undefined
+   *
+   * @example
+   * ```ts
+   * const a: Option<number> = undefined
+   * const b = pipe(
+   *   a,
+   *   Option.map(nb => nb * 2)
+   * )
+   *
+   * expect(b).toBe(undefined)
+   * ```
+   */
+  map,
+
+  /**
+   * @description
+   * If the predicate is false, the value becomes `undefined`
+   *
+   * @see `Option.reject`
+   *
+   * @example
+   * ```ts
+   * const result = pipe(
+   *   NaN,
+   *   Option.filter(nb => !isNaN(nb))
+   * )
+   *
+   * expect(result).toBe(undefined)
+   * ```
+   */
+  filter,
+
+  /**
+   * @description
+   * If the predicate is true, the value becomes `undefined`
+   *
+   * @see `Option.filter`
+   *
+   * @example
+   * ```ts
+   * const result = pipe(
+   *   NaN,
+   *   Option.reject(nb => isNaN(nb))
+   * )
+   *
+   * expect(result).toBe(undefined)
+   */
+  reject,
+
+  /**
+   * @description
+   * For a given `Option<A>`, returns either:
+   * - The value `A`
+   * - The given default value if the optional value is `undefined`
+   *
+   * @see `Option.throwError`
+   *
+   * @example
+   * ```ts
+   * const a: Option<number> = undefined
+   * const b: number = pipe(
+   *   nb,
+   *   Option.get(0)
+   * )
+   *
+   * expect(b).toBe(0)
+   * ```
+   */
+  get,
+
+  /**
+   * @description
+   * For a given `Option<A>`, either:
+   * - Return the value `A`
+   * - Throw the given error if the optional value is `undefined`
+   *
+   * @see `Option.get`
+   *
+   * @example
+   * ```ts
+   * const a: Option<number> = undefined
+   * const b: number = pipe(
+   *   nb,
+   *   Option.get(0)
+   * )
+   *
+   * expect(b).toBe(0)
+   * ```
+   */
+  throwError,
+
+  /**
+   * @description
+   * Returns an optional value from a nullable value
+   *
+   * @example
+   * ```ts
+   * const a: number | null = null
+   * const b: Option<number> = Option.fromNullable(a)
+   *
+   * expect(b).toBe(undefined)
+   * ```
+   */
+  fromNullable,
+  /**
+   * @description
+   * Returns an optional value from a falsy value
+   *
+   * **Note**: In Javascript, a falsy value may be undefined, null, 0, false and ""
+   *
+   * @example
+   * ```ts
+   * const a: number = 0
+   * const b: Option<number> = Option.fromFalsy(a)
+   *
+   * expect(b).toBe(undefined)
+   * ```
+   */
+  fromFalsy,
+
+  /**
+   * @description
+   * Returns an optional value from an empty string
+   *
+   * @example
+   * ```ts
+   * const a: string = ""
+   * const b: Option<string> = Option.fromString(a)
+   *
+   * expect(b).toBe(undefined)
+   * ```
+   */
+  fromString,
+
+  /**
+   * @description
+   * Returns an optional value from a number
+   *
+   * @example
+   * ```ts
+   * const a: number = NaN
+   * const b: Option<number> = Option.fromNumber(a)
+   *
+   * expect(b).toBe(undefined)
+   * ```
+   */
+  fromNumber,
+
+  /**
+   * @description
+   * Returns an optional value from a Date object
+   *
+   * @example
+   * ```ts
+   * const a: Date = new Date("invalid")
+   * const b: Option<Date> = Option.fromDate(a)
+   *
+   * expect(b).toBe(undefined)
+   * ```
+   */
+  fromDate
 }

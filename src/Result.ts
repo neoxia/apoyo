@@ -1,5 +1,7 @@
+import { Option } from './Option'
+
 import { identity, pipe, throwError } from './function'
-import { isSome, Option } from './Option'
+import { isSome } from './Option'
 import { isObject } from './types'
 
 const enum Tags {

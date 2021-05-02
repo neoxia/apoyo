@@ -1,4 +1,5 @@
-import { Dict } from './Dict'
+import type { Dict } from './Dict'
+
 import { Predicate, Refinement } from './function'
 
 export type Seq<A> = Iterable<A>

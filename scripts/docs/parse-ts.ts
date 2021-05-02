@@ -1,5 +1,5 @@
 import { JSDoc, Node, ObjectLiteralExpression, SourceFile, ts, TypeFormatFlags, VariableStatement } from 'ts-morph'
-import { Arr, Option, pipe, Str, throwError, Err } from '../../src'
+import { Arr, Option, pipe, Str, Err } from '../../src'
 import { DocElement, parseDoc } from './parse-tsdocs'
 
 const FORMAT_FLAGS =
@@ -131,7 +131,7 @@ export const getObject = (sourceFile: SourceFile, name: string): Option<Decl> =>
 export const getObjectOrThrow = (sourceFile: SourceFile, name: string): Decl =>
   pipe(
     getObject(sourceFile, name),
-    Option.get(() => throwError(Err.of(`Could not get object {objectName}`, { objectName: name })))
+    Option.throwError(Err.of(`Could not get object {objectName}`, { objectName: name }))
   )
 
 export const getDeclarations = (sourceFile: SourceFile, name: string) => {

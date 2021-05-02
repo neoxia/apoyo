@@ -1,4 +1,4 @@
-import { and, isNaN, isNull, isUInt, isUndefined, not, Option, pipe, throwError } from '../src'
+import { Err, isNaN, isUInt, Option, pipe, throwError } from '../src'
 
 describe('Option.isSome', () => {
   it('should be true for any other value than undefined', () => {
@@ -74,35 +74,6 @@ describe('Option.fromDate', () => {
   })
   it('should not change any other date', () => {
     expect(pipe(new Date('2020'), Option.fromDate)).toEqual(new Date('2020'))
-  })
-})
-
-describe('Option.from', () => {
-  it('should get option with predicate when true', () => {
-    const value = 42
-    const refined: Option<number> = pipe(
-      value,
-      Option.from((nb) => nb >= 0)
-    )
-    expect(refined).toBe(42)
-  })
-  it('should get option with predicate when false', () => {
-    const value = -42
-    const refined: Option<number> = pipe(
-      value,
-      Option.from((nb) => nb >= 0)
-    )
-    expect(refined).toBe(undefined)
-  })
-  it('should refine when true', () => {
-    const value = NaN as number | undefined | null
-    const refined: Option<number> = pipe(value, Option.from(and(not(isUndefined), not(isNull), not(isNaN))))
-    expect(refined).toBe(undefined)
-  })
-  it('should refine when false', () => {
-    const value = 42 as number | undefined | null
-    const refined: Option<number> = pipe(value, Option.from(and(not(isUndefined), not(isNull), not(isNaN))))
-    expect(refined).toBe(42)
   })
 })
 
@@ -216,15 +187,11 @@ describe('Option.get', () => {
   })
 })
 
-describe('Option.fold', () => {
-  const increment = (value: number) => value + 1
-  const one = () => 1
-
-  it('should exec onSome when not undefined', () => {
-    expect(pipe(42, Option.fold(increment, one))).toBe(43)
+describe('Option.throwError', () => {
+  it('should throw if undefined', () => {
+    expect(() => pipe(undefined, Option.throwError(Err.of('Undefined variable')))).toThrowError('Undefined variable')
   })
-
-  it('should exec onNone when not undefined', () => {
-    expect(pipe(undefined, Option.fold(increment, one))).toBe(1)
+  it('should return value if defined', () => {
+    expect(pipe(0, Option.throwError(Err.of('Undefined variable')))).toBe(0)
   })
 })

@@ -109,14 +109,14 @@ describe('Promise.catchError', () => {
   })
 })
 
-describe('Promise.fromIO', () => {
+describe('Promise.thunk', () => {
   it('should be able to return a normal value', async () => {
-    const result = Prom.fromIO(() => 10)
+    const result = Prom.thunk(() => 10)
     expect(result).resolves.toBe(10)
   })
 
   it('should be able to return a promise', async () => {
-    const result = Prom.fromIO(() => Prom.of(10))
+    const result = Prom.thunk(() => Prom.of(10))
     expect(result).resolves.toBe(10)
   })
 })
@@ -136,11 +136,11 @@ describe('Promise.all', () => {
     const mock = jest.fn((x: number) => x)
 
     const a = pipe(
-      Prom.sleep(10),
+      Prom.sleep(20),
       Prom.map(() => mock(1))
     )
     const b = pipe(
-      Prom.sleep(20),
+      Prom.sleep(40),
       Prom.map(() => mock(2))
     )
     const c = pipe(
@@ -167,5 +167,28 @@ describe('Promise.tryCatch', () => {
   it('should return ko', async () => {
     const result = await pipe(Prom.reject(10), Prom.tryCatch)
     expect(result).toEqual(Result.ko(10))
+  })
+})
+
+describe('Promise.struct', () => {
+  it('should merge struct into a single promise', async () => {
+    const result = await pipe(
+      {
+        name: Prom.of('John'),
+        age: Prom.of(30),
+        profiles: pipe(Prom.of([{ name: 'developer' }]), Prom.delay(100))
+      },
+      Prom.struct
+    )
+
+    expect(result).toEqual({
+      name: 'John',
+      age: 30,
+      profiles: [
+        {
+          name: 'developer'
+        }
+      ]
+    })
   })
 })

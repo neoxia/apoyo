@@ -18,12 +18,10 @@ export const enum Ordering {
   EQ = 0
 }
 
-export interface IOrd<A> {
+export type Ord<A> = {
   name: string
   (a: A, b: A): Ordering
 }
-
-export type Ord<A> = IOrd<A>
 
 export const string: Ord<string> = (a: string, b: string) => (a > b ? 1 : a === b ? 0 : -1)
 
@@ -54,14 +52,42 @@ export const concat = <A>(...ords: [Ord<A>, Ord<A>, ...Ord<A>[]]): Ord<A> => (a,
   return 0
 }
 
-export const eq = <A>(ord: Ord<A>) => fcurry2((x: A, y: A) => ord(x, y) === Ordering.EQ)
-export const lt = <A>(ord: Ord<A>) => fcurry2((x: A, y: A) => ord(x, y) < Ordering.EQ)
-export const lte = <A>(ord: Ord<A>) => fcurry2((x: A, y: A) => ord(x, y) <= Ordering.EQ)
-export const gt = <A>(ord: Ord<A>) => lt(inverse(ord))
-export const gte = <A>(ord: Ord<A>) => lte(inverse(ord))
+export const eq = <A>(ord: Ord<A>) =>
+  fcurry2((x: A, y: A) => ord(x, y) === Ordering.EQ) as {
+    (x: A, y: A): boolean
+    (y: A): (x: A) => boolean
+  }
+export const lt = <A>(ord: Ord<A>) =>
+  fcurry2((x: A, y: A) => ord(x, y) < Ordering.EQ) as {
+    (x: A, y: A): boolean
+    (y: A): (x: A) => boolean
+  }
+export const lte = <A>(ord: Ord<A>) =>
+  fcurry2((x: A, y: A) => ord(x, y) <= Ordering.EQ) as {
+    (x: A, y: A): boolean
+    (y: A): (x: A) => boolean
+  }
+export const gt = <A>(ord: Ord<A>) =>
+  fcurry2((x: A, y: A) => ord(x, y) > Ordering.EQ) as {
+    (x: A, y: A): boolean
+    (y: A): (x: A) => boolean
+  }
+export const gte = <A>(ord: Ord<A>) =>
+  fcurry2((x: A, y: A) => ord(x, y) >= Ordering.EQ) as {
+    (x: A, y: A): boolean
+    (y: A): (x: A) => boolean
+  }
 
-export const min = <A>(ord: Ord<A>) => fcurry2((x: A, y: A) => (ord(x, y) <= Ordering.EQ ? x : y))
-export const max = <A>(ord: Ord<A>) => min(inverse(ord))
+export const min = <A>(ord: Ord<A>) =>
+  fcurry2((x: A, y: A) => (ord(x, y) <= Ordering.EQ ? x : y)) as {
+    (x: A, y: A): A
+    (y: A): (x: A) => A
+  }
+export const max = <A>(ord: Ord<A>) =>
+  min(inverse(ord)) as {
+    (x: A, y: A): A
+    (y: A): (x: A) => A
+  }
 
 /**
  * @namespace Ord

@@ -288,3 +288,14 @@ describe('Seq.range', () => {
     }
   })
 })
+
+describe('Seq.of', () => {
+  it('should return expected values', () => {
+    const expected = [5]
+    let i = 0
+    for (const item of Seq.of(5)) {
+      expect(item).toBe(expected[i])
+      i++
+    }
+  })
+})

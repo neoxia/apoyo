@@ -1,27 +1,30 @@
+import type { Dict } from './Dict'
+import type { Option } from './Option'
+
 import * as A from './Array'
-import * as Dict from './Dict'
+import * as D from './Dict'
 import { merge, omit } from './Object'
-import * as O from './Option'
 import { pipe } from './pipe'
 import { template } from './String'
 
-interface IErr extends Error {
-  cause?: IErr
+export interface FormattedError {
+  name: string
+  message: string
+  info: Dict
+  stack: string
+}
+
+export type Err = Error & {
+  cause?: Err
   [key: string]: any
 }
-
-interface FormattedError extends Error {
-  info: Dict.Dict
-}
-
-export type Err = IErr
 
 const INFO_RESERVED = new Set(['message', 'stack', 'cause'])
 
 const isNotReserved = (_: unknown, key: string) => !INFO_RESERVED.has(key)
 
 const info = (err: unknown) => {
-  return pipe(merge<Dict.Dict>(toError(err) as any), Dict.filter(isNotReserved))
+  return pipe(merge<Dict>(toError(err) as any), D.filter(isNotReserved))
 }
 
 const fullInfo = (err: unknown) => {
@@ -38,8 +41,8 @@ const fullStack = (err: unknown) =>
     A.join(`\ncaused by: `)
   )
 
-export const of = (msg: string, info: Dict.Dict<any> = {}, cause?: Err, constructorOpt?: Function): Err => {
-  const data = pipe(info, Dict.filter(isNotReserved))
+export const of = (msg: string, info: Dict<any> = {}, cause?: Err, constructorOpt?: Function): Err => {
+  const data = pipe(info, D.filter(isNotReserved))
   const message = pipe(msg, template(data))
   const e: Err = new Error(message)
   e.cause = cause
@@ -52,7 +55,7 @@ export const toError = (err: unknown): Err => (err instanceof Error ? err : of(S
 
 export const toArray = (err: unknown): Err[] => {
   const errors: Err[] = []
-  let cur: O.Option<Err> = toError(err)
+  let cur: Option<Err> = toError(err)
   while (cur) {
     errors.push(cur)
     cur = cur.cause
@@ -60,22 +63,22 @@ export const toArray = (err: unknown): Err[] => {
   return errors
 }
 
-export function wrap(msg: string, info?: Dict.Dict<any>) {
+export function wrap(msg: string, info?: Dict<any>) {
   return function _wrap(e: unknown): Err {
     const err = toError(e)
     return of(msg, info, err, _wrap)
   }
 }
 
-export function chain(msg: string, info?: Dict.Dict<any>) {
+export function chain(msg: string, info?: Dict<any>) {
   return function _chain(e: unknown): Err {
     const err = toError(e)
     return of(`${msg}: ${err.message}`, info, err, _chain)
   }
 }
 
-export const find = (fn: (err: Err) => boolean) => (source: unknown): O.Option<Err> => {
-  let cur: O.Option<Err> = toError(source)
+export const find = (fn: (err: Err) => boolean) => (source: unknown): Option<Err> => {
+  let cur: Option<Err> = toError(source)
   while (cur) {
     const found = fn(cur)
     if (found) {

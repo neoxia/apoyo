@@ -85,14 +85,14 @@ describe('Task.catchError', () => {
   })
 })
 
-describe('Task.fromIO', () => {
+describe('Task.thunk', () => {
   it('should be able to return a normal value', async () => {
-    const result = Task.fromIO(() => 10)
+    const result = Task.thunk(() => 10)
     expect(pipe(result, Task.run)).resolves.toBe(10)
   })
 
   it('should be able to return a promise', async () => {
-    const result = Task.fromIO(() => Prom.of(10))
+    const result = Task.thunk(() => Prom.of(10))
     expect(pipe(result, Task.run)).resolves.toBe(10)
   })
 })
@@ -112,11 +112,11 @@ describe('Task.all', () => {
     const mock = jest.fn<number>((x: number) => x)
 
     const a = pipe(
-      Task.sleep(10),
+      Task.sleep(20),
       Task.map(() => mock(1))
     )
     const b = pipe(
-      Task.sleep(20),
+      Task.sleep(40),
       Task.map(() => mock(2))
     )
     const c = pipe(
@@ -247,5 +247,29 @@ describe('Task.tryCatch', () => {
   it('should return ko', async () => {
     const result = await pipe(Task.reject(10), Task.tryCatch, Task.run)
     expect(result).toEqual(Result.ko(10))
+  })
+})
+
+describe('Task.struct', () => {
+  it('should merge struct into a single task', async () => {
+    const result = await pipe(
+      {
+        name: Task.of('John'),
+        age: Task.of(30),
+        profiles: pipe(Task.of([{ name: 'developer' }]), Task.delay(100))
+      },
+      Task.struct(Task.sequence),
+      Task.run
+    )
+
+    expect(result).toEqual({
+      name: 'John',
+      age: 30,
+      profiles: [
+        {
+          name: 'developer'
+        }
+      ]
+    })
   })
 })
