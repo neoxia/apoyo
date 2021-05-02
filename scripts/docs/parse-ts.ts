@@ -1,5 +1,5 @@
 import { JSDoc, Node, ObjectLiteralExpression, SourceFile, ts, TypeFormatFlags, VariableStatement } from 'ts-morph'
-import { Arr, Option, pipe, Str, throwError, Err } from '../../src'
+import { Arr, Option, pipe, Str, Err } from '../../src'
 import { DocElement, parseDoc } from './parse-tsdocs'
 
 const FORMAT_FLAGS =
@@ -9,29 +9,18 @@ const FORMAT_FLAGS =
   TypeFormatFlags.UseStructuralFallback |
   TypeFormatFlags.WriteTypeArgumentsOfSignature |
   TypeFormatFlags.UseFullyQualifiedType |
-  TypeFormatFlags.SuppressAnyReturnType |
   TypeFormatFlags.MultilineObjectLiterals |
   TypeFormatFlags.WriteClassExpressionAsTypeLiteral |
-  TypeFormatFlags.UseTypeOfFunction |
-  TypeFormatFlags.OmitParameterModifiers |
-  TypeFormatFlags.UseAliasDefinedOutsideCurrentScope |
-  TypeFormatFlags.UseSingleQuotesForStringLiteralType |
-  TypeFormatFlags.NoTypeReduction |
-  TypeFormatFlags.AllowUniqueESSymbolType |
-  TypeFormatFlags.AddUndefined |
-  TypeFormatFlags.WriteArrowStyleSignature |
-  TypeFormatFlags.InArrayType |
-  TypeFormatFlags.InElementType |
-  TypeFormatFlags.InFirstTypeArgument |
-  TypeFormatFlags.InTypeAlias
+  TypeFormatFlags.NoTypeReduction
 
 export const getTypeOf = (node: Node): string =>
   pipe(
     node.getType().getText(node, FORMAT_FLAGS),
     Str.replace(/[{}]/g, ''),
     Str.split(';'),
-    Arr.map((str) => str.trim()),
-    (arr) => arr.join('\n')
+    Arr.map(Str.trim),
+    Arr.reject(Str.isEmpty),
+    Arr.join('\n')
   )
 
 export const getDoc = (jsdocs: JSDoc[]) => {
@@ -142,7 +131,7 @@ export const getObject = (sourceFile: SourceFile, name: string): Option<Decl> =>
 export const getObjectOrThrow = (sourceFile: SourceFile, name: string): Decl =>
   pipe(
     getObject(sourceFile, name),
-    Option.get(() => throwError(Err.of(`Could not get object {objectName}`, { objectName: name })))
+    Option.throwError(Err.of(`Could not get object {objectName}`, { objectName: name }))
   )
 
 export const getDeclarations = (sourceFile: SourceFile, name: string) => {

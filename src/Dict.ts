@@ -1,9 +1,11 @@
+import type { Option } from './Option'
+
 import * as A from './Array'
 import { identity, InverseRefinement, not, pipe } from './function'
 import * as Obj from './Object'
-import { isSome, Option } from './Option'
+import { isSome } from './Option'
 
-export type Dict<A = unknown> = Record<string, A>
+export type Dict<A = any> = Record<string, A>
 export namespace Dict {
   export interface Predicate<A> {
     (value: A, key: string): boolean

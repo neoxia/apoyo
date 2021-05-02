@@ -1,7 +1,12 @@
-import { Dict } from './Dict'
+import type { Dict } from './Dict'
+
 import { Predicate, Refinement } from './function'
 
 export type Seq<A> = Iterable<A>
+
+export function* of<A>(value: A): Seq<A> {
+  yield value
+}
 
 export function map<A, B>(fn: (value: A) => B) {
   return function* (seq: Seq<A>): Seq<B> {
@@ -79,6 +84,7 @@ export function* range(from: number, to: number, step = 1) {
 }
 
 export const Seq = {
+  of,
   map,
   uniq,
   filter,

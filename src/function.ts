@@ -5,10 +5,6 @@ import { of } from './IO'
 export * from './pipe'
 export * from './flow'
 
-export interface Lazy<A> {
-  (): A
-}
-
 export interface Predicate<A> {
   (a: A): boolean
 }
@@ -51,9 +47,12 @@ export function throwError(err: unknown): never {
 }
 
 export const first = <A, B>(a: A, _b: B) => a
-export const second = <A, B>(_a: A, b: B) => b
+export const last = <A, B>(_a: A, b: B) => b
 
-export const add = fcurry2((a: number, b: number) => a + b)
+export const add = fcurry2((a: number, b: number) => a + b) as {
+  (a: number, b: number): number
+  (a: number): (b: number) => number
+}
 
 export function or<A1, A2, B1 extends A1, B2 extends A2>(
   fn1: Refinement<A1, B1>,

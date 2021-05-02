@@ -1,4 +1,4 @@
-import { pipe, Arr, first, second, identity, Result, Ord } from '../src'
+import { pipe, Arr, first, identity, Result, Ord } from '../src'
 
 describe('Array.head', () => {
   it('should return first value when not empty', () => {
@@ -65,6 +65,17 @@ describe('Array.mapIndexed', () => {
 
   it('should return expected values', () => {
     expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.concat', () => {
+  const a = [1, 2, 3]
+
+  it('should concat simple value', () => {
+    expect(pipe(a, Arr.concat(4))).toEqual([1, 2, 3, 4])
+  })
+  it('should concat another array', () => {
+    expect(pipe(a, Arr.concat([4, 5]))).toEqual([1, 2, 3, 4, 5])
   })
 })
 
@@ -241,7 +252,7 @@ describe('Array.indexBy', () => {
 
     const b = pipe(
       a,
-      Arr.indexBy(first, (a) => a.id)
+      Arr.indexBy((a) => a.id, first)
     )
     const expected = {
       1: a[0],
@@ -269,7 +280,7 @@ describe('Array.indexBy', () => {
 
     const b = pipe(
       a,
-      Arr.indexBy(second, (a) => a.id)
+      Arr.indexBy((a) => a.id)
     )
     const expected = {
       1: a[2],
@@ -332,7 +343,16 @@ describe('Array.chunksOf', () => {
 describe('Array.uniq', () => {
   it('should return expected values', () => {
     const a = [1, 2, 2, 3, 5, 5, 2, 1, 4]
-    const b = pipe(a, Arr.uniq(identity))
+    const b = pipe(a, Arr.uniq)
+    const expected = [1, 2, 3, 5, 4]
+    expect(b).toEqual(expected)
+  })
+})
+
+describe('Array.uniqBy', () => {
+  it('should return expected values', () => {
+    const a = [1, 2, 2, 3, 5, 5, 2, 1, 4]
+    const b = pipe(a, Arr.uniqBy(identity))
     const expected = [1, 2, 3, 5, 4].sort()
     expect(b).toEqual(expected)
   })
@@ -442,5 +462,21 @@ describe('Array.sort', () => {
     const b = pipe(a, Arr.sort(ordArr))
     expect(a).toEqual(aCopy)
     expect(b).toEqual([undefined, undefined, 9, 7, 4, 3, 3, 2, 1])
+  })
+})
+
+describe('Array.sum', () => {
+  it('should work', () => {
+    const a = [1, 2, 3, 4]
+    const b = pipe(a, Arr.sum)
+    expect(b).toEqual(10)
+  })
+})
+
+describe('Array.sumBy', () => {
+  it('should work', () => {
+    const a = [1, 2, 3, 4]
+    const b = pipe(a, Arr.sumBy(identity))
+    expect(b).toEqual(10)
   })
 })
