@@ -1,8 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { Arr, pipe } from '../../src'
-import { flatten } from '../../src/Array'
+import { Arr, pipe } from '@apoyo/std'
 import { Decl } from './parse-ts'
 
 const formatDecl = (decl: Decl) => {
@@ -85,8 +84,8 @@ export const markdownObject = async (options: MarkdownObjectOptions) => {
     name: options.title,
     description: obj.docs?.description,
     example: obj.docs?.example,
-    types: flatten([options.additionals?.types || []]),
-    functions: flatten([
+    types: Arr.flatten([options.additionals?.types || []]),
+    functions: Arr.flatten([
       pipe(
         obj.properties as Decl[],
         Arr.filter((p) => p.type === 'function')

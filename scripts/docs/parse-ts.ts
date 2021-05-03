@@ -1,5 +1,5 @@
 import { JSDoc, Node, ObjectLiteralExpression, SourceFile, ts, TypeFormatFlags, VariableStatement } from 'ts-morph'
-import { Arr, Option, pipe, Str, Err } from '../../src'
+import { Arr, Option, pipe, Str, Err } from '@apoyo/std'
 import { DocElement, parseDoc } from './parse-tsdocs'
 
 const FORMAT_FLAGS =
