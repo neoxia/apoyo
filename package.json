@@ -1,33 +1,11 @@
 {
   "name": "apoyo",
-  "version": "0.0.4",
-  "description": "Typescript utility library",
+  "version": "1.0.0",
   "private": "true",
   "workspaces": [
     "examples/*",
     "packages/*"
   ],
-  "author": "Sascha Braun",
-  "license": "MIT",
-  "tags": [
-    "utils",
-    "functional",
-    "fp",
-    "pipable",
-    "typescript"
-  ],
-  "keywords": [
-    "utils",
-    "functional",
-    "fp",
-    "pipable",
-    "typescript"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/neoxia/apoyo-std"
-  },
-  "homepage": "https://nx-apoyo.netlify.app/",
   "scripts": {
     "lint": "npx eslint --ext ts,tsx .",
     "lint:fix": "npx eslint --fix --ext ts,tsx .",

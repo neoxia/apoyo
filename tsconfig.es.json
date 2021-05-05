@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.common.json",
+  "compilerOptions": {
+    "module": "es6",
+    "target": "es6",
+    "downlevelIteration": false,
+  }
+}
