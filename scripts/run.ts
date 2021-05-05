@@ -4,7 +4,8 @@ export function run(fn: () => Promise<any>) {
       process.exitCode = 0
     },
     (e) => {
-      console.error(e) // tslint:disable-line no-console
+      // eslint-disable-next-line no-console
+      console.error(e)
       process.exitCode = 1
     }
   )

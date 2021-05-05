@@ -1,7 +1,7 @@
 import path from 'path'
 import { Project, ProjectOptions } from 'ts-morph'
 
-import { Arr, Err, pipe, Result } from '../src'
+import { Arr, Err, pipe, Result } from '@apoyo/std'
 import { markdownObject } from './docs/markdown'
 import { getObjectOrThrow, getType } from './docs/parse-ts'
 import { run } from './run'

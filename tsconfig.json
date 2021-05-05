@@ -1,22 +1,11 @@
 {
+  "extends": "./tsconfig.common.json",
   "compilerOptions": {
     "noEmit": true,
-    "outDir": "./dist/lib",
-    "target": "es5",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "lib": ["es6", "dom"],
-    "sourceMap": false,
-    "declaration": true,
-    "strict": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true,
-    "downlevelIteration": true,
-    "stripInternal": true
+    "baseUrl": ".",
+    "paths": {
+      "@apoyo/*": ["packages/*/src"]
+    }
   },
-  "include": ["./src", "./tests", "./scripts", "./examples"]
+  "exclude": ["node_modules", "dist"]
 }
