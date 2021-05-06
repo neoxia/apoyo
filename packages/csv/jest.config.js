@@ -6,6 +6,9 @@ module.exports = {
     '.(ts|tsx)': 'ts-jest'
   },
   moduleFileExtensions: ['ts', 'tsx', 'js'],
+  moduleNameMapper: {
+    '^@apoyo/(.*?)$': '<rootDir>/../../packages/$1/src'
+  },
   collectCoverage: true,
   coveragePathIgnorePatterns: ['/node_modules/', '/test/'],
   /* FIXME: Enable threshold again when coverage has progressed on the project

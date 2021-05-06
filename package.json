@@ -6,6 +6,11 @@
     "examples/*",
     "packages/*"
   ],
+  "engines": {
+    "node": "^12.14.1 || ^14.0.0",
+    "yarn": ">=1.22.4 <2",
+    "npm": "Please use yarn instead of NPM to install dependencies"
+  },
   "scripts": {
     "lint": "npx eslint --ext ts,tsx .",
     "lint:fix": "npx eslint --fix --ext ts,tsx .",
