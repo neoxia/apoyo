@@ -90,3 +90,15 @@ export function and<A>(...fns: [Predicate<A>, Predicate<A>, ...Predicate<A>[]]):
 export function and(...fns: any[]) {
   return (value: any, indexOrKey: number | string) => fns.every((fn) => fn(value, indexOrKey))
 }
+
+export const once = <Args extends any[], A>(fn: (...args: Args) => A) => {
+  let result: A
+  let done = false
+  return (...args: Args) => {
+    if (!done) {
+      result = fn(...args)
+      done = true
+    }
+    return result
+  }
+}

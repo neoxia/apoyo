@@ -14,7 +14,11 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "downlevelIteration": true,
-    "stripInternal": true
+    "stripInternal": true,
+    "baseUrl": ".",
+    "paths": {
+      "@apoyo/*": ["packages/*/src"]
+    }
   },
   "exclude": ["node_modules", "dist"]
 }

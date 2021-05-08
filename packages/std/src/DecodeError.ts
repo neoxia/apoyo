@@ -1,3 +1,4 @@
+import { Arr } from './Array'
 import { Dict } from './Dict'
 import { pipe } from './pipe'
 import * as Tree from './Tree'
@@ -7,7 +8,7 @@ export namespace DecodeError {
     _tag: 'DE.Value'
     value: unknown
     message: string
-    [k: string]: unknown
+    [k: string]: any
   }
 
   export interface Key {
@@ -108,6 +109,26 @@ export const toTree: (e: DecodeError) => Tree.Tree<string> = fold({
   wrap: (err) => Tree.of(`${err.kind}${err.name ? ' ' + err.name : ''}`, err.errors.map(toTree))
 })
 
+export const flatten: (e: DecodeError) => DecodeError.Value[] = fold({
+  value: (err) => [err],
+  key: (err) =>
+    pipe(
+      flatten(err.error),
+      Arr.map((error) => ({ ...error, path: error.path ? `${error.path}.${err.key}` : err.key }))
+    ),
+  index: (err) =>
+    pipe(
+      flatten(err.error),
+      Arr.map((error) => ({ ...error, path: error.path ? `${error.path}[${err.index}]` : `[${err.index}]` }))
+    ),
+  member: (err) =>
+    pipe(
+      flatten(err.error),
+      Arr.map((error) => ({ ...error, path: error.path ? `${error.path}[${err.index}]` : `[${err.index}]` }))
+    ),
+  wrap: (err) => pipe(err.errors, Arr.chain(flatten))
+})
+
 export const draw = (e: DecodeError): string => pipe(e, toTree, Tree.draw)
 
 export const DecodeError = {
@@ -122,5 +143,6 @@ export const DecodeError = {
   intersect,
   fold,
   toTree,
+  flatten,
   draw
 }
