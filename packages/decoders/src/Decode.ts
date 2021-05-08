@@ -1,8 +1,6 @@
-import * as A from './Array'
+import { Arr, Dict, Result, Obj, Option, InverseRefinement, pipe, Predicate, Refinement } from '@apoyo/std'
+
 import * as DE from './DecodeError'
-import * as Dict from './Dict'
-import { InverseRefinement, pipe, Predicate, Refinement } from './function'
-import * as Result from './Result'
 import {
   isBoolean,
   isDate,
@@ -15,13 +13,11 @@ import {
   isUInt,
   isUUID
 } from './types'
-import * as Obj from './Object'
-import { isSome, Option } from './Option'
 
-export type DecodeResult<A> = Result.Result<A, DE.DecodeError>
+export type DecodeResult<A> = Result<A, DE.DecodeError>
 export interface IDecode<I, O> {
   name: string
-  (input: I): Result.Result<O, DE.DecodeError>
+  (input: I): Result<O, DE.DecodeError>
 }
 export type Decode<I, O> = IDecode<I, O>
 
@@ -30,15 +26,13 @@ export namespace Decode {
   export type InputOf<A> = A extends Decode<infer B, unknown> ? Option.Struct<B> : never
 }
 
-type Struct<A extends Dict.Dict<unknown>> = {
+type Struct<A extends Dict<unknown>> = {
   [P in keyof A]: Decode<unknown, A[P]>
 }
 
-export const fromGuard = <A>(
-  fn: Refinement<unknown, A>,
-  message: string,
-  meta?: Dict.Dict<unknown>
-): Decode<unknown, A> => (input) => (fn(input) ? Result.ok(input) : Result.ko(DE.value(input, message, meta)))
+export const fromGuard = <A>(fn: Refinement<unknown, A>, message: string, meta?: Dict<unknown>): Decode<unknown, A> => (
+  input
+) => (fn(input) ? Result.ok(input) : Result.ko(DE.value(input, message, meta)))
 
 export const chain = <B, C>(fn: Decode<B, C>) => <A>(decoder: Decode<A, B>): Decode<A, C> => (input) =>
   pipe(input, decoder, Result.chain(fn))
@@ -49,28 +43,28 @@ export const map = <A, B>(fn: (input: A) => B) => <I>(decoder: Decode<I, A>): De
 export function filter<A, B extends A>(
   fn: Refinement<A, B>,
   message: string,
-  meta?: Dict.Dict<unknown>
+  meta?: Dict<unknown>
 ): <I>(value: Decode<I, A>) => Decode<I, B>
 export function filter<A>(
   fn: Predicate<A>,
   message: string,
-  meta?: Dict.Dict<unknown>
+  meta?: Dict<unknown>
 ): <I>(value: Decode<I, A>) => Decode<I, A>
-export function filter(fn: any, message: string, meta: Dict.Dict<unknown> = {}) {
+export function filter(fn: any, message: string, meta: Dict<unknown> = {}) {
   return chain((input) => (fn(input) ? Result.ok(input) : Result.ko(DE.value(input, message, meta))))
 }
 
 export function reject<A, B extends A>(
   fn: Refinement<A, B>,
   message: string,
-  meta?: Dict.Dict<unknown>
+  meta?: Dict<unknown>
 ): <I>(value: Decode<I, A>) => Decode<I, InverseRefinement<A, B>>
 export function reject<A>(
   fn: Predicate<A>,
   message: string,
-  meta?: Dict.Dict<unknown>
+  meta?: Dict<unknown>
 ): <I>(value: Decode<I, A>) => Decode<I, A>
-export function reject(fn: any, message: string, meta: Dict.Dict<unknown> = {}) {
+export function reject(fn: any, message: string, meta: Dict<unknown> = {}) {
   return chain((input) => (!fn(input) ? Result.ok(input) : Result.ko(DE.value(input, message, meta))))
 }
 
@@ -81,7 +75,7 @@ export const string = fromGuard(isString, `value is not a string`)
 export const number = fromGuard(isNumber, `value is not a number`)
 export const boolean = fromGuard(isBoolean, `value is not a boolean`)
 export const Date = fromGuard(isDate, `value is not an instance of Date`)
-export const unknownArray = fromGuard(A.isArray, `value is not an array`)
+export const unknownArray = fromGuard(Arr.isArray, `value is not an array`)
 export const unknownDict = fromGuard(Dict.isDict, `value is not an object`)
 
 /* Collection types */
@@ -92,20 +86,20 @@ export const array = <A>(decoder: Decode<unknown, A>): Decode<unknown, A[]> =>
     chain((input) =>
       pipe(
         input,
-        A.mapIndexed((value, index) =>
+        Arr.mapIndexed((value, index) =>
           pipe(
             value,
             decoder,
             Result.mapError((err) => DE.index(index, err))
           )
         ),
-        A.separate,
+        Arr.separate,
         ([success, errors]) => (errors.length > 0 ? Result.ko(DE.array(errors)) : Result.ok(success))
       )
     )
   )
 
-export const dict = <A>(decoder: Decode<unknown, A>): Decode<unknown, Dict.Dict<A>> => {
+export const dict = <A>(decoder: Decode<unknown, A>): Decode<unknown, Dict<A>> => {
   return pipe(
     unknownDict,
     chain((input) => {
@@ -119,21 +113,21 @@ export const dict = <A>(decoder: Decode<unknown, A>): Decode<unknown, Dict.Dict<
             Result.mapError((err) => DE.key(key, err))
           )
         ),
-        A.separate
+        Arr.separate
       )
       return errors.length > 0 ? Result.ko(DE.object(errors)) : Result.ok(Dict.fromPairs(success))
     })
   )
 }
 
-export const struct = <A extends Dict.Dict<unknown>>(props: Struct<A>, name?: string): Decode<unknown, A> => {
-  const entries = Dict.toPairs(props as Dict.Dict<Decode<unknown, unknown>>)
+export const struct = <A extends Dict<unknown>>(props: Struct<A>, name?: string): Decode<unknown, A> => {
+  const entries = Dict.toPairs(props as Dict<Decode<unknown, unknown>>)
   return pipe(
     unknownDict,
     chain((input) => {
       const [success, errors] = pipe(
         entries,
-        A.map(([key, decoder]) =>
+        Arr.map(([key, decoder]) =>
           pipe(
             input[key],
             decoder,
@@ -141,14 +135,14 @@ export const struct = <A extends Dict.Dict<unknown>>(props: Struct<A>, name?: st
             Result.mapError((err) => DE.key(key, err))
           )
         ),
-        A.separate
+        Arr.separate
       )
       return errors.length > 0 ? Result.ko(DE.object(errors, name)) : Result.ok(Dict.fromPairs(success) as A)
     })
   )
 }
 
-export const type = <A extends Dict.Dict<unknown>>(props: Struct<A>, name?: string): Decode<unknown, A> => {
+export const type = <A extends Dict<unknown>>(props: Struct<A>, name?: string): Decode<unknown, A> => {
   const decoder = struct(props, name)
   return pipe(
     unknownDict,
@@ -167,7 +161,7 @@ export const nullable = <I, O>(decoder: Decode<I, O>): Decode<I, O | null> => (i
   input !== null ? decoder(input) : Result.ok(null)
 
 export const option = <I, O>(decoder: Decode<I, O>): Decode<I, Option<O>> => (input: I) =>
-  isSome(input) ? decoder(input) : Result.ok(undefined)
+  Option.isSome(input) ? decoder(input) : Result.ok(undefined)
 
 export const ref = <A>(decoder: Decode<unknown, A>) => decoder
 
@@ -204,34 +198,29 @@ export function union<I>(
 
 /* Merge */
 
-export function merge<I, O1 extends Dict.Dict, O2 extends Dict.Dict>(
-  a: Decode<I, O1>,
-  b: Decode<I, O2>
-): Decode<I, O1 & O2>
-export function merge<I, O1 extends Dict.Dict, O2 extends Dict.Dict, O3 extends Dict.Dict>(
+export function merge<I, O1 extends Dict, O2 extends Dict>(a: Decode<I, O1>, b: Decode<I, O2>): Decode<I, O1 & O2>
+export function merge<I, O1 extends Dict, O2 extends Dict, O3 extends Dict>(
   a: Decode<I, O1>,
   b: Decode<I, O2>,
   c: Decode<I, O3>
 ): Decode<I, O1 & O2 & O3>
-export function merge<I, O1 extends Dict.Dict, O2 extends Dict.Dict, O3 extends Dict.Dict, O4 extends Dict.Dict>(
+export function merge<I, O1 extends Dict, O2 extends Dict, O3 extends Dict, O4 extends Dict>(
   a: Decode<I, O1>,
   b: Decode<I, O2>,
   c: Decode<I, O3>,
   d: Decode<I, O4>
 ): Decode<I, O1 & O2 & O3 & O4>
-export function merge<I>(
-  ...members: [Decode<I, Dict.Dict>, Decode<I, Dict.Dict>, ...Decode<I, Dict.Dict>[]]
-): Decode<I, Dict.Dict> {
+export function merge<I>(...members: [Decode<I, Dict>, Decode<I, Dict>, ...Decode<I, Dict>[]]): Decode<I, Dict> {
   return (input) => {
     return pipe(
       members,
-      A.mapIndexed((member, index) =>
+      Arr.mapIndexed((member, index) =>
         pipe(
           member(input),
           Result.mapError((err) => DE.member(index, err))
         )
       ),
-      A.separate,
+      Arr.separate,
       ([success, errors]) => (errors.length > 0 ? Result.ko(DE.intersect(errors)) : Result.ok(Obj.merge(...success)))
     )
   }
@@ -250,7 +239,7 @@ export const int = pipe(number, filter(isInt, `value is not a integer`))
 export const uint = pipe(number, filter(isUInt, `value is not an unsigned integer`))
 
 export const nonEmptyArray = <O>(decoder: Decode<unknown, O>) =>
-  pipe(array(decoder), filter(A.isNonEmpty, `array should not be empty`))
+  pipe(array(decoder), filter(Arr.isNonEmpty, `array should not be empty`))
 
 export const validate = <A>(decoder: Decode<unknown, A>) => <I>(value: I): DecodeResult<A> => decoder(value)
 export const ap = <I>(value: I) => <O>(decoder: Decode<I, O>) => decoder(value)

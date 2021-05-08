@@ -1,4 +1,5 @@
-import { Decode, pipe, TaskDecode, Result, TaskResult, DecodeError, Task, Prom } from '../src'
+import { pipe, Prom, Result, Task, TaskResult } from '@apoyo/std'
+import { Decode, DecodeError, TaskDecode } from '../src'
 
 describe('TaskDecode.map', () => {
   const flooredNumber = pipe(

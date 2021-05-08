@@ -1,4 +1,5 @@
-import { Decode, pipe, Result } from '@apoyo/std'
+import { pipe, Result } from '@apoyo/std'
+import { Decode } from '@apoyo/decoders'
 import { CsvResult } from '../src'
 
 describe('CsvResult.fromRow', () => {

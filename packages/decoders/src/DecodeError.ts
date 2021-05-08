@@ -1,7 +1,4 @@
-import { Arr } from './Array'
-import { Dict } from './Dict'
-import { pipe } from './pipe'
-import * as Tree from './Tree'
+import { Arr, Dict, pipe, Tree } from '@apoyo/std'
 
 export namespace DecodeError {
   export interface Value {
@@ -101,7 +98,7 @@ export const fold = <T>(cases: {
   }
 }
 
-export const toTree: (e: DecodeError) => Tree.Tree<string> = fold({
+export const toTree: (e: DecodeError) => Tree<string> = fold({
   value: (err) => Tree.of(`cannot decode ${JSON.stringify(err.value)}: ${err.message}`),
   key: (err) => Tree.of(`property ${JSON.stringify(err.key)}`, [err.error].map(toTree)),
   index: (err) => Tree.of(`index ${JSON.stringify(err.index)}`, [err.error].map(toTree)),

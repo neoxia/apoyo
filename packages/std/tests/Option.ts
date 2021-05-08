@@ -1,4 +1,4 @@
-import { Err, isNaN, isUInt, Option, pipe, throwError } from '../src'
+import { Err, isNull, not, Option, pipe, throwError } from '../src'
 
 describe('Option.isSome', () => {
   it('should be true for any other value than undefined', () => {
@@ -115,12 +115,14 @@ describe('Option.filter', () => {
   })
 
   it('should refine value when true', () => {
-    const result = pipe(10, Option.filter(isUInt))
+    const a = 10 as number | null
+    const result = pipe(a, Option.filter(not(isNull)))
     expect(result).toBe(10)
   })
 
   it('should return undefined when refinement is false', () => {
-    const result = pipe(-10, Option.filter(isUInt))
+    const a = null as number | null
+    const result = pipe(a, Option.filter(not(isNull)))
     expect(result).toBe(undefined)
   })
 })
@@ -129,26 +131,28 @@ describe('Option.reject', () => {
   it('should return value when predicate is false', () => {
     const result = pipe(
       42,
-      Option.filter((a) => a < 10)
+      Option.reject((a) => a < 10)
     )
-    expect(result).toBe(undefined)
+    expect(result).toBe(42)
   })
 
   it('should return undefined when predicate is true', () => {
     const result = pipe(
       42,
-      Option.filter((a) => a >= 10)
+      Option.reject((a) => a >= 10)
     )
-    expect(result).toBe(42)
+    expect(result).toBe(undefined)
   })
 
   it('should exclude refined type when false', () => {
-    const result = pipe(10, Option.reject(isNaN))
+    const a = 10 as number | null
+    const result = pipe(a, Option.reject(isNull))
     expect(result).toBe(10)
   })
 
   it('should return undefined when false', () => {
-    const result = pipe(NaN, Option.reject(isNaN))
+    const a = null as number | null
+    const result = pipe(a, Option.reject(isNull))
     expect(result).toBe(undefined)
   })
 })
