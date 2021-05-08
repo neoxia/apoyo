@@ -14,6 +14,8 @@ However, we would appreciate any feedback you have on how to improve this librar
 
 ## Installation
 
+**Warning**: This package has not been deployed to NPM yet.
+
 `npm install @apoyo/csv`
 
 ## Description

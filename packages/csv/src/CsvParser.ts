@@ -1,11 +1,13 @@
 import Papa from 'papaparse'
 import { Dict, NonEmptyArray, Str } from '@apoyo/std'
+import { CsvError } from './CsvError'
 
-export type Csv = {}
-
-export namespace Csv {
-  export type Error = Papa.ParseError
-  export type Meta = Papa.ParseMeta
+export type CsvParser = {}
+export namespace CsvParser {
+  export type Meta = {
+    delimiter: string
+    fields?: string[]
+  }
 
   export interface Row {
     /**
@@ -22,8 +24,14 @@ export namespace Csv {
      * @see `@apoyo/decoders`
      */
     data: unknown
-    errors: Array<Csv.Error>
-    meta: Csv.Meta
+    /**
+     * List of errors
+     */
+    errors: Array<CsvError>
+    /**
+     * Metadata about the file (header fields, delimiter, etc...)
+     */
+    meta: CsvParser.Meta
   }
 
   export type ReadOptions = {
@@ -83,24 +91,28 @@ const DefaultConfiguration: Omit<Papa.ParseConfig, 'step' | 'chunk' | 'complete'
 }
 
 export const streamAsync = (
-  input: Buffer | string | NodeJS.ReadableStream,
+  input: string | NodeJS.ReadableStream,
   chunkSize = 1000,
-  config?: Csv.ReadOptions
-): AsyncIterable<NonEmptyArray<Csv.Row>> => {
+  config: CsvParser.ReadOptions = {}
+): AsyncIterable<NonEmptyArray<CsvParser.Row>> => {
   const configFull = {
     ...DefaultConfiguration,
     ...Dict.compact(config as Dict)
   }
 
+  if (chunkSize <= 0) {
+    throw new Error('Invalid chunkSize: number needs to be above 0')
+  }
+
   return {
     [Symbol.asyncIterator]: () => {
-      let chunk: Csv.Row[] = []
-      let rows = 0
+      let chunk: CsvParser.Row[] = []
+      let rows = configFull.header ? 1 : 0
 
       let parser: Papa.Parser | null = null
       let done = false
       let error: unknown = null
-      let resolve: (r: IteratorResult<NonEmptyArray<Csv.Row>>) => void = () => undefined
+      let resolve: (r: IteratorResult<NonEmptyArray<CsvParser.Row>>) => void = () => undefined
       let reject: (err: any) => void = () => undefined
       return {
         return: () => {
@@ -108,7 +120,7 @@ export const streamAsync = (
           if (parser) parser.abort()
           return Promise.resolve({
             done,
-            value: (undefined as any) as NonEmptyArray<Csv.Row>
+            value: (undefined as any) as NonEmptyArray<CsvParser.Row>
           })
         },
         throw: (err) => {
@@ -123,14 +135,14 @@ export const streamAsync = (
             : done
             ? Promise.resolve({
                 done: true,
-                value: (undefined as any) as NonEmptyArray<Csv.Row>
+                value: (undefined as any) as NonEmptyArray<CsvParser.Row>
               })
-            : new Promise<IteratorResult<NonEmptyArray<Csv.Row>>>((res, rej) => {
+            : new Promise<IteratorResult<NonEmptyArray<CsvParser.Row>>>((res, rej) => {
                 try {
                   resolve = res
                   reject = rej
                   if (parser === null) {
-                    Papa.parse((Buffer.isBuffer(input) ? input.toString('utf8').replace('\r', '') : input) as any, {
+                    Papa.parse(input, {
                       ...configFull,
                       error: (ioError: unknown) => {
                         done = true
@@ -152,7 +164,7 @@ export const streamAsync = (
                         chunk = []
                         return resolve({
                           done: false,
-                          value: results as NonEmptyArray<Csv.Row>
+                          value: results as NonEmptyArray<CsvParser.Row>
                         })
                       },
                       complete: () => {
@@ -163,14 +175,14 @@ export const streamAsync = (
                         if (chunk.length === 0) {
                           return resolve({
                             done: true,
-                            value: (undefined as any) as NonEmptyArray<Csv.Row>
+                            value: (undefined as any) as NonEmptyArray<CsvParser.Row>
                           })
                         }
                         const results = chunk
                         chunk = []
                         return resolve({
                           done: false,
-                          value: results as NonEmptyArray<Csv.Row>
+                          value: results as NonEmptyArray<CsvParser.Row>
                         })
                       }
                     })
@@ -188,57 +200,25 @@ export const streamAsync = (
 }
 
 /**
- * @namespace Csv
+ * @namespace CsvParser
  *
  * @description
  *
- * This namespace is based on [papaparse](https://www.papaparse.com/docs), but has been simplified for easier usage and better typings.
- *
- * Additional features:
- * - Async iterator support
- * - Useful default configurations are enabled
- * - All headers and fields are automatically trimmed
- * - Both \n and \r\n are supported at the same time
- * - UTF-8 BOM character is automatically skipped
+ * This namespace contains utilities for CSV parsing.
  *
  * @example
  * ```ts
  * const inputStream = fs.createReadStream(...)
- * const csvSeq = Csv.streamAsync(inputStream, 1000, {
+ * const csvSeq = CsvParser.streamAsync(inputStream, 1000, {
  *   header: true,
  *   delimiter: ','
  * })
  *
- * let header = null
- * const stats = {
- *   total: 0,
- *   ok: 0,
- *   ko: 0
- * }
- *
  * for (const rows of csvSeq) {
- *   if (!header) {
- *     header = rows[0].meta.fields
- *     // check header
- *     const errors = checkHeader(header)
- *     if (errors.length > 0) {
- *       // Abort parsing by throwing or returning
- *       throw new Error('Invalid header')
- *     }
- *   }
- *
- *   const [ok, ko] = pipe(rows, Arr.partition(row => row.errors.length === 0))
- *
- *   // etc...
- *
- *   stats.total += rows.length
- *   stats.ok += ok.length
- *   stats.ko += ko.length
+ *   ...
  * }
- *
- * console.log(`File has ${stats.total} lines in total`, stats)
  * ```
  */
-export const Csv = {
+export const CsvParser = {
   streamAsync
 }
