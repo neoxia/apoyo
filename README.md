@@ -9,5 +9,5 @@ Apoyo (Spanish for "support") tries to improve Developer Experience, by giving t
 ## Packages
 
 - [Std](packages/std) (`@apoyo/std`): Contains general, framework agnostic utilities.
-- **TODO:** Decoders (`@apoyo/decoders`): Contains type decoders and validators.
+- [Decoders](packages/decoders) (`@apoyo/decoders`): Contains type decoders and validators.
 - [CSV](packages/csv) (`@apoyo/csv`): Based on `papaparse`, this package contains additional CSV related utilities.
