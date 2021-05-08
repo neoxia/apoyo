@@ -1,4 +1,5 @@
-import { Decode, DecodeError, isNull, pipe, Result } from '../src'
+import { isNull, pipe, Result } from '@apoyo/std'
+import { Decode, DecodeError } from '../src'
 
 describe('Decode.string', () => {
   it('should succeed', () => {

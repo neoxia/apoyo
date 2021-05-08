@@ -1,4 +1,5 @@
-import { Arr, DecodeError, pipe, Result } from '@apoyo/std'
+import { Arr, pipe, Result } from '@apoyo/std'
+import { DecodeError } from '@apoyo/decoders'
 import { CsvParser } from './CsvParser'
 import { CsvError } from './CsvError'
 

@@ -1,18 +1,11 @@
-import * as A from './Array'
+import { Arr, Dict, Result, Obj, Option, pipe, Task, TaskResult, NonEmptyArray } from '@apoyo/std'
+
 import * as DE from './DecodeError'
 import * as D from './Decode'
-import { Dict, collect, fromPairs, toPairs } from './Dict'
-import { pipe } from './function'
-import { Option } from './Option'
-import * as Result from './Result'
-import * as Task from './Task'
-import * as TaskResult from './TaskResult'
-import * as Obj from './Object'
-import { NonEmptyArray } from './NonEmptyArray'
 
 export interface ITaskDecode<I, O> {
   name: string
-  (input: I): Task.Task<Result.Result<O, DE.DecodeError>>
+  (input: I): Task<Result<O, DE.DecodeError>>
 }
 export type TaskDecode<I, O> = ITaskDecode<I, O>
 
@@ -20,7 +13,7 @@ export namespace TaskDecode {
   export type TypeOf<A> = A extends TaskDecode<unknown, infer B> ? Option.Struct<B> : never
   export type InputOf<A> = A extends TaskDecode<infer B, unknown> ? Option.Struct<B> : never
   export type T<I, O> = TaskDecode<I, O> | D.Decode<I, O>
-  export type Strategy = <A>(tasks: Task.Task<A>[]) => Task.Task<A[]>
+  export type Strategy = <A>(tasks: Task<A>[]) => Task<A[]>
 }
 
 type Struct<A extends Dict<unknown>> = {
@@ -54,7 +47,7 @@ export const array = <A>(
     chain((input) => {
       return pipe(
         input,
-        A.mapIndexed((value, index) =>
+        Arr.mapIndexed((value, index) =>
           pipe(
             decoder(value),
             TaskResult.from,
@@ -62,7 +55,7 @@ export const array = <A>(
           )
         ),
         strategy,
-        Task.map(A.separate),
+        Task.map(Arr.separate),
         Task.map(([success, errors]) => (errors.length > 0 ? Result.ko(DE.array(errors, name)) : Result.ok(success)))
       )
     })
@@ -79,7 +72,7 @@ export const dict = <A>(
     chain((input) => {
       return pipe(
         input,
-        collect((source, key) =>
+        Dict.collect((source, key) =>
           pipe(
             decoder(source),
             TaskResult.from,
@@ -88,9 +81,9 @@ export const dict = <A>(
           )
         ),
         strategy,
-        Task.map(A.separate),
+        Task.map(Arr.separate),
         Task.map(([success, errors]) =>
-          errors.length > 0 ? Result.ko(DE.object(errors, name)) : Result.ok(fromPairs(success))
+          errors.length > 0 ? Result.ko(DE.object(errors, name)) : Result.ok(Dict.fromPairs(success))
         )
       )
     })
@@ -102,13 +95,13 @@ export const struct = <A extends Dict<unknown>>(
   name?: string,
   strategy: TaskDecode.Strategy = Task.all
 ): TaskDecode<unknown, A> => {
-  const entries = toPairs(props as Dict<TaskDecode.T<unknown, unknown>>)
+  const entries = Dict.toPairs(props as Dict<TaskDecode.T<unknown, unknown>>)
   return pipe(
     D.unknownDict,
     chain((input) => {
       return pipe(
         entries,
-        A.map(([key, decoder]) =>
+        Arr.map(([key, decoder]) =>
           pipe(
             decoder(input[key]),
             TaskResult.from,
@@ -117,9 +110,9 @@ export const struct = <A extends Dict<unknown>>(
           )
         ),
         strategy,
-        Task.map(A.separate),
+        Task.map(Arr.separate),
         Task.map(([success, errors]) =>
-          errors.length > 0 ? Result.ko(DE.object(errors, name)) : Result.ok(fromPairs(success) as A)
+          errors.length > 0 ? Result.ko(DE.object(errors, name)) : Result.ok(Dict.fromPairs(success) as A)
         )
       )
     })
@@ -200,7 +193,7 @@ export function merge<I>(...members: NonEmptyArray<TaskDecode.T<I, Dict>>): Task
   return (input) => {
     return pipe(
       members,
-      A.mapIndexed((member, index) =>
+      Arr.mapIndexed((member, index) =>
         pipe(
           member(input),
           TaskResult.from,
@@ -208,7 +201,7 @@ export function merge<I>(...members: NonEmptyArray<TaskDecode.T<I, Dict>>): Task
         )
       ),
       Task.sequence,
-      Task.map(A.separate),
+      Task.map(Arr.separate),
       Task.map(([success, errors]) =>
         errors.length > 0 ? Result.ko(DE.intersect(errors)) : Result.ok(Obj.merge(...success))
       )
@@ -217,8 +210,7 @@ export function merge<I>(...members: NonEmptyArray<TaskDecode.T<I, Dict>>): Task
 }
 
 export const ref = <A>(decoder: TaskDecode<unknown, A>) => decoder
-export const validate = <A>(decoder: TaskDecode<unknown, A>) => <I>(value: I): Task.Task<D.DecodeResult<A>> =>
-  decoder(value)
+export const validate = <A>(decoder: TaskDecode<unknown, A>) => <I>(value: I): Task<D.DecodeResult<A>> => decoder(value)
 
 export const ap = <I>(value: I) => <O>(decoder: TaskDecode<I, O>) => decoder(value)
 

@@ -1,4 +1,5 @@
-import { DecodeError, pipe } from '../src'
+import { pipe } from '@apoyo/std'
+import { DecodeError } from '../src'
 
 describe('DecodeError.toTree', () => {
   it('should exec Value case', () => {
