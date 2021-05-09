@@ -14,8 +14,6 @@ However, we would appreciate any feedback you have on how to improve this librar
 
 ## Installation
 
-**Warning**: This package has not been deployed to NPM yet.
-
 `npm install @apoyo/decoders`
 
 ## Usage
@@ -47,8 +45,8 @@ const TodoDto = ObjectDecoder.struct({
   updatedAt: DateDecoder.datetime
 })
 
-const TodoPostDto = pipe(TodoDto, ObjectDecoder.omit(['id']))
-const TodoPutDto = pipe(TodoDto, ObjectDecoder.partial, ObjectDecoder.omit(['id']))
+const TodoPostDto = pipe(TodoDto, ObjectDecoder.omit(['id', 'createdAt', 'updatedAt']))
+const TodoPutDto = pipe(TodoDto, ObjectDecoder.partial, ObjectDecoder.omit(['id', 'createdAt', 'updatedAt']))
 
 interface TodoDto extends Decoder.TypeOf<typeof TodoDto> {}
 interface TodoPostDto extends Decoder.TypeOf<typeof TodoPostDto> {}
