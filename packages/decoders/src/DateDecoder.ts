@@ -1,4 +1,4 @@
-import { pipe } from '../../std/src'
+import { pipe } from '@apoyo/std'
 import { Decoder } from './Decoder'
 import { TextDecoder } from './TextDecoder'
 import { ISO } from './types'
