@@ -15,23 +15,60 @@ describe('DecodeError.toTree', () => {
 
   it('should exec Key case', () => {
     const err = DecodeError.value(42, 'value is not a string')
-    const tree = pipe(DecodeError.key('name', err), DecodeError.toTree)
-    expect(tree.value).toBe('property "name"')
-    expect(tree.forest.length).toEqual(1)
+    const tree = pipe(DecodeError.object([DecodeError.key('name', err)]), DecodeError.toTree)
+    expect(tree).toEqual({
+      value: 'object',
+      forest: [
+        {
+          value: 'property "name"',
+          forest: [
+            {
+              value: 'cannot decode 42: value is not a string',
+              forest: []
+            }
+          ]
+        }
+      ]
+    })
   })
 
   it('should exec Index case', () => {
     const err = DecodeError.value(42, 'value is not a string')
-    const tree = pipe(DecodeError.index(0, err), DecodeError.toTree)
-    expect(tree.value).toBe('index 0')
-    expect(tree.forest.length).toEqual(1)
+    const tree = pipe(DecodeError.array([DecodeError.index(0, err)]), DecodeError.toTree)
+
+    expect(tree).toEqual({
+      value: 'array',
+      forest: [
+        {
+          value: 'index 0',
+          forest: [
+            {
+              value: 'cannot decode 42: value is not a string',
+              forest: []
+            }
+          ]
+        }
+      ]
+    })
   })
 
   it('should exec Member case', () => {
     const err = DecodeError.value(42, 'value is not a string')
-    const tree = pipe(DecodeError.member(0, err), DecodeError.toTree)
-    expect(tree.value).toBe('member 0')
-    expect(tree.forest.length).toEqual(1)
+    const tree = pipe(DecodeError.union([DecodeError.member(0, err)]), DecodeError.toTree)
+    expect(tree).toEqual({
+      value: 'union',
+      forest: [
+        {
+          value: 'member 0',
+          forest: [
+            {
+              value: 'cannot decode 42: value is not a string',
+              forest: []
+            }
+          ]
+        }
+      ]
+    })
   })
 
   it('should exec Wrap case', () => {
@@ -50,6 +87,100 @@ describe('DecodeError.toTree', () => {
     const tree = pipe(DecodeError.union([member1, member2], 'MyUnion'), DecodeError.toTree)
     expect(tree.value).toBe('union MyUnion')
     expect(tree.forest.length).toEqual(2)
+  })
+})
+
+describe('DecodeError.flatten', () => {
+  it('should return expected results for arrays', () => {
+    const err = DecodeError.value(42, 'value is not a string')
+    const errors = pipe(DecodeError.array([DecodeError.index(0, err)]), DecodeError.flatten)
+
+    expect(errors).toEqual([
+      {
+        value: err.value,
+        message: err.message,
+        meta: err.meta,
+        path: ['index 0']
+      }
+    ])
+  })
+
+  it('should return expected results for objects', () => {
+    const err = DecodeError.value(42, 'value is not a string')
+    const errors = pipe(DecodeError.object([DecodeError.key('name', err)]), DecodeError.flatten)
+
+    expect(errors).toEqual([
+      {
+        value: err.value,
+        message: err.message,
+        meta: err.meta,
+        path: ['property "name"']
+      }
+    ])
+  })
+
+  it('should return expected results for unions', () => {
+    const valueErr = DecodeError.value(42, 'value is not a string')
+    const unionErr = pipe(DecodeError.union([DecodeError.member(0, valueErr), DecodeError.member(1, valueErr)]))
+
+    const errors = pipe(unionErr, DecodeError.flatten)
+
+    expect(errors).toEqual([
+      {
+        value: 42,
+        message: 'value is not a string',
+        meta: {},
+        path: ['union (member 0)']
+      },
+      {
+        value: 42,
+        message: 'value is not a string',
+        meta: {},
+        path: ['union (member 1)']
+      }
+    ])
+  })
+
+  it('should return expected results for mixed nested', () => {
+    const err = pipe(
+      DecodeError.array([
+        DecodeError.index(
+          0,
+          DecodeError.object([
+            DecodeError.key(
+              'id',
+              DecodeError.union([
+                DecodeError.member(0, DecodeError.value(false, 'value is not a string')),
+                DecodeError.member(1, DecodeError.value(false, 'value is not a number'))
+              ])
+            ),
+            DecodeError.key('name', DecodeError.value(42, 'value is not a string'))
+          ])
+        )
+      ])
+    )
+    const errors = pipe(err, DecodeError.flatten)
+
+    expect(errors).toEqual([
+      {
+        value: false,
+        message: 'value is not a string',
+        meta: {},
+        path: ['index 0', 'property "id"', 'union (member 0)']
+      },
+      {
+        value: false,
+        message: 'value is not a number',
+        meta: {},
+        path: ['index 0', 'property "id"', 'union (member 1)']
+      },
+      {
+        value: 42,
+        message: 'value is not a string',
+        meta: {},
+        path: ['index 0', 'property "name"']
+      }
+    ])
   })
 })
 

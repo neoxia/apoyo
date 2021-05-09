@@ -32,7 +32,7 @@ export const decode = <A, B>(decoder: (input: A) => Result<B, DecodeError>) => (
     errors: pipe(
       result.ko,
       DecodeError.flatten,
-      Arr.map((err) => CsvError.leaf('Validation', err.path || '', err.message)),
+      Arr.map((err) => CsvError.leaf('Validation', 'invalidData', DecodeError.formatError(err))),
       Arr.map(CsvError.fromLeaf(row.row))
     )
   })

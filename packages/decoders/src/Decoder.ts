@@ -5,7 +5,7 @@ export type DecoderResult<A> = Result<A, DecodeError>
 
 export type Decoder<I, O> = {
   name: string
-  (input: I): Result<O, DecodeError>
+  (input: I): DecoderResult<O>
 }
 
 export namespace Decoder {
@@ -30,6 +30,12 @@ export const nullable = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | null> => 
 
 export const optional = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | undefined> => (input: I) =>
   input === undefined ? Result.ok(undefined) : decoder(input)
+
+export const guard = <O>(fn: (input: O) => Option<DecodeError>) =>
+  parse((input: O) => {
+    const error = fn(input)
+    return error !== undefined ? Result.ko(error) : Result.ok(input)
+  })
 
 export function filter<A, B extends A>(
   fn: Refinement<A, B>,
@@ -60,6 +66,7 @@ export function reject(fn: any, message: string, meta: Dict<unknown> = {}) {
 }
 
 export const ref = <A>(decoder: Decoder<unknown, A>) => decoder
+export const validate = <O>(decoder: Decoder<unknown, O>) => (input: unknown) => decoder(input)
 
 export const lazy = <I, O>(fn: () => Decoder<I, O>): Decoder<I, O> => (input) => pipe(input, fn())
 
@@ -75,7 +82,7 @@ export function union<I>(
   ...members: [Decoder<I, unknown>, Decoder<I, unknown>, ...Decoder<I, unknown>[]]
 ): Decoder<I, unknown> {
   return (input) => {
-    const errors: DecodeError[] = []
+    const errors: DecodeError.Member[] = []
     for (let index = 0; index < members.length; ++index) {
       const member = members[index]
       const result = pipe(
@@ -98,6 +105,7 @@ export const Decoder = {
   fromGuard,
   map,
   parse,
+  guard,
   nullable,
   optional,
   filter,

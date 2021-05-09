@@ -1,4 +1,4 @@
-import { Arr, Dict, InverseRefinement, Obj, pipe, Predicate, Refinement, Result } from '@apoyo/std'
+import { Arr, Dict, Obj, Option, pipe, Result } from '@apoyo/std'
 import { DecodeError } from './DecodeError'
 import { Decoder } from './Decoder'
 
@@ -64,33 +64,9 @@ export const struct = <A extends Dict>(props: Struct<A>, name?: string): ObjectD
   )
 }
 
-export function filter<A extends Dict, B extends A>(
-  fn: Refinement<A, B>,
-  message: string,
-  meta?: Dict<unknown>
-): <I>(value: ObjectDecoder<I, A>) => ObjectDecoder<I, B>
-export function filter<A>(
-  fn: Predicate<A>,
-  message: string,
-  meta?: Dict<unknown>
-): <I>(value: ObjectDecoder<I, A>) => ObjectDecoder<I, A>
-export function filter(fn: any, message: string, meta: Dict<unknown> = {}) {
-  return (decoder: ObjectDecoder<any, any>) => create(decoder.props, pipe(decoder, Decoder.filter(fn, message, meta)))
-}
-
-export function reject<A extends Dict, B extends A>(
-  fn: Refinement<A, B>,
-  message: string,
-  meta?: Dict<unknown>
-): <I>(value: ObjectDecoder<I, A>) => ObjectDecoder<I, InverseRefinement<A, B>>
-export function reject<A>(
-  fn: Predicate<A>,
-  message: string,
-  meta?: Dict<unknown>
-): <I>(value: ObjectDecoder<I, A>) => ObjectDecoder<I, A>
-export function reject(fn: any, message: string, meta: Dict<unknown> = {}) {
-  return (decoder: ObjectDecoder<any, any>) => create(decoder.props, pipe(decoder, Decoder.reject(fn, message, meta)))
-}
+export const guard = <I, O extends Dict>(fn: (input: O) => Option<DecodeError.Value | DecodeError.ObjectLike>) => (
+  decoder: ObjectDecoder<I, O>
+) => create(decoder.props, pipe(decoder, Decoder.guard(fn)))
 
 export function omit<I, O extends Dict, B extends keyof O>(
   props: B[]
@@ -118,6 +94,5 @@ export const ObjectDecoder = {
   omit,
   pick,
   partial,
-  filter,
-  reject
+  guard
 }

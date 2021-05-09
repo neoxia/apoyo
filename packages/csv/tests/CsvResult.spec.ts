@@ -85,14 +85,14 @@ describe('CsvResult.decode', () => {
           {
             row: 2,
             type: 'Validation',
-            code: 'id',
-            message: 'string should contain at least 1 characters'
+            code: 'invalidData',
+            message: 'invalid value "" at property "id": string should contain at least 1 characters'
           },
           {
             row: 2,
             type: 'Validation',
-            code: 'name',
-            message: 'string should contain at least 1 characters'
+            code: 'invalidData',
+            message: 'invalid value "" at property "name": string should contain at least 1 characters'
           }
         ]
       })
