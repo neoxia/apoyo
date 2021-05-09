@@ -6,7 +6,7 @@
     "downlevelIteration": false,
     "baseUrl": ".",
     "paths": {
-      "@apoyo/*": ["packages/*/src"]
+      "@apoyo/*": ["packages/*/dist"]
     }
   }
 }

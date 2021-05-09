@@ -5,7 +5,7 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@apoyo/*": ["packages/*/src"]
+      "@apoyo/*": ["packages/*/dist"]
     }
   },
   "exclude": ["node_modules", "dist"]
