@@ -1,5 +1,4 @@
-import { flow, pipe, Result, Str } from '@apoyo/std'
-import { DecodeError } from './DecodeError'
+import { flow, pipe, Str } from '@apoyo/std'
 import { Decoder } from './Decoder'
 import { Email, UUID } from './types'
 
@@ -8,8 +7,10 @@ const REGEXP_EMAIL = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}
 
 export type TextDecoder<I> = Decoder<I, string>
 
-export const string: TextDecoder<unknown> = (input: unknown) =>
-  typeof input === 'string' ? Result.ok(input) : Result.ko(DecodeError.value(input, `value is not a string`))
+export const string: TextDecoder<unknown> = Decoder.fromGuard(
+  (input: unknown): input is string => typeof input === 'string',
+  `value is not a string`
+)
 
 export const min = (minLength: number) =>
   Decoder.filter(

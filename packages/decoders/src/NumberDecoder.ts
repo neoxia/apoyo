@@ -1,14 +1,13 @@
-import { flow, pipe, Result } from '@apoyo/std'
-import { DecodeError } from './DecodeError'
+import { flow, pipe } from '@apoyo/std'
 import { Decoder } from './Decoder'
 import { TextDecoder } from './TextDecoder'
 
 export type NumberDecoder<I> = Decoder<I, number>
 
-export const number: NumberDecoder<unknown> = (input: unknown) =>
-  typeof input === 'number' && !Number.isNaN(input)
-    ? Result.ok(input)
-    : Result.ko(DecodeError.value(input, `value is not a number`))
+export const number: NumberDecoder<unknown> = Decoder.fromGuard(
+  (input: unknown): input is number => typeof input === 'number' && !Number.isNaN(input),
+  `value is not a number`
+)
 
 export const fromString = pipe(TextDecoder.string, Decoder.map(parseFloat), Decoder.parse(number))
 

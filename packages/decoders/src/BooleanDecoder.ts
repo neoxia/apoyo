@@ -9,8 +9,10 @@ export type BooleanDecoder<I> = Decoder<I, boolean>
 const TEXT_TRUE = new Set(['true', 'yes', 'y', '1'])
 const TEXT_FALSE = new Set(['false', 'no', 'no', '0'])
 
-export const boolean: BooleanDecoder<unknown> = (input: unknown) =>
-  typeof input === 'boolean' ? Result.ok(input) : Result.ko(DecodeError.value(input, `value is not a boolean`))
+export const boolean: BooleanDecoder<unknown> = Decoder.fromGuard(
+  (input: unknown): input is boolean => typeof input === 'boolean',
+  `value is not a boolean`
+)
 
 export const fromString = pipe(
   TextDecoder.string,

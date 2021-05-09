@@ -36,8 +36,8 @@ export const main = async () => {
     updatedAt: DateDecoder.datetime
   })
 
-  const TodoPostDto = pipe(TodoDto, ObjectDecoder.omit(['id']))
-  const TodoPutDto = pipe(TodoDto, ObjectDecoder.partial, ObjectDecoder.omit(['id']))
+  const TodoPostDto = pipe(TodoDto, ObjectDecoder.omit(['id', 'createdAt', 'updatedAt']))
+  const TodoPutDto = pipe(TodoDto, ObjectDecoder.partial, ObjectDecoder.omit(['id', 'createdAt', 'updatedAt']))
 
   interface TodoDto extends Decoder.TypeOf<typeof TodoDto> {}
   interface TodoPostDto extends Decoder.TypeOf<typeof TodoPostDto> {}

@@ -1,3 +1,9 @@
+describe('Todo', () => {
+  it('Todo', () => {
+    expect(true).toBe(true)
+  })
+})
+
 // import { pipe, Prom, Result, Task, TaskResult } from '@apoyo/std'
 // import { Decode, DecodeError, TaskDecode } from '../src'
 
