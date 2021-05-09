@@ -59,7 +59,7 @@ This library has a few main goal:
 
 **fp-ts**:
 
-This library has been heavily inspired by `fp-ts`, and has re-implemented a lot of useful concepts (Results, Tasks, Decoders, Option, Ord, pipe, etc...)
+This library has been heavily inspired by `fp-ts`, and has re-implemented a lot of useful concepts (Results, Tasks, Option, Ord, pipe, etc...)
 
 However, `fp-ts` is unfortunaly too complicated to use and doesn't always integrate well with existing code.
 As such, while this library may have a few similarities, `@apoyo/std` has been heavily simplified for easier usage.
