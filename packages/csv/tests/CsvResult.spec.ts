@@ -1,5 +1,5 @@
 import { pipe, Result } from '@apoyo/std'
-import { Decode } from '@apoyo/decoders'
+import { ObjectDecoder, TextDecoder } from '@apoyo/decoders'
 import { CsvResult } from '../src'
 
 describe('CsvResult.fromRow', () => {
@@ -38,15 +38,9 @@ describe('CsvResult.fromRow', () => {
 })
 
 describe('CsvResult.decode', () => {
-  const schema = Decode.struct({
-    id: pipe(
-      Decode.string,
-      Decode.filter((str) => str.length > 0, 'Id is required')
-    ),
-    name: pipe(
-      Decode.string,
-      Decode.filter((str) => str.length > 0, 'Name is required')
-    )
+  const schema = ObjectDecoder.struct({
+    id: TextDecoder.varchar(1, 50),
+    name: TextDecoder.varchar(1, 50)
   })
 
   it('should return no errors on success', () => {
@@ -91,14 +85,14 @@ describe('CsvResult.decode', () => {
           {
             row: 2,
             type: 'Validation',
-            code: 'id',
-            message: 'Id is required'
+            code: 'invalidData',
+            message: 'invalid value "" at property "id": string should contain at least 1 characters'
           },
           {
             row: 2,
             type: 'Validation',
-            code: 'name',
-            message: 'Name is required'
+            code: 'invalidData',
+            message: 'invalid value "" at property "name": string should contain at least 1 characters'
           }
         ]
       })

@@ -1,5 +1,6 @@
-import { Arr, Decode, flow, once, pipe } from '@apoyo/std'
+import { Arr, flow, once, pipe } from '@apoyo/std'
 import { CsvParser, CsvHeader, CsvResult } from '@apoyo/csv'
+import { BooleanDecoder, IntegerDecoder, ObjectDecoder, TextDecoder } from '@apoyo/decoders'
 
 export async function main() {
   const content = `id,name\n1,John\n2,Doe\n3,Smith`
@@ -14,10 +15,12 @@ export async function main() {
     CsvHeader.checkRequiredColumns(['id'])
   )
 
-  const RowDecoder = Decode.struct({
-    id: Decode.string,
-    name: Decode.string,
-    email: Decode.email
+  const RowDecoder = ObjectDecoder.struct({
+    id: TextDecoder.string,
+    name: TextDecoder.string,
+    age: pipe(IntegerDecoder.fromString, IntegerDecoder.between(0, 120)),
+    isActive: BooleanDecoder.fromString,
+    email: TextDecoder.email
   })
 
   const stats = {
