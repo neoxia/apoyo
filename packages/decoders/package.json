@@ -35,7 +35,7 @@
     "release": "npx ts-node ../../scripts/release"
   },
   "dependencies": {
-    "@apoyo/std": "^0.0.4"
+    "@apoyo/std": "^0.0.5"
   },
   "devDependencies": {
     "@types/jest": "22.2.2",
