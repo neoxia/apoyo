@@ -19,6 +19,9 @@ However, we would appreciate any feedback you have on how to improve this librar
 ## Usage
 
 ```ts
+import { ObjectDecoder, DateDecoder, IntegerDecoder, TextDecoder, Decoder, BooleanDecoder } from '@apoyo/decoders'
+import { pipe, Result } from '@apoyo/std'
+
 const validateAge = (dob: string) => {
   const now = new Date()
   const date = new Date(dob)
@@ -52,4 +55,41 @@ interface TodoDto extends Decoder.TypeOf<typeof TodoDto> {}
 interface TodoPostDto extends Decoder.TypeOf<typeof TodoPostDto> {}
 interface TodoPutDto extends Decoder.TypeOf<typeof TodoPutDto> {}
 
+```
+
+## Example
+
+Let's say your are implementing a HTTP REST API endpoint to create a todo list item.
+
+You would like to validate the POST payload before creating the todo item in database.
+
+Or return an unprocessable entity HTTP error if payload is invalid.
+
+Here's how you can do with Apoyo's decoders:
+
+```typescript
+import { DecodeError } from '@apoyo/decoders'
+import { Result } from '@apoyo/std'
+import { TodoModel } from './models'
+
+export const handler = async (event: HttpEvent) => {
+  // Result is an union between OK and KO result
+  const result = TodoPostDto(event.body)
+
+  // Use type guard isKo to properly cast result
+  if (Result.isKo(result)) {
+    // If error result return "Unprocessable entity" and properly format errors with flatten 
+    return {
+      status: 422,
+      body: DecodeError.flatten(result.ko)
+    }
+  }
+  // If payload is valid, save item (result.ok should have the correct type) 
+  const saved = await TodoModel.save(result.ok)
+  // And return status "Created"
+  return {
+    status: 201,
+    body: saved,
+  }
+}
 ```
