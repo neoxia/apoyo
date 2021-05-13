@@ -1,5 +1,6 @@
 {
   "name": "@apoyo/csv",
+  "private":"true",
   "version": "0.0.1",
   "description": "CSV Parsing utilities",
   "main": "lib/index.js",
