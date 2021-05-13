@@ -56,15 +56,151 @@ export const uuid = pipe(
   Decoder.filter((str): str is UUID => REGEXP_UUID.test(str), `string is not an uuid`)
 )
 
+/**
+ * @namespace TextDecoder
+ *
+ * @description
+ * This namespace contains string decoders and additional utilities for string validations.
+ */
 export const TextDecoder = {
+  /**
+   * @description
+   * Check if the input is a string
+   */
   string,
+
+  /**
+   * @description
+   * Check the minimum length of the string
+   *
+   * @example
+   * ```ts
+   * const decoder = pipe(
+   *   TextDecoder.string,
+   *   TextDecoder.min(1)
+   * )
+   *
+   * expect(pipe('1', Decoder.validate(decoder), Result.isOk)).toBe(true)
+   * expect(pipe('', Decoder.validate(decoder), Result.isKo)).toBe(true)
+   * ```
+   */
   min,
+
+  /**
+   * @description
+   * Check the maximum length of the string
+   *
+   * @example
+   * ```ts
+   * const decoder = pipe(
+   *   TextDecoder.string,
+   *   TextDecoder.max(5)
+   * )
+   *
+   * expect(pipe('12345', Decoder.validate(decoder), Result.isOk)).toBe(true)
+   * expect(pipe('123456', Decoder.validate(decoder), Result.isKo)).toBe(true)
+   * ```
+   */
   max,
+
+  /**
+   * @description
+   * Check both the minimum and maximum length of the string
+   *
+   * @example
+   * ```ts
+   * const decoder = pipe(
+   *   TextDecoder.string,
+   *   TextDecoder.between(1, 100)
+   * )
+   *
+   * expect(pipe('', Decoder.validate(decoder), Result.isKo)).toBe(true)
+   * ```
+   */
   between,
+
+  /**
+   * @description
+   * Trim the string
+   *
+   * @example
+   * ```ts
+   * const decoder = pipe(
+   *   TextDecoder.string,
+   *   TextDecoder.trim,
+   *   TextDecoder.between(1, 100)
+   * )
+   *
+   * expect(pipe('     ', Decoder.validate(decoder), Result.isKo)).toBe(true)
+   * ```
+   */
   trim,
+
+  /**
+   * @description
+   * Check if the input is an email
+   *
+   * @example
+   * ```ts
+   * expect(pipe("test@example.com", Decoder.validate(TextDecoder.email), Result.isOk)).toBe(true)
+   * expect(pipe("test", Decoder.validate(TextDecoder.email), Result.isKo)).toBe(true)
+   * ```
+   */
   email,
+
+  /**
+   * @description
+   * Check if the input is an UUID
+   */
   uuid,
+
+  /**
+   * @description
+   * Check if the input is a string between the given length.
+   *
+   * @example
+   * ```ts
+   * // The following:
+   * const decoder = TextDecoder.varchar(1, 100)
+   * // is the same as:
+   * const decoder = pipe(TextDecoder.string, TextDecoder.between(1, 100))
+   * ```
+   */
   varchar,
+
+  /**
+   * @description
+   * This makes the string nullable. If the string is empty, `null` is returned.
+   *
+   * @see `TextDecoder.optional`
+   * @see `Decoder.nullable`
+   *
+   * @example
+   * ```ts
+   * const decoder = pipe(TextDecoder.string, TextDecoder.nullable)
+   *
+   * expect(pipe("Hello", Decoder.validate(decoder), Result.get)).toBe("Hello")
+   * expect(pipe(null, Decoder.validate(decoder), Result.get)).toBe(null)
+   * expect(pipe("", Decoder.validate(decoder), Result.get)).toBe(null)
+   * ```
+   */
   nullable,
+
+  /**
+   * @description
+   * This makes the string optional (allows `undefined`). If the string is empty, `undefined` is returned.
+   *
+   * @see `TextDecoder.nullable`
+   * @see `Decoder.optional`
+   *
+   * @example
+   * ```ts
+   * const decoder = pipe(TextDecoder.string, TextDecoder.optional)
+   *
+   * expect(pipe("Hello", Decoder.validate(decoder), Result.get)).toBe("Hello")
+   * expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toBe(undefined)
+   * expect(pipe("", Decoder.validate(decoder), Result.get)).toBe(undefined)
+   * ```
+   */
   optional
 }
