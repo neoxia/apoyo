@@ -1,5 +1,6 @@
 {
   "name": "@apoyo/csv",
+  "private":"true",
   "version": "0.0.1",
   "description": "CSV Parsing utilities",
   "main": "lib/index.js",
@@ -29,13 +30,10 @@
     "test": "npx jest --clearCache && jest --verbose --runInBand",
     "clean": "npx rimraf ./dist",
     "prebuild": "npm run clean",
-    "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build",
-    "prepublishOnly": "npx ts-node ../../scripts/pre-publish",
-    "prerelease": "npm run build && npm run test",
-    "release": "npx ts-node ../../scripts/release"
+    "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
   },
   "dependencies": {
-    "@apoyo/decoders": "^0.0.2",
+    "@apoyo/decoders": "^0.0.3",
     "@apoyo/std": "^0.0.5",
     "@types/papaparse": "^5.2.5",
     "papaparse": "^5.3.0"
