@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "engines": {
-    "node": "^12.14.1 || ^16.0.0",
+    "node": ">=12.0.0",
     "yarn": ">=1.22.4 <2",
     "npm": "Please use yarn instead of NPM to install dependencies"
   },
@@ -19,7 +19,9 @@
     "docs:generate": "npx ts-node -r tsconfig-paths/register scripts/generate-docs",
     "docs:dev": "vuepress dev docs",
     "docs:build": "npm run build && npm run docs:generate && vuepress build docs",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "prepublishOnly": "npm run build && npm run test",
+    "pub": "lerna publish from-package --contents dist"
   },
   "dependencies": {},
   "devDependencies": {
