@@ -87,12 +87,139 @@ export function partial(decoder: ObjectDecoder<any, any>) {
   return pipe(decoder.props, Dict.map(Decoder.optional), struct)
 }
 
+/**
+ * @namespace ObjectDecoder
+ *
+ * @description
+ * This namespace contains object decoders and additional utilities for object validations.
+ */
 export const ObjectDecoder = {
+  /**
+   * @description
+   * Check if the input is an object / record.
+   * This function does not check the type of the properties.
+   */
   unknownDict,
+
+  /**
+   * @description
+   * Check if the input is an record, where all properties are of the given type.
+   */
   dict,
+
+  /**
+   * @description
+   * Check if the input is an object, where all object properties match the given decoders.
+   * All extraenous properties will be skipped and ignored.
+   *
+   * @example
+   * ```ts
+   * const TodoDto = ObjectDecoder.struct({
+   *   id: IntegerDecoder.positive,
+   *   title: TextDecoder.varchar(1, 100),
+   *   done: BooleanDecoder.boolean
+   * })
+   *
+   * const input: unknown = {
+   *   id: 0,
+   *   title: 'Wake up',
+   *   description: 'Some description', // This property is not recognized by the decoder and will be ignored.
+   *   done: false
+   * }
+   *
+   * expect(pipe(input, Decoder.validate(TodoDto), Result.isOk)).toBe(true)
+   * expect(pipe(input, Decoder.validate(TodoDto), Result.get)).toEqual({
+   *   id: 0,
+   *   title: 'Wake up',
+   *   done: false
+   * })
+   * ```
+   */
   struct,
+
+  /**
+   * @description
+   * Omit given properties from an `ObjectDecoder`.
+   * The resulting `ObjectDecoder` will not contain the omitted properties.
+   *
+   * @example
+   * ```ts
+   * const TodoPostDto = pipe(TodoDto, ObjectDecoder.omit(['id']))
+   *
+   * const input: unknown = {
+   *   id: 0, // This property has been omitted and will be ignored.
+   *   title: 'Wake up',
+   *   done: false
+   * }
+   *
+   * expect(pipe(input, Decoder.validate(TodoPostDto), Result.isOk)).toBe(true)
+   * expect(pipe(input, Decoder.validate(TodoPostDto), Result.get)).toEqual({
+   *   title: 'Wake up',
+   *   done: false
+   * })
+   * ```
+   */
   omit,
+
+  /**
+   * @description
+   * Pick given properties from an `ObjectDecoder`.
+   * The resulting `ObjectDecoder` will only contain the picked properties.
+   *
+   * @example
+   * ```ts
+   * const TodoPostDto = pipe(TodoDto, ObjectDecoder.pick(['title', 'done']))
+   *
+   * const input: unknown = {
+   *   id: 0, // This property has not been picked and will be ignored.
+   *   title: 'Wake up',
+   *   done: false
+   * }
+   *
+   * expect(pipe(input, Decoder.validate(TodoPostDto), Result.isOk)).toBe(true)
+   * expect(pipe(input, Decoder.validate(TodoPostDto), Result.get)).toEqual({
+   *   title: 'Wake up',
+   *   done: false
+   * })
+   * ```
+   */
   pick,
+
+  /**
+   * @description
+   * Make all properties of an `ObjectDecoder` optional.
+   */
   partial,
+
+  /**
+   * @description
+   * Add a custom validation function to the `ObjectDecoder`.
+   *
+   * @example
+   * ```ts
+   * const SignupDto = pipe(
+   *   ObjectDecoder.struct({
+   *     email: TextDecoder.email,
+   *     password: TextDecoder.varchar(5, 50),
+   *     passwordRepeat: TextDecoder.varchar(5, 50)
+   *   }),
+   *   ObjectDecoder.guard(user => {
+   *     return user.password === user.passwordRepeat
+   *       ? undefined
+   *       : DecodeError.object([
+   *         DecodeError.key('passwordRepeat', DecodeError.value(user.passwordRepeat, `Password does not match password confirmation`))
+   *       ])
+   *   })
+   * )
+   *
+   * const input: unknown = {
+   *   email: 'test@example.com',
+   *   password: '12345',
+   *   passwordRepeat: '12345'
+   * }
+   *
+   * expect(pipe(input, Decoder.validate(SignupDto), Result.isKo)).toBe(true)
+   * ```
+   */
   guard
 }
