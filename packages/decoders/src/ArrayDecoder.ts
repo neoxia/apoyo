@@ -28,8 +28,28 @@ export const array = <A>(decoder: Decoder<unknown, A>): ArrayDecoder<unknown, A[
 export const nonEmptyArray = <O>(decoder: Decoder<unknown, O>) =>
   pipe(array(decoder), Decoder.filter(Arr.isNonEmpty, `array should not be empty`))
 
+/**
+ * @namespace ArrayDecoder
+ *
+ * @description
+ * This namespace contains array decoders and additional utilities for array validations.
+ */
 export const ArrayDecoder = {
+  /**
+   * @description
+   * Check if the input is an array.
+   */
   unknownArray,
+
+  /**
+   * @description
+   * Check if the input is an array of a given type.
+   */
   array,
+
+  /**
+   * @description
+   * Check if the input is a non empty array of a given type.
+   */
   nonEmptyArray
 }

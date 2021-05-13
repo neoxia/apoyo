@@ -37,8 +37,46 @@ export const fromNumber = pipe(
   )
 )
 
+/**
+ * @namespace BooleanDecoder
+ *
+ * @description
+ * This namespace contains boolean decoders and additional utilities for boolean validations.
+ */
 export const BooleanDecoder = {
+  /**
+   * @description
+   * Check if the input is a boolean.
+   */
   boolean,
+
+  /**
+   * @description
+   * Decodes an input from a string into a boolean:
+   * - 'true', 'yes', 'y', '1' becomes true
+   * - 'false', 'no', 'n', '0' becomes false
+   *
+   * Any other value will fail validation.
+   *
+   * @example
+   * ```
+   * expect(pipe('yes', Decoder.validate(BooleanDecoder.fromString), Result.get)).toBe(true)
+   * ```
+   */
   fromString,
+
+  /**
+   * @description
+   * Decodes an input from a number into a boolean:
+   * - 1 becomes true
+   * - 0 becomes false
+   *
+   * Any other value will fail validation.
+   *
+   * @example
+   * ```
+   * expect(pipe(1, Decoder.validate(BooleanDecoder.fromNumber), Result.get)).toBe(true)
+   * ```
+   */
   fromNumber
 }

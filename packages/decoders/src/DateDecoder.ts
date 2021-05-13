@@ -14,7 +14,22 @@ export type DateDecoder<I, O extends ISO.Date | ISO.Datetime> = Decoder<I, O>
 export const date = pipe(TextDecoder.string, Decoder.filter(isDateFormat, `string is not a date string`))
 export const datetime = pipe(TextDecoder.string, Decoder.filter(isDatetimeFormat, `string is not a datetime string`))
 
+/**
+ * @namespace DateDecoder
+ *
+ * @description
+ * This namespace contains date decoders and additional utilities for date validations.
+ */
 export const DateDecoder = {
+  /**
+   * @description
+   * Check if the input is a date.
+   */
   date,
+
+  /**
+   * @description
+   * Check if the input is a datetime.
+   */
   datetime
 }
