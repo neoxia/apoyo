@@ -1,0 +1,48 @@
+{
+  "name": "@apoyo/ioc",
+  "private":"true",
+  "version": "0.0.1",
+  "description": "IoC utilities",
+  "main": "lib/index.js",
+  "module": "es6/index.js",
+  "typings": "lib/index.d.ts",
+  "sideEffects": false,
+  "author": "Sascha Braun",
+  "license": "MIT",
+  "tags": [
+    "utils",
+    "services",
+    "dependencies",
+    "typescript"
+  ],
+  "keywords": [
+    "utils",
+    "services",
+    "dependencies",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neoxia/apoyo"
+  },
+  "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/ioc",
+  "scripts": {
+    "test": "npx jest --clearCache && jest --verbose --runInBand",
+    "clean": "npx rimraf ./dist",
+    "prebuild": "npm run clean",
+    "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
+  },
+  "dependencies": {
+    "@apoyo/decoders": "^0.0.3",
+    "@apoyo/std": "^0.0.5"
+  },
+  "devDependencies": {
+    "@types/jest": "22.2.2",
+    "@types/node": "^12.6.8",
+    "jest": "^26.4.2",
+    "rimraf": "2.6.2",
+    "ts-jest": "^26.3.0",
+    "ts-node": "^8.0.2",
+    "typescript": "^4.1.2"
+  }
+}
