@@ -1,6 +1,5 @@
 module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   testRegex: '(/tests/.*|\\.(test|spec))\\.(ts|tsx|js)$',
   transform: {
     '.(ts|tsx)': 'ts-jest'
@@ -9,8 +8,9 @@ module.exports = {
   moduleNameMapper: {
     '^@apoyo/(.*?)$': '<rootDir>/../../packages/$1/src'
   },
+  setupFilesAfterEnv: ['<rootDir>/setup-tests.ts'],
   collectCoverage: true,
-  coveragePathIgnorePatterns: ['/node_modules/', '/test/'],
+  coveragePathIgnorePatterns: ['/node_modules/', '/tests/'],
   /* FIXME: Enable threshold again when coverage has progressed on the project
   coverageThreshold: {
     global: {
