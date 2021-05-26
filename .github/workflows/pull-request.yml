@@ -1,8 +1,6 @@
-name: Node.js CI
+name: Node.js CI - PR
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
 
