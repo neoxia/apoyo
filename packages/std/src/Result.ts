@@ -1,4 +1,5 @@
-import { Option } from './Option'
+import type { Option } from './Option'
+import type { NonEmptyArray } from './NonEmptyArray'
 
 import { identity, pipe, throwError } from './function'
 import { isSome } from './Option'
@@ -39,6 +40,9 @@ export const isResult = <A = unknown, B = unknown>(result: unknown): result is R
 
 export const get = <A, E = unknown>(result: Result<A, E>) => (isOk(result) ? result.ok : throwError(result.ko))
 
+export const tuple = <A, E = unknown>(result: Result<A, E>): [Option<A>, Option<E>] =>
+  isOk(result) ? [result.ok, undefined] : [undefined, result.ko]
+
 export const map = <A, B>(fn: (value: A) => B) => <E = unknown>(result: Result<A, E>): Result<B, E> =>
   isOk(result) ? ok(fn(result.ok)) : result
 
@@ -76,6 +80,22 @@ export const tryCatch = <A>(fn: () => A): Result<A, unknown> => {
 
 export const tryCatchFn = <Args extends any[], T>(fun: (...args: Args) => T) => (...args: Args): Result<T, unknown> =>
   tryCatch(() => fun(...args))
+
+export const unionBy = <T, A, E>(fn: (member: T, index: number) => Result<A, E>) => (
+  members: NonEmptyArray<T>
+): Result<A, E[]> => {
+  const errors: E[] = []
+  for (let i = 0; i < members.length; ++i) {
+    const result = fn(members[i], i)
+    if (Result.isOk(result)) {
+      return result
+    }
+    errors.push(result.ko)
+  }
+  return Result.ko(errors)
+}
+
+export const union = <A, E>(members: NonEmptyArray<Result<A, E>>): Result<A, E[]> => pipe(members, unionBy(identity))
 
 /**
  * @namespace Result
@@ -183,6 +203,22 @@ export const Result = {
    * ```
    */
   get,
+
+  /**
+   * @description
+   * Transforms the result into a tuple [ value, error ]
+   *
+   * @example
+   * ```ts
+   * const [value, error] = Result.tryCatch(() => {
+   *   throw new Error('Unknown')
+   * })
+   *
+   * expect(value).toBe(undefined)
+   * expect(error?.message).toBe('Unknown')
+   * ```
+   */
+  tuple,
 
   /**
    * @description
@@ -355,5 +391,43 @@ export const Result = {
    * )
    * ```
    */
-  tryCatchFn
+  tryCatchFn,
+
+  /**
+   * @description
+   * Takes a list of value as an input.
+   * Applies the function one by one, and returns the first succeeding `Result` or all errors
+   *
+   * @example
+   * ```
+   * const numbers = [-2, -3, 1, -7, -12, -6]
+   *
+   * const firstPositive = Result.unionBy(nb => nb >= 0
+   *   ? Result.ok(nb)
+   *   : Result.ko(`${nb} is negative`)
+   * )
+   *
+   * expect(pipe([-2, -3, 1, -7, -12], firstPositive)).toBe(1)
+   * expect(pipe([-2, -3, -7, -12], firstPositive)).toEqual([
+   *   `-2 is negative`,
+   *   `-3 is negative`,
+   *   `-7 is negative`,
+   *   `-12 is negative`
+   * ])
+   * ```
+   */
+  unionBy,
+
+  /**
+   * @description
+   * Returns the first succeeding `Result` or all errors
+   *
+   * @example
+   * ```ts
+   * const results = [Result.ko(`-2 is negative`), Result.ko(`-3 is negative`), Result.ok(1)]
+   *
+   * expect(pipe(results, Result.union, Result.get)).toBe(1)
+   * ```
+   */
+  union
 }

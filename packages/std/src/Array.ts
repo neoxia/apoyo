@@ -9,6 +9,7 @@ import * as D from './Dict'
 import {
   add,
   constant,
+  fcurry2,
   first,
   identity,
   InverseRefinement,
@@ -91,6 +92,9 @@ export function reject(fn: any) {
 }
 
 export const reduce = <A, B>(fn: (acc: B, current: A) => B, initial: B) => (arr: A[]) => arr.reduce(fn, initial)
+
+export const reduceRight = <A, B>(fn: (acc: B, current: A) => B, initial: B) => (arr: A[]) =>
+  arr.reduceRight(fn, initial)
 
 export const slice = (start?: number, end?: number) => <A>(arr: A[]) => arr.slice(start, end)
 export const take = (nb: number) => slice(0, nb)
@@ -196,6 +200,11 @@ export const empty = <A>(): A[] => []
 
 export const sum = (arr: number[]) => arr.reduce(add, 0)
 export const sumBy = <A>(fn: (value: A) => number) => (arr: A[]) => arr.reduce((a, b) => a + fn(b), 0)
+
+export const push = fcurry2((arr: any[], value: any): any[] => (arr.push(value), arr)) as {
+  <T>(arr: T[], value: T): NonEmptyArray<T>
+  <T>(value: T): (arr: T[]) => NonEmptyArray<T>
+}
 
 /**
  * @namespace Arr
@@ -432,6 +441,21 @@ export const Arr = {
    * ```
    */
   reduce,
+
+  /**
+   * @description
+   * Aggregate / accumulate all values in the array into a single value, starting from the right
+   *
+   * @example
+   * ```ts
+   * const nbs = [1,2,3,4]
+   * const total = pipe(
+   *   nbs,
+   *   Arr.reduceRight((a, b) => a + b, 0)
+   * )
+   * ```
+   */
+  reduceRight,
 
   /**
    * @description
@@ -1055,5 +1079,23 @@ export const Arr = {
    * expect(nb).toBe(10)
    * ```
    */
-  sumBy
+  sumBy,
+
+  /**
+   * @description
+   * Push a new value into an existing array.
+   * This function will mutate the given array and will not create a new one.
+   *
+   * @example
+   * ```ts
+   * const array = pipe(
+   *   [],
+   *   Arr.push("A"),
+   *   Arr.push(undefined),
+   *   Arr.push("B"),
+   *   Arr.compact
+   * )
+   * ```
+   */
+  push
 }

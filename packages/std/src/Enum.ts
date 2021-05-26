@@ -9,6 +9,11 @@ export function values<E extends Enum<E>>(enumType: E) {
 export const toPairs = <E extends Enum<E>>(enumType: E) =>
   keys(enumType).map((key) => [key, enumType[key]]) as Array<[keyof E, E[keyof E]]>
 
+export const isEnum = <E extends Enum<E>>(enumType: E) => {
+  const set = new Set(values(enumType))
+  return (input: unknown): input is E[keyof E] => set.has(input as any)
+}
+
 /**
  * @namespace Enum
  *
@@ -72,5 +77,26 @@ export const Enum = {
    * ])
    * ```
    */
-  toPairs
+  toPairs,
+
+  /**
+   * @description
+   * Check if a value exists in the enumeration.
+   * This function acts as a type guard for an enumeration.
+   *
+   * @example
+   * ```
+   * enum Color {
+   *   RED = "red",
+   *   BLUE = "blue",
+   *   GREEN = "green"
+   * }
+   *
+   * const isColor = Enum.isEnum(Color)
+   *
+   * expect(isColor("red")).toBe(true)
+   * expect(isColor("unknown")).toBe(false)
+   * ```
+   */
+  isEnum
 }
