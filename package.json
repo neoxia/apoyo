@@ -21,7 +21,8 @@
     "docs:build": "npm run build && npm run docs:generate && vuepress build docs",
     "postinstall": "husky install",
     "prepublishOnly": "npm run build && npm run test",
-    "pub": "lerna publish from-package --contents dist"
+    "pub": "lerna publish from-package --contents dist",
+    "pub:ci": "lerna publish from-package --contents dist --no-verify-access --yes"
   },
   "dependencies": {},
   "devDependencies": {
