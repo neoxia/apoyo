@@ -90,6 +90,8 @@ export const tryCatch = <A, E = unknown>(fn: Task<A>): Task<Result<A, E>> => () 
 
 export const thunk = <A>(fn: () => Promise<A> | A): Task<A> => () => Promise.resolve().then(fn)
 
+export const timeout = <A>(ms: number, fn: Task<A>) => (task: Task<A>) => () => pipe(task(), P.timeout(ms, fn))
+
 export const struct = fcurry2(
   (obj: Dict<Task>, strategy: Task.Strategy): Task<Dict> => {
     const toPairs = ([key, task]: [string, Task]) =>
@@ -388,5 +390,28 @@ export const Task = {
    * )
    * ```
    */
-  struct
+  struct,
+
+  /**
+   * @description
+   * Timeout a task after the given amount of milliseconds.
+   *
+   * @example
+   * ```ts
+   * const original = pipe(
+   *   Task.sleep(10000),
+   *   Task.map(() => "Hello!")
+   * )
+   *
+   * const withTimeout = await pipe(
+   *   original,
+   *   Task.timeout(5000, Task.reject(Err.of('Timeout!'))),
+   *   Task.tryCatch,
+   *   Task.run
+   * )
+   *
+   * expect(pipe(withTimeout, Result.isKo)).toBe(true)
+   * ```
+   */
+  timeout
 }

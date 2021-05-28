@@ -30,6 +30,19 @@ describe('Array.last', () => {
   })
 })
 
+describe('Array.reduce', () => {
+  const a = [1, 2, 3]
+  const b = pipe(
+    a,
+    Arr.reduce((a, b) => a + b, 0)
+  )
+  const expected = 6
+
+  it('should return expected values', () => {
+    expect(b).toBe(expected)
+  })
+})
+
 describe('Array.map', () => {
   const a = [1, 2, 3]
   const b = pipe(

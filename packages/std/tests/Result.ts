@@ -1,4 +1,4 @@
-import { Arr, Err, pipe, Result, throwError } from '../src'
+import { Arr, Err, NonEmptyArray, pipe, Result, throwError } from '../src'
 
 describe('Result.ok', () => {
   it('should create ok', () => {
@@ -77,6 +77,13 @@ describe('Result.get', () => {
 
   it('should throw on Ko', () => {
     expect(() => pipe(Result.ko('on ko'), Result.get)).toThrow('on ko')
+  })
+})
+
+describe('Result.tuple', () => {
+  it('should return expected results', () => {
+    expect(pipe(Result.ok(1), Result.tuple)).toEqual([1, undefined])
+    expect(pipe(Result.ko(2), Result.tuple)).toEqual([undefined, 2])
   })
 })
 
@@ -232,5 +239,59 @@ describe('Result.tryCatchFn', () => {
 
     expect(Result.isKo(a)).toEqual(true)
     expect(Result.isOk(b)).toEqual(true)
+  })
+})
+
+describe('Result.union', () => {
+  it('should return first OK', () => {
+    const results: NonEmptyArray<Result<number, number>> = [
+      Result.ko(0),
+      Result.ok(1),
+      Result.ok(2),
+      Result.ko(3),
+      Result.ok(4)
+    ]
+    expect(pipe(results, Result.union)).toEqual(Result.ok(1))
+  })
+
+  it('should return all errors', () => {
+    const results: NonEmptyArray<Result<number, number>> = [Result.ko(0), Result.ko(1), Result.ko(2)]
+    expect(pipe(results, Result.union)).toEqual(Result.ko([0, 1, 2]))
+  })
+})
+
+describe('Result.struct', () => {
+  it('should return first OK', () => {
+    expect(
+      pipe(
+        {
+          a: Result.ok(1),
+          b: Result.ok(2),
+          c: Result.ok(3)
+        },
+        Result.struct
+      )
+    ).toEqual(
+      Result.ok({
+        a: 1,
+        b: 2,
+        c: 3
+      })
+    )
+  })
+
+  it('should return all errors', () => {
+    expect(
+      pipe(
+        {
+          a: Result.ok(1),
+          b: Result.ok(2),
+          c: Result.ko(2.5),
+          d: Result.ok(3),
+          e: Result.ko(2.33)
+        },
+        Result.struct
+      )
+    ).toEqual(Result.ko([2.5, 2.33]))
   })
 })
