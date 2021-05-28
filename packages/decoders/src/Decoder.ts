@@ -1,4 +1,4 @@
-import { Dict, InverseRefinement, Option, pipe, Predicate, Refinement, Result } from '@apoyo/std'
+import { Dict, InverseRefinement, NonEmptyArray, Option, pipe, Predicate, Refinement, Result } from '@apoyo/std'
 import { DecodeError } from './DecodeError'
 
 export type DecoderResult<A> = Result<A, DecodeError>
@@ -78,25 +78,19 @@ export function union<I, O1, O2, O3, O4>(
   c: Decoder<I, O3>,
   d: Decoder<I, O4>
 ): Decoder<I, O1 | O2 | O3 | O4>
-export function union<I>(
-  ...members: [Decoder<I, unknown>, Decoder<I, unknown>, ...Decoder<I, unknown>[]]
-): Decoder<I, unknown> {
-  return (input) => {
-    const errors: DecodeError.Member[] = []
-    for (let index = 0; index < members.length; ++index) {
-      const member = members[index]
-      const result = pipe(
-        input,
-        member,
-        Result.mapError((err) => DecodeError.member(index, err))
-      )
-      if (Result.isOk(result)) {
-        return result
-      }
-      errors.push(result.ko)
-    }
-    return Result.ko(DecodeError.union(errors))
-  }
+export function union(...members: NonEmptyArray<Decoder<unknown, unknown>>): Decoder<unknown, unknown> {
+  return (input) =>
+    pipe(
+      members,
+      Result.unionBy((member, index) =>
+        pipe(
+          input,
+          Decoder.validate(member),
+          Result.mapError((err) => DecodeError.member(index, err))
+        )
+      ),
+      Result.mapError(DecodeError.union)
+    )
 }
 
 export const unknown: Decoder<unknown, unknown> = Result.ok

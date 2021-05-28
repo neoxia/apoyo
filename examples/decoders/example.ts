@@ -1,13 +1,20 @@
 import { pipe, Result } from '@apoyo/std'
 import {
+  ArrayDecoder,
   BooleanDecoder,
   DateDecoder,
   DecodeError,
   Decoder,
-  IntegerDecoder,
+  EnumDecoder,
   ObjectDecoder,
   TextDecoder
 } from '@apoyo/decoders'
+
+enum UserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  ARCHIVED = 'archived'
+}
 
 export const main = async () => {
   const validateAge = (dob: string) => {
@@ -23,13 +30,17 @@ export const main = async () => {
     return Result.ok(dob)
   }
 
-  const TodoDto = ObjectDecoder.struct({
+  const UserDto = ObjectDecoder.struct({
     id: TextDecoder.string,
     email: TextDecoder.email,
-    name: pipe(TextDecoder.varchar(1, 100), Decoder.nullable),
-    dob: pipe(DateDecoder.date, Decoder.parse(validateAge), Decoder.nullable),
-    age: IntegerDecoder.range(0, 120),
+    status: EnumDecoder.from(UserStatus),
+    birthdate: pipe(DateDecoder.date, Decoder.parse(validateAge))
+  })
+
+  const TodoDto = ObjectDecoder.struct({
+    id: TextDecoder.string,
     title: TextDecoder.varchar(1, 100),
+    tags: ArrayDecoder.array(TextDecoder.varchar(1, 100)),
     done: pipe(BooleanDecoder.boolean),
     description: pipe(TextDecoder.varchar(0, 2000), TextDecoder.nullable),
     createdAt: DateDecoder.datetime,
@@ -44,6 +55,7 @@ export const main = async () => {
   interface TodoPutDto extends Decoder.TypeOf<typeof TodoPutDto> {}
 
   return {
+    UserDto,
     TodoDto,
     TodoPostDto,
     TodoPutDto

@@ -40,26 +40,24 @@ export const dict = <A>(decoder: Decoder<unknown, A>): Decoder<unknown, Dict<A>>
 }
 
 export const struct = <A extends Dict>(props: Struct<A>, name?: string): ObjectDecoder<unknown, A> => {
-  const entries = Dict.toPairs(props as Dict<Decoder<unknown, unknown>>)
   return create(
     props,
     pipe(
       unknownDict,
-      Decoder.parse((input) => {
-        const [success, errors] = pipe(
-          entries,
-          Arr.map(([key, decoder]) =>
-            pipe(
-              input[key],
-              decoder,
-              Result.map((value) => [key, value] as [string, unknown]),
-              Result.mapError((err) => DecodeError.key(key, err))
-            )
-          ),
-          Arr.separate
-        )
-        return errors.length > 0 ? Result.ko(DecodeError.object(errors, name)) : Result.ok(Dict.fromPairs(success) as A)
-      })
+      Decoder.parse(
+        (input) =>
+          pipe(
+            props as Dict<Decoder<unknown, unknown>>,
+            Result.structBy((prop, key) =>
+              pipe(
+                input[key],
+                Decoder.validate(prop),
+                Result.mapError((err) => DecodeError.key(key, err))
+              )
+            ),
+            Result.mapError((errors) => DecodeError.object(errors, name))
+          ) as Result<A, DecodeError>
+      )
     )
   )
 }
