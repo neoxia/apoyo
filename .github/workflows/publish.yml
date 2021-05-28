@@ -25,6 +25,8 @@ jobs:
     - run: yarn --frozen-lockfile
     - run: yarn build
     - run: yarn test
-    - run: yarn pub:ci
+    - run: |
+        npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
+        yarn pub:ci
       env:
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
