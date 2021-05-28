@@ -43,6 +43,9 @@ export const tryCatch = <A, E = unknown>(promise: Promise<A>): Promise<Result<A,
 
 export const thunk = <A>(fn: () => Promise<A> | A): Promise<A> => Promise.resolve().then(fn)
 
+export const timeout = <A>(ms: number, fn: () => Promise<A>) => (promise: Promise<A>) =>
+  Promise.race([promise, pipe(Prom.sleep(ms), Prom.chain(fn))])
+
 export function struct<A extends Dict<Prom>>(obj: A): Prom.Struct<A>
 export function struct(obj: Dict<Prom>): Promise<Dict>
 export function struct(obj: Dict<Prom>): Promise<Dict> {
@@ -260,5 +263,27 @@ export const Prom = {
    * )
    * ```
    */
-  struct
+  struct,
+
+  /**
+   * @description
+   * Timeout a promise after the given amount of milliseconds.
+   *
+   * @example
+   * ```ts
+   * const original = pipe(
+   *   Prom.sleep(10000),
+   *   Prom.map(() => "Hello!")
+   * )
+   *
+   * const withTimeout = await pipe(
+   *   original,
+   *   Prom.timeout(5000, () => Prom.reject(Err.of('Timeout!'))),
+   *   Prom.tryCatch
+   * )
+   *
+   * expect(pipe(withTimeout, Result.isKo)).toBe(true)
+   * ```
+   */
+  timeout
 }

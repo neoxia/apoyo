@@ -1,9 +1,12 @@
 import type { Option } from './Option'
 import type { NonEmptyArray } from './NonEmptyArray'
+import type { Dict } from './Dict'
 
 import { identity, pipe, throwError } from './function'
 import { isSome } from './Option'
 import { isObject } from './types'
+import { fromPairs, toPairs } from './Dict'
+import * as A from './Array'
 
 const enum Tags {
   Ok = 'Result.Ok',
@@ -96,6 +99,33 @@ export const unionBy = <T, A, E>(fn: (member: T, index: number) => Result<A, E>)
 }
 
 export const union = <A, E>(members: NonEmptyArray<Result<A, E>>): Result<A, E[]> => pipe(members, unionBy(identity))
+
+export const structBy = <T, A, E>(fn: (prop: T, key: string) => Result<A, E>) => (
+  props: Dict<T>
+): Result<Dict<A>, E[]> => {
+  const [success, errors] = pipe(
+    toPairs(props as Dict),
+    A.map(([key, prop]) =>
+      pipe(
+        fn(prop, key),
+        Result.map((value) => [key, value] as [string, A])
+      )
+    ),
+    A.separate
+  )
+  return errors.length > 0 ? Result.ko(errors) : Result.ok(fromPairs(success))
+}
+
+type Struct<T extends Dict> = {
+  [P in keyof T]: T[P] extends Ok<infer A> ? A : never
+}
+type StructErrors<T extends Dict> = {
+  [P in keyof T]: T[P] extends Ko<infer E> ? E : never
+}[keyof T]
+
+export const struct = structBy(identity) as {
+  <T extends Dict<Result<any>>>(props: T): Result<Struct<T>, StructErrors<T>[]>
+}
 
 /**
  * @namespace Result
@@ -379,7 +409,7 @@ export const Result = {
    * @see `Result.tryCatch`
    *
    * @example
-   * ```
+   * ```ts
    * const divide = (a, b) => b === 0
    *   ? throwError(Err.of('cannot divide by zero'))
    *   : a / b
@@ -399,7 +429,7 @@ export const Result = {
    * Applies the function one by one, and returns the first succeeding `Result` or all errors
    *
    * @example
-   * ```
+   * ```ts
    * const numbers = [-2, -3, 1, -7, -12, -6]
    *
    * const firstPositive = Result.unionBy(nb => nb >= 0
@@ -429,5 +459,64 @@ export const Result = {
    * expect(pipe(results, Result.union, Result.get)).toBe(1)
    * ```
    */
-  union
+  union,
+
+  /**
+   * @description
+   * Takes an object of values as an input and applies a function to all properties, to transform each property to a `Result`.
+   * If all properties are `Ok`, return an `Ok` with all values.
+   * If one or more properties are `Ko`, return the list of errors.
+   *
+   * @example
+   * ```ts
+   * const parseNbs = Result.structBy((prop, key) => {
+   *   const nb = parseInt(prop)
+   *   return isNaN(nb)
+   *     ? Result.ko(Err.of(`Invalid number {value} at property {key}`, { value, key }))
+   *     : Result.ok(nb)
+   * })
+   *
+   * const result1 = pipe(
+   *   {
+   *     a: "13",
+   *     b: "24",
+   *     d: "6"
+   *   },
+   *   parseNbs
+   * )
+   *
+   * expect(pipe(result1, Result.get)).toEqual({
+   *   a: 13,
+   *   b: 24,
+   *   d: 6
+   * })
+   * ```
+   */
+  structBy,
+
+  /**
+   * @description
+   * Takes an object of results as an input.
+   * If all properties are `Ok`, return an `Ok` with all values.
+   * If one or more properties are `Ko`, return the list of errors.
+   *
+   * @example
+   * ```ts
+   * const all = pipe(
+   *   {
+   *     a: Result.ok(13),
+   *     b: Result.ok(24),
+   *     d: Result.ok(6)
+   *   },
+   *   Result.struct
+   * )
+   *
+   * expect(pipe(all, Result.get)).toEqual({
+   *   a: 13,
+   *   b: 24,
+   *   d: 6
+   * })
+   * ```
+   */
+  struct
 }
