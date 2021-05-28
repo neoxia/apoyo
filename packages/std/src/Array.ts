@@ -93,9 +93,6 @@ export function reject(fn: any) {
 
 export const reduce = <A, B>(fn: (acc: B, current: A) => B, initial: B) => (arr: A[]) => arr.reduce(fn, initial)
 
-export const reduceRight = <A, B>(fn: (acc: B, current: A) => B, initial: B) => (arr: A[]) =>
-  arr.reduceRight(fn, initial)
-
 export const slice = (start?: number, end?: number) => <A>(arr: A[]) => arr.slice(start, end)
 export const take = (nb: number) => slice(0, nb)
 export const skip = (nb: number) => slice(nb)
@@ -441,21 +438,6 @@ export const Arr = {
    * ```
    */
   reduce,
-
-  /**
-   * @description
-   * Aggregate / accumulate all values in the array into a single value, starting from the right
-   *
-   * @example
-   * ```ts
-   * const nbs = [1,2,3,4]
-   * const total = pipe(
-   *   nbs,
-   *   Arr.reduceRight((a, b) => a + b, 0)
-   * )
-   * ```
-   */
-  reduceRight,
 
   /**
    * @description

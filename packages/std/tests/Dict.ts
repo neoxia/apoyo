@@ -14,6 +14,23 @@ describe('Dict.isEmpty', () => {
   })
 })
 
+describe('Dict.isDict', () => {
+  it('should be true when valid', () => {
+    expect(Dict.isDict({})).toBe(true)
+    expect(
+      Dict.isDict({
+        firstName: 'John'
+      })
+    ).toBe(true)
+  })
+
+  it('should be false when invalid', () => {
+    expect(Dict.isDict('')).toBe(false)
+    expect(Dict.isDict(undefined)).toBe(false)
+    expect(Dict.isDict(null)).toBe(false)
+  })
+})
+
 describe('Dict.mapIndexed', () => {
   it('should map with key', () => {
     const res = pipe(

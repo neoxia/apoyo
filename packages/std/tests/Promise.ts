@@ -192,3 +192,22 @@ describe('Promise.struct', () => {
     })
   })
 })
+
+describe('Promise.timeout', () => {
+  it('should not timeout', async () => {
+    const result = await pipe(
+      Prom.of(10),
+      Prom.timeout(100, () => Prom.of(0))
+    )
+    expect(result).toEqual(10)
+  })
+
+  it('should timeout', async () => {
+    const original = pipe(Prom.of(10), Prom.delay(200))
+    const result = await pipe(
+      original,
+      Prom.timeout(100, () => Prom.of(0))
+    )
+    expect(result).toEqual(0)
+  })
+})
