@@ -26,7 +26,7 @@
   },
   "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/decoders",
   "scripts": {
-    "test": "npx jest --clearCache && jest --verbose --runInBand",
+    "test": "jest --verbose --runInBand",
     "clean": "npx rimraf ./dist",
     "prebuild": "npm run clean",
     "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
