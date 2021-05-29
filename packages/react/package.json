@@ -11,6 +11,9 @@
     "type": "git",
     "url": "https://github.com/neoxia/apoyo"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/react",
   "scripts": {
     "test": "npx jest --clearCache && jest --verbose",
