@@ -56,6 +56,24 @@ export const uuid = pipe(
   Decoder.filter((str): str is UUID => REGEXP_UUID.test(str), `string is not an uuid`)
 )
 
+export const equals = <T extends string>(value: T) =>
+  pipe(
+    string,
+    Decoder.filter((str): str is T => str === value, `string is not equal to value ${JSON.stringify(value)}`)
+  )
+
+export function oneOf<T extends string>(arr: T[]): Decoder<unknown, T>
+export function oneOf<T extends string>(arr: Set<T>): Decoder<unknown, T>
+export function oneOf(arr: string[] | Set<string>): any {
+  const set = new Set(arr)
+  return pipe(
+    string,
+    Decoder.filter((str: string) => set.has(str), `string is not included in the given values`, {
+      values: arr
+    })
+  )
+}
+
 /**
  * @namespace TextDecoder
  *
@@ -202,5 +220,33 @@ export const TextDecoder = {
    * expect(pipe("", Decoder.validate(decoder), Result.get)).toBe(undefined)
    * ```
    */
-  optional
+  optional,
+
+  /**
+   * @description
+   * Check if the string is included in the given values
+   *
+   * @example
+   * ```ts
+   * const decoder = TextDecoder.oneOf(['todo', 'in-progress', 'done', 'archived'] as const)
+   *
+   * expect(pipe("todo", Decoder.validate(decoder), Result.isOk)).toBe(true)
+   * expect(pipe("unknown", Decoder.validate(decoder), Result.isKo)).toBe(true)
+   * ```
+   */
+  oneOf,
+
+  /**
+   * @description
+   * Check if the string is included in the given values
+   *
+   * @example
+   * ```ts
+   * const decoder = TextDecoder.equals('ongoing')
+   *
+   * expect(pipe("todo", Decoder.validate(decoder), Result.isOk)).toBe(true)
+   * expect(pipe("unknown", Decoder.validate(decoder), Result.isKo)).toBe(true)
+   * ```
+   */
+  equals
 }
