@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
  * @param ms: milliseconds to wait before re-rendering the component
  * @returns: count of render since the component is mounted
  */
-function useInterval(ms: number): number {
+export function useInterval(ms: number): number {
   // State
   const [count, setCount] = useState(0)
 
@@ -22,5 +22,3 @@ function useInterval(ms: number): number {
 
   return count
 }
-
-export default useInterval

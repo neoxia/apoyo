@@ -7,7 +7,7 @@ import { useEffect, useRef } from 'react'
  * @param value: value to save
  * @returns: the previous given value (or null for the 1st render)
  */
-function usePrevious<T>(value: T): T | null {
+export function usePrevious<T>(value: T): T | null {
   // Ref
   const previous = useRef<T | null>(null)
 
@@ -18,5 +18,3 @@ function usePrevious<T>(value: T): T | null {
 
   return previous.current
 }
-
-export default usePrevious
