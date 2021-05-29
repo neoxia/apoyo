@@ -1,4 +1,5 @@
 import { Arr, Dict, Obj, Option, pipe, Result } from '@apoyo/std'
+import { NonEmptyArray } from '@apoyo/std'
 import { DecodeError } from './DecodeError'
 import { Decoder } from './Decoder'
 
@@ -84,6 +85,41 @@ export function partial<I, O extends Dict>(decoder: ObjectDecoder<I, O>): Object
 export function partial(decoder: ObjectDecoder<any, any>) {
   return pipe(decoder.props, Dict.map(Decoder.optional), struct)
 }
+
+export function merge<I, O1 extends Dict>(a: ObjectDecoder<I, O1>): ObjectDecoder<I, O1>
+export function merge<I, O1 extends Dict, O2 extends Dict>(
+  a: ObjectDecoder<I, O1>,
+  b: ObjectDecoder<I, O2>
+): ObjectDecoder<I, O2 & Omit<O1, keyof O2>>
+export function merge<I, O1 extends Dict, O2 extends Dict, O3 extends Dict>(
+  a: ObjectDecoder<I, O1>,
+  b: ObjectDecoder<I, O2>,
+  c: ObjectDecoder<I, O3>
+): ObjectDecoder<I, O3 & Omit<O2, keyof O3> & Omit<O1, keyof O3 | keyof O2>>
+export function merge<I, O1 extends Dict, O2 extends Dict, O3 extends Dict, O4 extends Dict>(
+  a: ObjectDecoder<I, O1>,
+  b: ObjectDecoder<I, O2>,
+  c: ObjectDecoder<I, O3>,
+  d: ObjectDecoder<I, O4>
+): ObjectDecoder<I, O4 & Omit<O3, keyof O4> & Omit<O2, keyof O4 | keyof O3> & Omit<O1, keyof O4 | keyof O3 | keyof O2>>
+export function merge<I, O extends Dict>(...members: NonEmptyArray<ObjectDecoder<I, O>>) {
+  return struct(Object.assign({}, ...members.map((m) => m.props)))
+}
+
+export const additionalProperties = <I, O extends Dict>(decoder: ObjectDecoder<I, O>): Decoder<I, O & Dict> =>
+  pipe(
+    unknownDict,
+    Decoder.parse((input) =>
+      pipe(
+        input as I,
+        Decoder.validate(decoder),
+        Result.map((parsed: O) => ({
+          ...input,
+          ...parsed
+        }))
+      )
+    )
+  )
 
 /**
  * @namespace ObjectDecoder
@@ -219,5 +255,54 @@ export const ObjectDecoder = {
    * expect(pipe(input, Decoder.validate(SignupDto), Result.isKo)).toBe(true)
    * ```
    */
-  guard
+  guard,
+
+  /**
+   * @description
+   * Merge multiple `ObjectDecoder`s.
+   * If a property has already been declared, the decoder for this property will be overwritten.
+   *
+   * @example
+   * ```ts
+   * const A = ObjectDecoder.struct({
+   *   a: TextDecoder.string,
+   *   ab: TextDecoder.string
+   * })
+   * const B = ObjectDecoder.struct({
+   *   ab: NumberDecoder.number,
+   *   b: NumberDecoder.number
+   * })
+   * const C = ObjectDecoder.merge(A, B)
+   *
+   * interface C extends Decoder.TypeOf<typeof C>
+   *
+   * // Interface C is now equals to:
+   * type C = {
+   *   a: string
+   *   ab: number
+   *   b: number
+   * }
+   *
+   * // Note that "ab: TextDecoder.string" has been overwritten and will not be executed
+   * ```
+   */
+  merge,
+
+  /**
+   * @description
+   * By default, `ObjectDecoder.struct` will skip and ignore extra properties.
+   * If you wish to keep extra properties (all properties not validated by the struct), you can use this util.
+   *
+   * @example
+   * ```ts
+   * const Response = pipe(
+   *   ObjectDecoder.struct({
+   *     status: TextDecoder.oneOf(['OK', 'KO']),
+   *     message: TextDecoder.string,
+   *   }),
+   *   ObjectDecoder.additionalProperties
+   * )
+   * ```
+   */
+  additionalProperties
 }

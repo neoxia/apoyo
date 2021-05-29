@@ -13,6 +13,8 @@ export namespace Decoder {
   export type InputOf<A> = A extends Decoder<infer B, unknown> ? Option.Struct<B> : never
 }
 
+export const create = <I, O>(fn: (input: I) => DecoderResult<O>) => fn
+
 export const fromGuard = <I, O extends I>(
   fn: Refinement<I, O>,
   message: string,
@@ -66,7 +68,12 @@ export function reject(fn: any, message: string, meta: Dict<unknown> = {}) {
 }
 
 export const ref = <A>(decoder: Decoder<unknown, A>) => decoder
-export const validate = <O>(decoder: Decoder<unknown, O>) => (input: unknown) => decoder(input)
+
+export function validate<O>(decoder: Decoder<unknown, O>): (input: unknown) => DecoderResult<O>
+export function validate<I, O>(decoder: Decoder<I, O>): (input: I) => DecoderResult<O>
+export function validate<I, O>(decoder: Decoder<I, O>) {
+  return (input: I) => decoder(input)
+}
 
 export const lazy = <I, O>(fn: () => Decoder<I, O>): Decoder<I, O> => (input) => pipe(input, fn())
 
@@ -121,6 +128,12 @@ export const unknown: Decoder<unknown, unknown> = Result.ok
  * ```
  */
 export const Decoder = {
+  /**
+   * @description
+   * Create a new decoder
+   */
+  create,
+
   /**
    * @description
    * Creates a new decoder from a type guard
