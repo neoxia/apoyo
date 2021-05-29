@@ -208,34 +208,131 @@ describe('ObjectDecoder.guard', () => {
   })
 })
 
-// describe('ObjectDecoder.reject', () => {
-//   const SignupDto = pipe(
-//     ObjectDecoder.struct({
-//       email: TextDecoder.email,
-//       password: TextDecoder.varchar(5, 50),
-//       passwordRepeat: TextDecoder.varchar(5, 50)
-//     }),
-//     ObjectDecoder.reject((user) => user.password !== user.passwordRepeat, 'The passwords do not match')
-//   )
-//   interface SignupDto extends Decoder.TypeOf<typeof SignupDto> {}
+describe('ObjectDecoder.merge', () => {
+  const A = ObjectDecoder.struct({
+    a: TextDecoder.string,
+    ab: TextDecoder.string
+  })
 
-//   it('should succeed', () => {
-//     const dto = {
-//       email: 'test@example.com',
-//       password: 'mypassword',
-//       passwordRepeat: 'mypassword'
-//     }
-//     const result = pipe(dto, SignupDto)
-//     expect(pipe(result, Result.isOk)).toBe(true)
-//   })
+  const B = ObjectDecoder.struct({
+    ab: NumberDecoder.number,
+    b: NumberDecoder.number
+  })
 
-//   it('should fail', () => {
-//     const dto = {
-//       email: 'test@example.com',
-//       password: 'mypassword',
-//       passwordRepeat: 'mypassword12345'
-//     }
-//     const result = pipe(dto, SignupDto)
-//     expect(pipe(result, Result.isKo)).toBe(true)
-//   })
-// })
+  const C = ObjectDecoder.merge(A, B)
+
+  interface C extends Decoder.TypeOf<typeof C> {}
+
+  it('should succeed without id', () => {
+    const valid: C = {
+      a: 'Hello',
+      ab: 13,
+      b: 10
+    }
+    expect(pipe(valid, Decoder.validate(C), Result.isOk)).toBe(true)
+  })
+
+  it('should fail with invalid properties', () => {
+    const invalid: C = {
+      a: 'Hello',
+      // @ts-expect-error Should be a number
+      ab: 'World',
+      b: 10
+    }
+
+    expect(pipe(invalid, Decoder.validate(C), Result.isKo)).toBe(true)
+  })
+})
+
+describe('ObjectDecoder.additionalProperties', () => {
+  const Response = pipe(
+    ObjectDecoder.struct({
+      status: TextDecoder.oneOf(['OK', 'KO']),
+      message: TextDecoder.string
+    }),
+    ObjectDecoder.additionalProperties
+  )
+
+  it('should keep extra properties', () => {
+    const valid = {
+      status: 'OK',
+      message: 'All is fine',
+      data: {
+        id: 'xxxx-xxxx-xxxx-xxxx'
+      }
+    }
+    expect(pipe(valid, Decoder.validate(Response), Result.get)).toEqual(valid)
+  })
+
+  it('should fail with invalid properties', () => {
+    const invalid = {
+      status: 'Something',
+      message: 'All is fine',
+      data: {
+        id: 'xxxx-xxxx-xxxx-xxxx'
+      }
+    }
+    expect(pipe(invalid, Decoder.validate(Response), Result.isKo)).toBe(true)
+  })
+})
+
+describe('ObjectDecoder.sum', () => {
+  const Geom = ObjectDecoder.sum('type', {
+    Circle: ObjectDecoder.struct({
+      radius: NumberDecoder.number
+    }),
+    Rectangle: ObjectDecoder.struct({
+      width: NumberDecoder.number,
+      height: NumberDecoder.number
+    })
+  })
+
+  type Geom = Decoder.TypeOf<typeof Geom>
+
+  it('should succeed when valid', () => {
+    const validCircle: Geom = {
+      type: 'Circle',
+      radius: 13.37
+    }
+    const validRect: Geom = {
+      type: 'Rectangle',
+      height: 12,
+      width: 25
+    }
+    expect(pipe(validCircle, Decoder.validate(Geom), Result.get)).toEqual(validCircle)
+    expect(pipe(validRect, Decoder.validate(Geom), Result.get)).toEqual(validRect)
+  })
+
+  it('should fail on invalid "type" property', () => {
+    expect(
+      pipe(
+        {
+          type: 'Something'
+        },
+        Decoder.validate(Geom),
+        Result.isKo
+      )
+    ).toEqual(true)
+  })
+
+  it('should fail without "type" property', () => {
+    expect(
+      pipe(
+        {
+          radius: 13.37
+        },
+        Decoder.validate(Geom),
+        Result.isKo
+      )
+    ).toEqual(true)
+  })
+
+  it('should fail on invalid object', () => {
+    const circle: Geom = {
+      type: 'Circle',
+      // @ts-expect-error Should not exist on circle
+      width: 13.37
+    }
+    expect(pipe(circle, Decoder.validate(Geom), Result.isKo)).toEqual(true)
+  })
+})
