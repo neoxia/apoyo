@@ -6,34 +6,69 @@ module.exports = {
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide/' },
-      { text: 'Github', link: 'https://github.com/neoxia/apoyo-std' }
+      { text: 'Github', link: 'https://github.com/neoxia/apoyo' }
     ],
     sidebar: [
       {
         title: "Introduction",
-        path: '/guide/'
-      },
-      {
-        title: "Pipe",
-        path: '/guide/pipe.md'
-      },
-      {
-        title: 'Namespaces',
         collapsable: false,
         sidebarDepth: 0,
         children: [
-          ['/guide/namespaces/Array.md', 'Array'],
-          ['/guide/namespaces/NonEmptyArray.md', 'NonEmptyArray'],
-          ['/guide/namespaces/Dict.md', 'Dictionnary'],
-          ['/guide/namespaces/Result.md', 'Result'],
-          ['/guide/namespaces/Promise.md', 'Promise'],
-          ['/guide/namespaces/Task.md', 'Task'],
-          ['/guide/namespaces/Ord.md', 'Ord'],
-          ['/guide/namespaces/String.md', 'String'],
-          ['/guide/namespaces/Option.md', 'Option'],
-          ['/guide/namespaces/Enum.md', 'Enum'],
-          ['/guide/namespaces/Err.md', 'Err'],
-          ['/guide/namespaces/Tree.md', 'Tree'],
+          '/guide/',
+          '/guide/mentions'
+        ]
+      },
+      {
+        title: 'Std',
+        collapsable: false,
+        children: [
+          '/guide/std/getting-started.md',
+          '/guide/std/pipe.md',
+          '/guide/std/error-handling.md',
+          '/guide/std/async-utils.md',
+          '/guide/std/complex-ordering.md',
+          {
+            title: 'API',
+            collapsable: true,
+            sidebarDepth: 0,
+            children: [
+              ['/guide/std/api/Array.md', 'Array'],
+              ['/guide/std/api/NonEmptyArray.md', 'NonEmptyArray'],
+              ['/guide/std/api/Dict.md', 'Dictionnary'],
+              ['/guide/std/api/Result.md', 'Result'],
+              ['/guide/std/api/Promise.md', 'Promise'],
+              ['/guide/std/api/Task.md', 'Task'],
+              ['/guide/std/api/Ord.md', 'Ord'],
+              ['/guide/std/api/String.md', 'String'],
+              ['/guide/std/api/Option.md', 'Option'],
+              ['/guide/std/api/Enum.md', 'Enum'],
+              ['/guide/std/api/Err.md', 'Err'],
+              ['/guide/std/api/Tree.md', 'Tree'],
+            ]
+          }
+        ]
+      },
+      {
+        title: 'Decoders',
+        collapsable: true,
+        children: [
+          '/guide/decoders/getting-started.md',
+          '/guide/decoders/decode-errors.md',
+          '/guide/decoders/creating-custom-decoders.md',
+          {
+            title: 'API',
+            collapsable: true,
+            sidebarDepth: 0,
+            children: [
+              ['/guide/decoders/api/Decoder.md', 'Decoder'],
+              ['/guide/decoders/api/TextDecoder.md', 'TextDecoder'],
+              ['/guide/decoders/api/NumberDecoder.md', 'NumberDecoder'],
+              ['/guide/decoders/api/IntegerDecoder.md', 'IntegerDecoder'],
+              ['/guide/decoders/api/BooleanDecoder.md', 'BooleanDecoder'],
+              ['/guide/decoders/api/ArrayDecoder.md', 'ArrayDecoder'],
+              ['/guide/decoders/api/ObjectDecoder.md', 'ObjectDecoder']
+            ]
+          }
         ]
       }
     ],

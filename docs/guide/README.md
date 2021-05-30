@@ -1,16 +1,6 @@
-# Guide
+# What is Apoyo?
 
-**Warning**: This package is still in development and features may still change, be renamed or removed.
-
-However, we would appreciate any feedback you have on how to improve this library:
-
-- Which features are missing?
-- Which features are hard to understand or unnecessary?
-- Which features need to be improved?
-
-## Installation
-
-`npm install @apoyo/std`
+Apoyo (Spanish for "support") tries to improve Developer Experience, by giving the developer a wide range of utility packages, from framework agnostic utilities to library overlays, to facilitate their usage.
 
 ## Motivation
 
@@ -40,66 +30,3 @@ This library has a few main goal:
 - Avoid any naming conflicts by putting all utilities related to a data-structure in their respective "barrel" export.
 
 - Ease of usage: While large, the library should be easy to read and learn.
-
-## Honorable mentions
-
-**fp-ts**:
-
-Apoyo has been heavily inspired by `fp-ts`, and has re-implemented a lot of useful concepts (Results, Tasks, Decoders, Option, Ord, pipe, etc...)
-
-However, `fp-ts` is unfortunaly too complicated to use and doesn't always integrate well with existing code.
-As such, while this library may have a few similarities, `@apoyo/std` has been heavily simplified for easier usage.
-
-**v-error**: The `Err` module has been heavily inspired by the way you chain errors with `v-error`. However, we didn't need the "printf" style messages formatting and decided to rather use "mustache" styled messages. Apoyo's implementation also works out of the box with other custom error libraries and is easier to use.
-
-**pupa**: The `Str` module a small `template` function based on this package.
-
-**escape-goat**: The `Str` module also re-integrates the small `htmlEscape` and `htmlUnescape` functions, which have been <s>copied</s> **inspired** by this package.
-
-**p-limit**: This library is known for it's capabilities to execute at maximum X promises at once. The `Task` module implements it's own `concurrence` and `sequence` functions, allowing you to achieve the same without this dependency.
-
-**enum-for**: We re-used the 3 mentionned lines in our `Enum` module
-
-## Examples
-
-- Chaining errors:
-
-```ts
-const users = await pipe(
-  findUsers(),
-  Prom.mapError(Err.chain('findUsers failed'))
-)
-```
-
-- Execute `Promise`s in sequence or concurrently:
-
-```ts
-await pipe(
-  tasks,
-  Task.concurrent(4),
-  Task.run
-)
-```
-
-- Accumulate results without throwing:
-
-```ts
-
-const operation = (value) => {
-  if (value < 0) {
-    throw new Error('number should be positive')
-  }
-  return value
-}
-
-const [ok, ko] = pipe(
-  [1,-2,3],
-  Arr.map(Result.tryCatchFn(operation)),
-  Arr.separate
-)
-
-expect(ok).toEqual([1,3])
-expect(ko).toEqual([-2])
-```
-
-- And more...

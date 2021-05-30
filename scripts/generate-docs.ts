@@ -6,12 +6,9 @@ import { markdownObject } from './docs/markdown'
 import { getObjectOrThrow, getType } from './docs/parse-ts'
 import { run } from './run'
 
-export const main = async () => {
-  const rootPath = path.resolve(__dirname, '..')
-  const docsPath = path.join(rootPath, `docs/guide/namespaces`)
-
+export const generateStdDocs = async (rootPath: string, docsPath: string) => {
   const config: ProjectOptions = {
-    tsConfigFilePath: path.join(rootPath, 'tsconfig.json')
+    tsConfigFilePath: path.join(rootPath, 'tsconfig.common.json')
   }
   const project = pipe(
     Result.tryCatch(() => new Project(config)),
@@ -138,6 +135,78 @@ export const main = async () => {
       types: Arr.compact([getType(files.io, 'IO')])
     }
   })
+}
+
+export const generateDecodersDocs = async (rootPath: string, docsPath: string) => {
+  const config: ProjectOptions = {
+    tsConfigFilePath: path.join(rootPath, 'tsconfig.common.json')
+  }
+  const project = pipe(
+    Result.tryCatch(() => new Project(config)),
+    Result.mapError(Err.chain('Could not initialize TS project')),
+    Result.get
+  )
+
+  project.addSourceFilesAtPaths(path.join(rootPath, 'src/**/*.ts'))
+
+  const files = {
+    decoder: project.getSourceFileOrThrow('Decoder.ts'),
+    textDecoder: project.getSourceFileOrThrow('TextDecoder.ts'),
+    numberDecoder: project.getSourceFileOrThrow('NumberDecoder.ts'),
+    integerDecoder: project.getSourceFileOrThrow('IntegerDecoder.ts'),
+    booleanDecoder: project.getSourceFileOrThrow('BooleanDecoder.ts'),
+    arrayDecoder: project.getSourceFileOrThrow('ArrayDecoder.ts'),
+    objectDecoder: project.getSourceFileOrThrow('ObjectDecoder.ts')
+  }
+
+  await markdownObject({
+    object: getObjectOrThrow(files.decoder, 'Decoder'),
+    title: 'Decoder overview',
+    path: path.join(docsPath, 'Decoder.md')
+  })
+
+  await markdownObject({
+    object: getObjectOrThrow(files.textDecoder, 'TextDecoder'),
+    title: 'TextDecoder overview',
+    path: path.join(docsPath, 'TextDecoder.md')
+  })
+
+  await markdownObject({
+    object: getObjectOrThrow(files.numberDecoder, 'NumberDecoder'),
+    title: 'NumberDecoder overview',
+    path: path.join(docsPath, 'NumberDecoder.md')
+  })
+
+  await markdownObject({
+    object: getObjectOrThrow(files.integerDecoder, 'IntegerDecoder'),
+    title: 'IntegerDecoder overview',
+    path: path.join(docsPath, 'IntegerDecoder.md')
+  })
+
+  await markdownObject({
+    object: getObjectOrThrow(files.booleanDecoder, 'BooleanDecoder'),
+    title: 'BooleanDecoder overview',
+    path: path.join(docsPath, 'BooleanDecoder.md')
+  })
+
+  await markdownObject({
+    object: getObjectOrThrow(files.arrayDecoder, 'ArrayDecoder'),
+    title: 'ArrayDecoder overview',
+    path: path.join(docsPath, 'ArrayDecoder.md')
+  })
+
+  await markdownObject({
+    object: getObjectOrThrow(files.objectDecoder, 'ObjectDecoder'),
+    title: 'ObjectDecoder overview',
+    path: path.join(docsPath, 'ObjectDecoder.md')
+  })
+}
+
+export const main = async () => {
+  const rootPath = path.resolve(__dirname, '..')
+
+  await generateStdDocs(path.join(rootPath, `packages/std`), path.join(rootPath, `docs/guide/std/api`))
+  await generateDecodersDocs(path.join(rootPath, `packages/decoders`), path.join(rootPath, `docs/guide/decoders/api`))
 }
 
 run(main)
