@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/react",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "React utility library",
   "main": "src/index.js",
   "module": "es6/index.js",
@@ -20,6 +20,9 @@
     "clean": "rimraf ./dist",
     "prebuild": "npm run clean",
     "build": "tsc -p ./tsconfig.common.json && tsc -p ./tsconfig.es.json && ts-node ../../scripts/build"
+  },
+  "dependencies": {
+    "axios": "^0.21.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.12.0",
