@@ -16,7 +16,6 @@
     "downlevelIteration": true,
     "stripInternal": true,
     "baseUrl": ".",
-    "skipLibCheck": true,
     "paths": {
       "@apoyo/*": ["packages/*/dist"]
     }

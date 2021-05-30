@@ -1,8 +1,9 @@
 {
-  "extends": "../../tsconfig.es.json",
+  "extends": "./tsconfig.common.json",
   "compilerOptions": {
+    "sourceMap": true,
+    "noEmit": true,
     "jsx": "react",
-    "outDir": "./dist/es6",
     "skipLibCheck": true
   },
   "include": ["src"]
