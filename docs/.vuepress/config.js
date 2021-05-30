@@ -44,6 +44,7 @@ module.exports = {
               ['/guide/std/api/Enum.md', 'Enum'],
               ['/guide/std/api/Err.md', 'Err'],
               ['/guide/std/api/Tree.md', 'Tree'],
+              ['/guide/std/api/Seq.md', 'Seq']
             ]
           }
         ]
@@ -66,7 +67,9 @@ module.exports = {
               ['/guide/decoders/api/IntegerDecoder.md', 'IntegerDecoder'],
               ['/guide/decoders/api/BooleanDecoder.md', 'BooleanDecoder'],
               ['/guide/decoders/api/ArrayDecoder.md', 'ArrayDecoder'],
-              ['/guide/decoders/api/ObjectDecoder.md', 'ObjectDecoder']
+              ['/guide/decoders/api/ObjectDecoder.md', 'ObjectDecoder'],
+              ['/guide/decoders/api/EnumDecoder.md', 'EnumDecoder'],
+              ['/guide/decoders/api/DateDecoder.md', 'DateDecoder']
             ]
           }
         ]
