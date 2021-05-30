@@ -31,7 +31,8 @@ export const generateStdDocs = async (rootPath: string, docsPath: string) => {
     enum: project.getSourceFileOrThrow('Enum.ts'),
     err: project.getSourceFileOrThrow('Err.ts'),
     tree: project.getSourceFileOrThrow('Tree.ts'),
-    io: project.getSourceFileOrThrow('IO.ts')
+    io: project.getSourceFileOrThrow('IO.ts'),
+    seq: project.getSourceFileOrThrow('Seq.ts')
   }
 
   await markdownObject({
@@ -135,6 +136,15 @@ export const generateStdDocs = async (rootPath: string, docsPath: string) => {
       types: Arr.compact([getType(files.io, 'IO')])
     }
   })
+
+  await markdownObject({
+    object: getObjectOrThrow(files.seq, 'Seq'),
+    title: 'Seq overview',
+    path: path.join(docsPath, 'Seq.md'),
+    additionals: {
+      types: Arr.compact([getType(files.seq, 'Seq')])
+    }
+  })
 }
 
 export const generateDecodersDocs = async (rootPath: string, docsPath: string) => {
@@ -156,7 +166,9 @@ export const generateDecodersDocs = async (rootPath: string, docsPath: string) =
     integerDecoder: project.getSourceFileOrThrow('IntegerDecoder.ts'),
     booleanDecoder: project.getSourceFileOrThrow('BooleanDecoder.ts'),
     arrayDecoder: project.getSourceFileOrThrow('ArrayDecoder.ts'),
-    objectDecoder: project.getSourceFileOrThrow('ObjectDecoder.ts')
+    objectDecoder: project.getSourceFileOrThrow('ObjectDecoder.ts'),
+    enumDecoder: project.getSourceFileOrThrow('EnumDecoder.ts'),
+    dateDecoder: project.getSourceFileOrThrow('DateDecoder.ts')
   }
 
   await markdownObject({
@@ -199,6 +211,18 @@ export const generateDecodersDocs = async (rootPath: string, docsPath: string) =
     object: getObjectOrThrow(files.objectDecoder, 'ObjectDecoder'),
     title: 'ObjectDecoder overview',
     path: path.join(docsPath, 'ObjectDecoder.md')
+  })
+
+  await markdownObject({
+    object: getObjectOrThrow(files.enumDecoder, 'EnumDecoder'),
+    title: 'EnumDecoder overview',
+    path: path.join(docsPath, 'EnumDecoder.md')
+  })
+
+  await markdownObject({
+    object: getObjectOrThrow(files.dateDecoder, 'DateDecoder'),
+    title: 'DateDecoder overview',
+    path: path.join(docsPath, 'DateDecoder.md')
   })
 }
 
