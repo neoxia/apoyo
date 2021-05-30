@@ -17,8 +17,7 @@ export interface CacheProps<R> extends CacheState<R> {
 // Defaults
 const cacheDefaults: CacheContextProps = {
   cache: {},
-  // eslint-disable-next-line no-console
-  setCache: (id) => console.warn(`Trying to use uninitialized CacheContext (id: ${id})`)
+  setCache: () => undefined
 }
 
 // Context
