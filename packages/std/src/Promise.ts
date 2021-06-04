@@ -24,16 +24,14 @@ export const of = <A>(value: A) => Promise.resolve(value)
 export const resolve = of
 export const reject = <A>(value: A) => Promise.reject(value)
 
-export const map = <A, B>(fn: (value: A) => Prom.Not<B>) => (promise: PromiseLike<A>): Promise<B> =>
-  thunk(() => promise.then(fn))
+export const map = <A, B>(fn: (value: A) => Prom.Not<B>) => then(fn)
 
-export const mapError = <A>(fn: (err: any) => Prom.Not<any>) => (promise: PromiseLike<A>): Promise<A> =>
+export const mapError = <B>(fn: (err: any) => Prom.Not<B>) => <A>(promise: PromiseLike<A>): Promise<A> =>
   thunk(() => promise.then(identity, (err) => reject(fn(err))))
 
-export const chain = <A, B>(fn: (value: A) => PromiseLike<B>) => (promise: PromiseLike<A>): Promise<B> =>
-  thunk(() => promise.then(fn))
+export const chain = <A, B>(fn: (value: A) => PromiseLike<B>) => then(fn)
 
-export const catchError = <A, B>(fn: (err: any) => PromiseLike<B>) => (promise: PromiseLike<A>): Promise<A | B> =>
+export const catchError = <B>(fn: (err: any) => PromiseLike<B>) => <A>(promise: PromiseLike<A>): Promise<A | B> =>
   thunk(() => promise.then(identity, (err) => fn(err)))
 
 export const then = <A, B>(fn: (value: A) => PromiseLike<B> | B) => (promise: PromiseLike<A>): Promise<B> =>
@@ -42,8 +40,11 @@ export const then = <A, B>(fn: (value: A) => PromiseLike<B> | B) => (promise: Pr
 export const tap = <A, B>(fn: (value: A) => PromiseLike<B> | B) =>
   then<A, A>((value) => thunk(() => fn(value)).then(() => value))
 
-export const tapError = <A, B>(fn: (value: A) => PromiseLike<B> | B) =>
-  catchError<A, A>((value) => thunk(() => fn(value)).then(() => reject(value)))
+export const tapError = <B>(fn: (err: any) => PromiseLike<B> | B) => <A>(promise: PromiseLike<A>): Promise<A> =>
+  pipe(
+    promise,
+    catchError((value) => thunk(() => fn(value)).then(() => reject(value)))
+  )
 
 export const sleep = (ms: number): Promise<void> => new Promise<void>((r) => setTimeout(r, ms))
 export const delay = (ms: number) => <A>(prom: PromiseLike<A>): Promise<A> =>
@@ -63,7 +64,7 @@ export const timeout = <A>(ms: number, fn: () => PromiseLike<A> | A) => (promise
 export function struct<A extends Dict<Prom>>(obj: A): Prom.Struct<A>
 export function struct(obj: Dict<Prom>): Promise<Dict>
 export function struct(obj: Dict<Prom>): Promise<Dict> {
-  return pipe(obj, D.map(T.of), T.struct(T.all), T.run)
+  return pipe(obj, D.map(T.from), T.struct(T.all), T.run)
 }
 
 /**

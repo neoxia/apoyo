@@ -25,6 +25,8 @@ export const thunk = <A>(fn: () => PromiseLike<A> | A): Task<A> => ({
   then: (onResolve, onReject) => Promise.resolve().then(fn).then(onResolve, onReject)
 })
 
+export const from = <A>(promise: PromiseLike<A>): Task<A> => thunk(() => promise)
+
 export const isTask = <A>(value: unknown): value is Task<A> => (value as any)._tag === 'Task'
 
 export const of = <A>(value: A): Task<A> => thunk(() => P.of(value))
@@ -102,6 +104,9 @@ export const concurrent = (concurrency: number) => <A>(tasks: Task<A>[]): Task<A
   })
 
 export const tryCatch = <A, E = unknown>(task: Task<A>): Task<Result<A, E>> => thunk(() => P.tryCatch(task))
+
+export const taskify = <Args extends any[], R>(fn: (...args: Args) => PromiseLike<R> | R) => (...args: Args): Task<R> =>
+  thunk(() => fn(...args))
 
 export const timeout = <A>(ms: number, fn: () => PromiseLike<A> | A) => (task: Task<A>) =>
   thunk(() => pipe(task, P.timeout(ms, fn)))
@@ -405,6 +410,12 @@ export const Task = {
 
   /**
    * @description
+   * Creates a `Task` from a `PromiseLike`.
+   */
+  from,
+
+  /**
+   * @description
    * Merge a struct of `Task`s into a single `Task`.
    *
    * @see `Prom.struct`
@@ -446,5 +457,25 @@ export const Task = {
    * expect(pipe(withTimeout, Result.isKo)).toBe(true)
    * ```
    */
-  timeout
+  timeout,
+
+  /**
+   * @description
+   * Transforms a function into a function returning a `Task`.
+   *
+   * @example
+   * ```ts
+   * const operation = async (a: number, b: number) => {
+   *   ...
+   * }
+   * const lazyOperation = Task.taskify(operation)
+   *
+   * // Create task - Operation not yet executed
+   * const task = lazyOperation(10, 20)
+   *
+   * // Execute task
+   * const result = await task
+   * ```
+   */
+  taskify
 }
