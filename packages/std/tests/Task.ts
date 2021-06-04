@@ -276,13 +276,21 @@ describe('Task.struct', () => {
 
 describe('Task.timeout', () => {
   it('should not timeout', async () => {
-    const result = await pipe(Task.of(10), Task.timeout(100, Task.of(0)), Task.run)
+    const result = await pipe(
+      Task.of(10),
+      Task.timeout(100, () => 0),
+      Task.run
+    )
     expect(result).toEqual(10)
   })
 
   it('should timeout', async () => {
     const original = pipe(Task.of(10), Task.delay(200))
-    const result = await pipe(original, Task.timeout(100, Task.of(0)), Task.run)
+    const result = await pipe(
+      original,
+      Task.timeout(100, () => Task.of(0)),
+      Task.run
+    )
     expect(result).toEqual(0)
   })
 })

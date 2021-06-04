@@ -1,16 +1,16 @@
 import type { Dict } from './Dict'
 import type { Result } from './Result'
 
+import * as D from './Dict'
+import { identity } from './function'
 import { pipe } from './pipe'
 import { ko, ok } from './Result'
 import * as T from './Task'
-import * as D from './Dict'
-import * as _IO from './IO'
 
-export type Prom<A = any> = Promise<A>
+export type Prom<A = any> = PromiseLike<A>
 export namespace Prom {
   export type Unwrap<A> = A extends Promise<infer I> ? I : A
-  export type Not<A> = A extends Promise<unknown> ? never : A
+  export type Not<A> = A extends PromiseLike<unknown> ? never : A
   export type Struct<A extends Dict<Prom>> = Prom<
     {
       [P in keyof A]: A[P] extends Prom<infer I> ? I : never
@@ -18,38 +18,43 @@ export namespace Prom {
   >
 }
 
+export const thunk = <A>(fn: () => PromiseLike<A> | A): Promise<A> => Promise.resolve().then(fn)
+
 export const of = <A>(value: A) => Promise.resolve(value)
 export const resolve = of
 export const reject = <A>(value: A) => Promise.reject(value)
 
-export const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
-export const delay = (ms: number) => <A>(prom: Promise<A>) => prom.then((value) => sleep(ms).then(() => value))
+export const sleep = (ms: number): Promise<void> => new Promise<void>((r) => setTimeout(r, ms))
+export const delay = (ms: number) => <A>(prom: PromiseLike<A>): Promise<A> =>
+  thunk(() => prom.then((value) => sleep(ms).then(() => value)))
 
-export const map = <A, B>(fn: (value: A) => Prom.Not<B>) => (promise: Promise<A>): Promise<B> => promise.then(fn)
+export const map = <A, B>(fn: (value: A) => Prom.Not<B>) => (promise: PromiseLike<A>): Promise<B> =>
+  thunk(() => promise.then(fn))
 
-export const mapError = <A>(fn: (err: any) => Prom.Not<any>) => (promise: Promise<A>): Promise<A> =>
-  promise.catch((err) => Promise.reject(fn(err)))
+export const mapError = <A>(fn: (err: any) => Prom.Not<any>) => (promise: PromiseLike<A>): Promise<A> =>
+  thunk(() => promise.then(identity, (err) => reject(fn(err))))
 
-export const chain = <A, B>(fn: (value: A) => Promise<B>) => (promise: Promise<A>): Promise<B> => promise.then(fn)
+export const chain = <A, B>(fn: (value: A) => PromiseLike<B>) => (promise: PromiseLike<A>): Promise<B> =>
+  thunk(() => promise.then(fn))
 
-export const catchError = <A, B>(fn: (err: any) => Promise<B>) => (promise: Promise<A>): Promise<A | B> =>
-  promise.catch((err) => fn(err))
+export const catchError = <A, B>(fn: (err: any) => PromiseLike<B>) => (promise: PromiseLike<A>): Promise<A | B> =>
+  thunk(() => promise.then(identity, (err) => fn(err)))
 
-export const then = <A, B>(fn: (value: A) => B | Promise<B>) => (promise: Promise<A>): Promise<B> => promise.then(fn)
+export const then = <A, B>(fn: (value: A) => PromiseLike<B> | B) => (promise: PromiseLike<A>): Promise<B> =>
+  thunk(() => promise.then(fn))
 
-export const all = <A>(promises: Promise<A>[]): Promise<A[]> => Promise.all(promises)
+export const all = <A>(promises: PromiseLike<A>[]): Promise<A[]> => Promise.all(promises)
 
-export const tryCatch = <A, E = unknown>(promise: Promise<A>): Promise<Result<A, E>> => promise.then(ok, ko)
+export const tryCatch = <A, E = unknown>(promise: PromiseLike<A>): Promise<Result<A, E>> =>
+  thunk(() => promise.then(ok, ko))
 
-export const thunk = <A>(fn: () => Promise<A> | A): Promise<A> => Promise.resolve().then(fn)
-
-export const timeout = <A>(ms: number, fn: () => Promise<A>) => (promise: Promise<A>) =>
-  Promise.race([promise, pipe(Prom.sleep(ms), Prom.chain(fn))])
+export const timeout = <A>(ms: number, fn: () => PromiseLike<A> | A) => (promise: PromiseLike<A>) =>
+  Promise.race([promise, pipe(Prom.sleep(ms), Prom.then(fn))])
 
 export function struct<A extends Dict<Prom>>(obj: A): Prom.Struct<A>
 export function struct(obj: Dict<Prom>): Promise<Dict>
 export function struct(obj: Dict<Prom>): Promise<Dict> {
-  return pipe(obj, D.map(_IO.of), T.struct(T.all), T.run)
+  return pipe(obj, D.map(T.of), T.struct(T.all), T.run)
 }
 
 /**
