@@ -2,17 +2,10 @@
 # yarn lockfile v1
 
 
-"@apoyo/decoders@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@apoyo/decoders/-/decoders-0.0.3.tgz#c416822831cc51ed8c6a6aa9aaba4c4be7cf051b"
-  integrity sha512-BqH03cl+HFN1ekqRrcL0VEF4a1tFiGhAks8SzsseuclUPl6wPAt/ijCL3AMhh5McJWJCdRWDw1rb5hq+eocKyw==
-  dependencies:
-    "@apoyo/std" "^0.0.5"
-
-"@apoyo/std@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@apoyo/std/-/std-0.0.5.tgz#2a6463c3fea952b4337f6d0cd6ae9131475b06fd"
-  integrity sha512-2fjqyfUoZAJKTJv9aZ/GJeQMVEM4kUde7Gg6boMJyYyUoUIof0kHEDhbWji+FlT9hsNDwCpLMKtXHzBkWULTrA==
+"@apoyo/std@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@apoyo/std/-/std-0.0.6.tgz#a598316d1259e3bc4e1545a4d0b41de02d9bd760"
+  integrity sha512-natW+VQ2J7ew3330MIm5Y35HV/QfPSobAXrk1DUhsajWV4RGBzj8LsdtCHKArjIhuAKNLXhtcAV4tOLaBqJlyg==
 
 "@babel/code-frame@7.12.11":
   version "7.12.11"

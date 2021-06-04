@@ -24,10 +24,6 @@ export const of = <A>(value: A) => Promise.resolve(value)
 export const resolve = of
 export const reject = <A>(value: A) => Promise.reject(value)
 
-export const sleep = (ms: number): Promise<void> => new Promise<void>((r) => setTimeout(r, ms))
-export const delay = (ms: number) => <A>(prom: PromiseLike<A>): Promise<A> =>
-  thunk(() => prom.then((value) => sleep(ms).then(() => value)))
-
 export const map = <A, B>(fn: (value: A) => Prom.Not<B>) => (promise: PromiseLike<A>): Promise<B> =>
   thunk(() => promise.then(fn))
 
@@ -42,6 +38,19 @@ export const catchError = <A, B>(fn: (err: any) => PromiseLike<B>) => (promise: 
 
 export const then = <A, B>(fn: (value: A) => PromiseLike<B> | B) => (promise: PromiseLike<A>): Promise<B> =>
   thunk(() => promise.then(fn))
+
+export const tap = <A, B>(fn: (value: A) => PromiseLike<B> | B) =>
+  then<A, A>((value) => thunk(() => fn(value)).then(() => value))
+
+export const tapError = <A, B>(fn: (value: A) => PromiseLike<B> | B) =>
+  catchError<A, A>((value) => thunk(() => fn(value)).then(() => reject(value)))
+
+export const sleep = (ms: number): Promise<void> => new Promise<void>((r) => setTimeout(r, ms))
+export const delay = (ms: number) => <A>(prom: PromiseLike<A>): Promise<A> =>
+  pipe(
+    prom,
+    tap(() => sleep(ms))
+  )
 
 export const all = <A>(promises: PromiseLike<A>[]): Promise<A[]> => Promise.all(promises)
 
@@ -207,6 +216,42 @@ export const Prom = {
    * Pipeable version of the native Promise.then function.
    */
   then,
+
+  /**
+   * @description
+   * When the promise resolves, execute a side-effect on the current value without modifying the value
+   *
+   * @example
+   * ```ts
+   * const result = await pipe(
+   *   Prom.of(42),
+   *   Prom.tap(value => console.log('received value', value)),
+   *   Prom.map(a => a + 1)
+   * )
+   *
+   * expect(result).toBe(43)
+   * ```
+   */
+  tap,
+
+  /**
+   * @description
+   * When the promise rejects, execute a side-effect on the current error without modifying the error
+   *
+   * @example
+   * ```ts
+   * const [, error] = await pipe(
+   *   Prom.reject(new Error('Internal error')),
+   *   Prom.tapError(err => console.error('An error occured', err)),
+   *   Prom.tryCatch,
+   *   Prom.map(Result.mapError(Err.toError)),
+   *   Prom.map(Result.tuple)
+   * )
+   *
+   * expect(error?.message).toBe('Internal error')
+   * ```
+   */
+  tapError,
 
   /**
    * @description

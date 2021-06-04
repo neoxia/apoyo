@@ -34,16 +34,6 @@ export const reject = (value: unknown): Task<never> => thunk(() => P.reject(valu
 export const run = <A>(task: Task<A>): Promise<A> => new Promise(task.then)
 
 export const map = <A, B>(fn: (value: A) => B) => (task: Task<A>): Task<B> => thunk(() => task.then(fn))
-export const tap = <A, B>(fn: (value: A) => PromiseLike<B> | B) => (task: Task<A>): Task<A> =>
-  pipe(
-    task,
-    chain((value) =>
-      pipe(
-        thunk(() => fn(value)),
-        map(() => value)
-      )
-    )
-  )
 
 export const mapError = <A>(fn: (err: unknown) => unknown) => (task: Task<A>): Task<A> =>
   thunk(() => task.then(identity, (err) => P.reject(fn(err))))
@@ -54,12 +44,14 @@ export const chain = <A, B>(fn: (value: A) => PromiseLike<B>) => (task: Task<A>)
 export const catchError = <A, B>(fn: (err: unknown) => Task<B>) => (task: Task<A>): Task<A | B> =>
   thunk(() => task.then(identity, (err) => fn(err)))
 
+export const tap = <A, B>(fn: (value: A) => PromiseLike<B> | B) => (task: Task<A>): Task<A> =>
+  thunk(() => pipe(task, P.tap(fn)))
+
+export const tapError = <A, B>(fn: (value: A) => PromiseLike<B> | B) => (task: Task<A>): Task<A> =>
+  thunk(() => pipe(task, P.tapError(fn)))
+
 export const sleep = (ms: number): Task<void> => thunk(() => P.sleep(ms))
-export const delay = (ms: number) => <A>(task: Task<A>): Task<A> =>
-  pipe(
-    task,
-    tap(() => sleep(ms))
-  )
+export const delay = (ms: number) => <A>(task: Task<A>): Task<A> => thunk(() => pipe(task, P.delay(ms)))
 
 export const join = <A>(task: Task<Task<A>>): Task<A> => pipe(task, chain(identity))
 
@@ -286,6 +278,42 @@ export const Task = {
    * ```
    */
   catchError,
+
+  /**
+   * @description
+   * When the tasks resolves, execute a side-effect on the current value without modifying the value
+   *
+   * @example
+   * ```ts
+   * const result = await pipe(
+   *   Task.of(42),
+   *   Task.tap(value => console.log('received value', value)),
+   *   Task.map(a => a + 1)
+   * )
+   *
+   * expect(result).toBe(43)
+   * ```
+   */
+  tap,
+
+  /**
+   * @description
+   * When the task rejects, execute a side-effect on the current error without modifying the error
+   *
+   * @example
+   * ```ts
+   * const [, error] = await pipe(
+   *   Task.reject(new Error('Internal error')),
+   *   Task.tapError(err => console.error('An error occured', err)),
+   *   Task.tryCatch,
+   *   Task.map(Result.mapError(Err.toError)),
+   *   Task.map(Result.tuple)
+   * )
+   *
+   * expect(error?.message).toBe('Internal error')
+   * ```
+   */
+  tapError,
 
   /**
    * @description

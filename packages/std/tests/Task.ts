@@ -1,4 +1,4 @@
-import { isNumber, pipe, Prom, Result, Task } from '../src'
+import { Err, isNumber, pipe, Prom, Result, Task } from '../src'
 
 describe('Task.of', () => {
   it('should return expected value', async () => {
@@ -292,5 +292,61 @@ describe('Task.timeout', () => {
       Task.run
     )
     expect(result).toEqual(0)
+  })
+})
+
+describe('Task.tap', () => {
+  it('should work', async () => {
+    const mock = jest.fn()
+    const result = await pipe(
+      Task.of(42),
+      Task.tap((value) => mock('received value', value)),
+      Task.map((a) => a + 1)
+    )
+    expect(result).toBe(43)
+    expect(mock.mock.calls.length).toBe(1)
+    expect(mock.mock.calls[0][1]).toBe(42)
+  })
+
+  it('should work with async', async () => {
+    const mock = jest.fn()
+    const result = await pipe(
+      Task.of(42),
+      Task.tap(async (value) => mock('received value', value)),
+      Task.map((a) => a + 1)
+    )
+    expect(result).toBe(43)
+    expect(mock.mock.calls.length).toBe(1)
+    expect(mock.mock.calls[0][1]).toBe(42)
+  })
+})
+
+describe('Task.tapError', () => {
+  it('should work', async () => {
+    const mock = jest.fn()
+    const [, error] = await pipe(
+      Task.reject(new Error('Internal error')),
+      Task.tapError((err) => mock('An error occured', err)),
+      Task.tryCatch,
+      Task.map(Result.mapError(Err.toError)),
+      Task.map(Result.tuple)
+    )
+    expect(error?.message).toBe('Internal error')
+    expect(mock.mock.calls.length).toBe(1)
+    expect(mock.mock.calls[0][1]?.message).toBe('Internal error')
+  })
+
+  it('should work with async', async () => {
+    const mock = jest.fn()
+    const [, error] = await pipe(
+      Task.reject(new Error('Internal error')),
+      Task.tapError(async (err) => mock('An error occured', err)),
+      Task.tryCatch,
+      Task.map(Result.mapError(Err.toError)),
+      Task.map(Result.tuple)
+    )
+    expect(error?.message).toBe('Internal error')
+    expect(mock.mock.calls.length).toBe(1)
+    expect(mock.mock.calls[0][1]?.message).toBe('Internal error')
   })
 })
