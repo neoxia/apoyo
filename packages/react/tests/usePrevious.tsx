@@ -14,7 +14,7 @@ describe('usePrevious', () => {
         <>
           <button onClick={() => setCount((old) => old + 1)}>increment</button>
           <p>
-            "{previous}" "{count}"
+            &quot;{previous}&quot; &quot;{count}&quot;
           </p>
         </>
       )
