@@ -1,4 +1,4 @@
-import { Dict, InverseRefinement, Option, pipe, Predicate, Refinement, Result } from '@apoyo/std'
+import { Dict, InverseRefinement, NonEmptyArray, Option, pipe, Predicate, Refinement, Result } from '@apoyo/std'
 import { DecodeError } from './DecodeError'
 
 export type DecoderResult<A> = Result<A, DecodeError>
@@ -12,6 +12,8 @@ export namespace Decoder {
   export type TypeOf<A> = A extends Decoder<unknown, infer B> ? Option.Struct<B> : never
   export type InputOf<A> = A extends Decoder<infer B, unknown> ? Option.Struct<B> : never
 }
+
+export const create = <I, O>(fn: (input: I) => DecoderResult<O>) => fn
 
 export const fromGuard = <I, O extends I>(
   fn: Refinement<I, O>,
@@ -66,7 +68,12 @@ export function reject(fn: any, message: string, meta: Dict<unknown> = {}) {
 }
 
 export const ref = <A>(decoder: Decoder<unknown, A>) => decoder
-export const validate = <O>(decoder: Decoder<unknown, O>) => (input: unknown) => decoder(input)
+
+export function validate<O>(decoder: Decoder<unknown, O>): (input: unknown) => DecoderResult<O>
+export function validate<I, O>(decoder: Decoder<I, O>): (input: I) => DecoderResult<O>
+export function validate<I, O>(decoder: Decoder<I, O>) {
+  return (input: I) => decoder(input)
+}
 
 export const lazy = <I, O>(fn: () => Decoder<I, O>): Decoder<I, O> => (input) => pipe(input, fn())
 
@@ -78,25 +85,19 @@ export function union<I, O1, O2, O3, O4>(
   c: Decoder<I, O3>,
   d: Decoder<I, O4>
 ): Decoder<I, O1 | O2 | O3 | O4>
-export function union<I>(
-  ...members: [Decoder<I, unknown>, Decoder<I, unknown>, ...Decoder<I, unknown>[]]
-): Decoder<I, unknown> {
-  return (input) => {
-    const errors: DecodeError.Member[] = []
-    for (let index = 0; index < members.length; ++index) {
-      const member = members[index]
-      const result = pipe(
-        input,
-        member,
-        Result.mapError((err) => DecodeError.member(index, err))
-      )
-      if (Result.isOk(result)) {
-        return result
-      }
-      errors.push(result.ko)
-    }
-    return Result.ko(DecodeError.union(errors))
-  }
+export function union(...members: NonEmptyArray<Decoder<unknown, unknown>>): Decoder<unknown, unknown> {
+  return (input) =>
+    pipe(
+      members,
+      Result.unionBy((member, index) =>
+        pipe(
+          input,
+          Decoder.validate(member),
+          Result.mapError((err) => DecodeError.member(index, err))
+        )
+      ),
+      Result.mapError(DecodeError.union)
+    )
 }
 
 export const unknown: Decoder<unknown, unknown> = Result.ok
@@ -127,6 +128,12 @@ export const unknown: Decoder<unknown, unknown> = Result.ok
  * ```
  */
 export const Decoder = {
+  /**
+   * @description
+   * Create a new decoder
+   */
+  create,
+
   /**
    * @description
    * Creates a new decoder from a type guard

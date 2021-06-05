@@ -9,6 +9,7 @@ import * as D from './Dict'
 import {
   add,
   constant,
+  fcurry2,
   first,
   identity,
   InverseRefinement,
@@ -196,6 +197,11 @@ export const empty = <A>(): A[] => []
 
 export const sum = (arr: number[]) => arr.reduce(add, 0)
 export const sumBy = <A>(fn: (value: A) => number) => (arr: A[]) => arr.reduce((a, b) => a + fn(b), 0)
+
+export const push = fcurry2((arr: any[], value: any): any[] => (arr.push(value), arr)) as {
+  <T>(arr: T[], value: T): NonEmptyArray<T>
+  <T>(value: T): (arr: T[]) => NonEmptyArray<T>
+}
 
 /**
  * @namespace Arr
@@ -1055,5 +1061,23 @@ export const Arr = {
    * expect(nb).toBe(10)
    * ```
    */
-  sumBy
+  sumBy,
+
+  /**
+   * @description
+   * Push a new value into an existing array.
+   * This function will mutate the given array and will not create a new one.
+   *
+   * @example
+   * ```ts
+   * const array = pipe(
+   *   [],
+   *   Arr.push("A"),
+   *   Arr.push(undefined),
+   *   Arr.push("B"),
+   *   Arr.compact
+   * )
+   * ```
+   */
+  push
 }

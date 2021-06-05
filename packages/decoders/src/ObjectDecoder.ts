@@ -1,6 +1,8 @@
-import { Arr, Dict, Obj, Option, pipe, Result } from '@apoyo/std'
+import { Dict, Obj, Option, pipe, Result } from '@apoyo/std'
+import { NonEmptyArray } from '@apoyo/std'
 import { DecodeError } from './DecodeError'
 import { Decoder } from './Decoder'
+import { TextDecoder } from './TextDecoder'
 
 export type ObjectDecoder<I, O extends Dict> = Decoder<I, O> & {
   props: Dict
@@ -21,45 +23,41 @@ export const unknownDict: Decoder<unknown, Dict<unknown>> = (input: unknown) =>
 export const dict = <A>(decoder: Decoder<unknown, A>): Decoder<unknown, Dict<A>> => {
   return pipe(
     unknownDict,
-    Decoder.parse((input) => {
-      const [success, errors] = pipe(
+    Decoder.parse((input) =>
+      pipe(
         input,
-        Dict.collect((source, key) =>
+        Result.structBy((value, key) =>
           pipe(
-            source,
-            decoder,
-            Result.map((value) => [key, value] as [string, A]),
+            value,
+            Decoder.validate(decoder),
             Result.mapError((err) => DecodeError.key(key, err))
           )
         ),
-        Arr.separate
+        Result.mapError((errors) => DecodeError.object(errors))
       )
-      return errors.length > 0 ? Result.ko(DecodeError.object(errors)) : Result.ok(Dict.fromPairs(success))
-    })
+    )
   )
 }
 
 export const struct = <A extends Dict>(props: Struct<A>, name?: string): ObjectDecoder<unknown, A> => {
-  const entries = Dict.toPairs(props as Dict<Decoder<unknown, unknown>>)
   return create(
     props,
     pipe(
       unknownDict,
-      Decoder.parse((input) => {
-        const [success, errors] = pipe(
-          entries,
-          Arr.map(([key, decoder]) =>
-            pipe(
-              input[key],
-              decoder,
-              Result.map((value) => [key, value] as [string, unknown]),
-              Result.mapError((err) => DecodeError.key(key, err))
-            )
-          ),
-          Arr.separate
-        )
-        return errors.length > 0 ? Result.ko(DecodeError.object(errors, name)) : Result.ok(Dict.fromPairs(success) as A)
-      })
+      Decoder.parse(
+        (input) =>
+          pipe(
+            props as Dict<Decoder<unknown, unknown>>,
+            Result.structBy((prop, key) =>
+              pipe(
+                input[key],
+                Decoder.validate(prop),
+                Result.mapError((err) => DecodeError.key(key, err))
+              )
+            ),
+            Result.mapError((errors) => DecodeError.object(errors, name))
+          ) as Result<A, DecodeError>
+      )
     )
   )
 }
@@ -86,6 +84,73 @@ export function partial<I, O extends Dict>(decoder: ObjectDecoder<I, O>): Object
 export function partial(decoder: ObjectDecoder<any, any>) {
   return pipe(decoder.props, Dict.map(Decoder.optional), struct)
 }
+
+export function merge<I, O1 extends Dict>(a: ObjectDecoder<I, O1>): ObjectDecoder<I, O1>
+export function merge<I, O1 extends Dict, O2 extends Dict>(
+  a: ObjectDecoder<I, O1>,
+  b: ObjectDecoder<I, O2>
+): ObjectDecoder<I, O2 & Omit<O1, keyof O2>>
+export function merge<I, O1 extends Dict, O2 extends Dict, O3 extends Dict>(
+  a: ObjectDecoder<I, O1>,
+  b: ObjectDecoder<I, O2>,
+  c: ObjectDecoder<I, O3>
+): ObjectDecoder<I, O3 & Omit<O2, keyof O3> & Omit<O1, keyof O3 | keyof O2>>
+export function merge<I, O1 extends Dict, O2 extends Dict, O3 extends Dict, O4 extends Dict>(
+  a: ObjectDecoder<I, O1>,
+  b: ObjectDecoder<I, O2>,
+  c: ObjectDecoder<I, O3>,
+  d: ObjectDecoder<I, O4>
+): ObjectDecoder<I, O4 & Omit<O3, keyof O4> & Omit<O2, keyof O4 | keyof O3> & Omit<O1, keyof O4 | keyof O3 | keyof O2>>
+export function merge<I, O extends Dict>(...members: NonEmptyArray<ObjectDecoder<I, O>>) {
+  return struct(Object.assign({}, ...members.map((m) => m.props)))
+}
+
+type SumTypes<K extends string, T extends Dict> = {
+  [P in keyof T]: T[P] extends ObjectDecoder<any, infer A> ? { [KP in K]: P } & A : never
+}[keyof T]
+
+export function sum<K extends string, I, T extends Dict<ObjectDecoder<I, any>>>(
+  prop: K,
+  cases: T
+): Decoder<I, SumTypes<K, T>>
+export function sum(prop: string, cases: Dict<ObjectDecoder<any, any>>) {
+  const keys = Dict.keys(cases)
+  const typeDecoder = TextDecoder.oneOf(keys)
+  return pipe(
+    unknownDict,
+    Decoder.parse((input) =>
+      pipe(
+        input[prop],
+        Decoder.validate(typeDecoder),
+        Result.chain((type) =>
+          pipe(
+            input,
+            Decoder.validate(cases[type]),
+            Result.map((parsed) => ({
+              [prop]: type,
+              ...parsed
+            }))
+          )
+        )
+      )
+    )
+  )
+}
+
+export const additionalProperties = <I, O extends Dict>(decoder: ObjectDecoder<I, O>): Decoder<I, O & Dict> =>
+  pipe(
+    unknownDict,
+    Decoder.parse((input) =>
+      pipe(
+        input as I,
+        Decoder.validate(decoder),
+        Result.map((parsed: O) => ({
+          ...input,
+          ...parsed
+        }))
+      )
+    )
+  )
 
 /**
  * @namespace ObjectDecoder
@@ -221,5 +286,79 @@ export const ObjectDecoder = {
    * expect(pipe(input, Decoder.validate(SignupDto), Result.isKo)).toBe(true)
    * ```
    */
-  guard
+  guard,
+
+  /**
+   * @description
+   * Merge multiple `ObjectDecoder`s.
+   * If a property has already been declared, the decoder for this property will be overwritten.
+   *
+   * @example
+   * ```ts
+   * const A = ObjectDecoder.struct({
+   *   a: TextDecoder.string,
+   *   ab: TextDecoder.string
+   * })
+   * const B = ObjectDecoder.struct({
+   *   ab: NumberDecoder.number,
+   *   b: NumberDecoder.number
+   * })
+   * const C = ObjectDecoder.merge(A, B)
+   *
+   * interface C extends Decoder.TypeOf<typeof C> {}
+   *
+   * // Interface C is now equals to:
+   * type C = {
+   *   a: string
+   *   ab: number
+   *   b: number
+   * }
+   *
+   * // Note that "ab: TextDecoder.string" has been overwritten and will not be executed
+   * ```
+   */
+  merge,
+
+  /**
+   * @description
+   * By default, `ObjectDecoder.struct` will skip and ignore extra properties.
+   * If you wish to keep extra properties (all properties not validated by the struct), you can use this util.
+   *
+   * @example
+   * ```ts
+   * const Response = pipe(
+   *   ObjectDecoder.struct({
+   *     status: TextDecoder.oneOf(['OK', 'KO']),
+   *     message: TextDecoder.string,
+   *   }),
+   *   ObjectDecoder.additionalProperties
+   * )
+   * ```
+   */
+  additionalProperties,
+
+  /**
+   * @description
+   * Execute a specific decoder depending on the value of a given "type" property.
+   *
+   * @example
+   * ```ts
+   * const Geom = ObjectDecoder.sum('type', {
+   *   Circle: struct({
+   *     radius: NumberDecoder.number
+   *   }),
+   *   Rectangle: struct({
+   *     width: NumberDecoder.number,
+   *     height: NumberDecoder.number
+   *   })
+   * })
+   *
+   * type Geom = Decoder.TypeOf<typeof Geom>
+   * const geom: Geom = {
+   *   type: 'Rectangle',
+   *   height: 5
+   * }
+   * ```
+   */
+  sum
 }

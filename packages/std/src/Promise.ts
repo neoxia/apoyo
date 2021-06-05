@@ -1,16 +1,16 @@
 import type { Dict } from './Dict'
 import type { Result } from './Result'
 
+import * as D from './Dict'
+import { identity } from './function'
 import { pipe } from './pipe'
 import { ko, ok } from './Result'
 import * as T from './Task'
-import * as D from './Dict'
-import * as _IO from './IO'
 
-export type Prom<A = any> = Promise<A>
+export type Prom<A = any> = PromiseLike<A>
 export namespace Prom {
   export type Unwrap<A> = A extends Promise<infer I> ? I : A
-  export type Not<A> = A extends Promise<unknown> ? never : A
+  export type Not<A> = A extends PromiseLike<unknown> ? never : A
   export type Struct<A extends Dict<Prom>> = Prom<
     {
       [P in keyof A]: A[P] extends Prom<infer I> ? I : never
@@ -18,35 +18,53 @@ export namespace Prom {
   >
 }
 
+export const thunk = <A>(fn: () => PromiseLike<A> | A): Promise<A> => Promise.resolve().then(fn)
+
 export const of = <A>(value: A) => Promise.resolve(value)
 export const resolve = of
 export const reject = <A>(value: A) => Promise.reject(value)
 
-export const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
-export const delay = (ms: number) => <A>(prom: Promise<A>) => prom.then((value) => sleep(ms).then(() => value))
+export const map = <A, B>(fn: (value: A) => Prom.Not<B>) => then(fn)
 
-export const map = <A, B>(fn: (value: A) => Prom.Not<B>) => (promise: Promise<A>): Promise<B> => promise.then(fn)
+export const mapError = <B>(fn: (err: any) => Prom.Not<B>) => <A>(promise: PromiseLike<A>): Promise<A> =>
+  thunk(() => promise.then(identity, (err) => reject(fn(err))))
 
-export const mapError = <A>(fn: (err: any) => Prom.Not<any>) => (promise: Promise<A>): Promise<A> =>
-  promise.catch((err) => Promise.reject(fn(err)))
+export const chain = <A, B>(fn: (value: A) => PromiseLike<B>) => then(fn)
 
-export const chain = <A, B>(fn: (value: A) => Promise<B>) => (promise: Promise<A>): Promise<B> => promise.then(fn)
+export const catchError = <B>(fn: (err: any) => PromiseLike<B>) => <A>(promise: PromiseLike<A>): Promise<A | B> =>
+  thunk(() => promise.then(identity, (err) => fn(err)))
 
-export const catchError = <A, B>(fn: (err: any) => Promise<B>) => (promise: Promise<A>): Promise<A | B> =>
-  promise.catch((err) => fn(err))
+export const then = <A, B>(fn: (value: A) => PromiseLike<B> | B) => (promise: PromiseLike<A>): Promise<B> =>
+  thunk(() => promise.then(fn))
 
-export const then = <A, B>(fn: (value: A) => B | Promise<B>) => (promise: Promise<A>): Promise<B> => promise.then(fn)
+export const tap = <A, B>(fn: (value: A) => PromiseLike<B> | B) =>
+  then<A, A>((value) => thunk(() => fn(value)).then(() => value))
 
-export const all = <A>(promises: Promise<A>[]): Promise<A[]> => Promise.all(promises)
+export const tapError = <B>(fn: (err: any) => PromiseLike<B> | B) => <A>(promise: PromiseLike<A>): Promise<A> =>
+  pipe(
+    promise,
+    catchError((value) => thunk(() => fn(value)).then(() => reject(value)))
+  )
 
-export const tryCatch = <A, E = unknown>(promise: Promise<A>): Promise<Result<A, E>> => promise.then(ok, ko)
+export const sleep = (ms: number): Promise<void> => new Promise<void>((r) => setTimeout(r, ms))
+export const delay = (ms: number) => <A>(prom: PromiseLike<A>): Promise<A> =>
+  pipe(
+    prom,
+    tap(() => sleep(ms))
+  )
 
-export const thunk = <A>(fn: () => Promise<A> | A): Promise<A> => Promise.resolve().then(fn)
+export const all = <A>(promises: PromiseLike<A>[]): Promise<A[]> => Promise.all(promises)
+
+export const tryCatch = <A, E = unknown>(promise: PromiseLike<A>): Promise<Result<A, E>> =>
+  thunk(() => promise.then(ok, ko))
+
+export const timeout = <A>(ms: number, fn: () => PromiseLike<A> | A) => (promise: PromiseLike<A>) =>
+  Promise.race([promise, pipe(Prom.sleep(ms), Prom.then(fn))])
 
 export function struct<A extends Dict<Prom>>(obj: A): Prom.Struct<A>
 export function struct(obj: Dict<Prom>): Promise<Dict>
 export function struct(obj: Dict<Prom>): Promise<Dict> {
-  return pipe(obj, D.map(_IO.of), T.struct(T.all), T.run)
+  return pipe(obj, D.map(T.from), T.struct(T.all), T.run)
 }
 
 /**
@@ -202,6 +220,42 @@ export const Prom = {
 
   /**
    * @description
+   * When the promise resolves, execute a side-effect on the current value without modifying the value
+   *
+   * @example
+   * ```ts
+   * const result = await pipe(
+   *   Prom.of(42),
+   *   Prom.tap(value => console.log('received value', value)),
+   *   Prom.map(a => a + 1)
+   * )
+   *
+   * expect(result).toBe(43)
+   * ```
+   */
+  tap,
+
+  /**
+   * @description
+   * When the promise rejects, execute a side-effect on the current error without modifying the error
+   *
+   * @example
+   * ```ts
+   * const [, error] = await pipe(
+   *   Prom.reject(new Error('Internal error')),
+   *   Prom.tapError(err => console.error('An error occured', err)),
+   *   Prom.tryCatch,
+   *   Prom.map(Result.mapError(Err.toError)),
+   *   Prom.map(Result.tuple)
+   * )
+   *
+   * expect(error?.message).toBe('Internal error')
+   * ```
+   */
+  tapError,
+
+  /**
+   * @description
    * Combine an array of promises into a single promise.
    * As promises are eager and executed directly, all promises are executed in parallel.
    *
@@ -260,5 +314,27 @@ export const Prom = {
    * )
    * ```
    */
-  struct
+  struct,
+
+  /**
+   * @description
+   * Timeout a promise after the given amount of milliseconds.
+   *
+   * @example
+   * ```ts
+   * const original = pipe(
+   *   Prom.sleep(10000),
+   *   Prom.map(() => "Hello!")
+   * )
+   *
+   * const withTimeout = await pipe(
+   *   original,
+   *   Prom.timeout(5000, () => Prom.reject(Err.of('Timeout!'))),
+   *   Prom.tryCatch
+   * )
+   *
+   * expect(pipe(withTimeout, Result.isKo)).toBe(true)
+   * ```
+   */
+  timeout
 }

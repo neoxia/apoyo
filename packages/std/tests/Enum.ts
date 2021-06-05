@@ -1,4 +1,4 @@
-import { Enum } from '../src'
+import { Enum, pipe } from '../src'
 
 enum TestEnum1 {
   a,
@@ -57,5 +57,18 @@ describe('Enum.toPairs', () => {
         ['1b', 'd']
       ].sort()
     )
+  })
+})
+
+describe('Enum.isEnum', () => {
+  it('should return true on matching value', () => {
+    expect(pipe(0, Enum.isEnum(TestEnum1))).toBe(true)
+    expect(pipe(1, Enum.isEnum(TestEnum2))).toBe(true)
+    expect(pipe('a', Enum.isEnum(TestEnum2))).toBe(true)
+  })
+  it('should return false on no match', () => {
+    expect(pipe(2, Enum.isEnum(TestEnum1))).toBe(false)
+    expect(pipe(2, Enum.isEnum(TestEnum2))).toBe(false)
+    expect(pipe('test', Enum.isEnum(TestEnum2))).toBe(false)
   })
 })

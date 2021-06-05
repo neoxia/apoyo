@@ -1,5 +1,4 @@
 import { pipe } from './function'
-import { isIO } from './IO'
 import * as Result from './Result'
 import * as T from './Task'
 
@@ -34,7 +33,7 @@ export const catchError = <A, B, E>(fn: (err: any) => Result.Result<B, E> | Task
   )
 
 export const from = <A, E>(value: Result.Result<A, E> | TaskResult<A, E>): TaskResult<A, E> =>
-  isIO(value) ? value : T.of(value)
+  T.isTask(value) ? value : T.of(value)
 
 export const TaskResult = {
   ok,

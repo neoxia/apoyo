@@ -1,7 +1,6 @@
 import type { Dict } from './Dict'
 
 import { flow } from './flow'
-import { run } from './IO'
 import { property } from './Object'
 import * as O from './Ord'
 import { pipe } from './pipe'
@@ -20,6 +19,13 @@ export const of = (value: any) => String(value)
 export const length = (str: string) => str.length
 
 export const isEmpty = (str: string) => str.length === 0
+
+export function oneOf<T extends string>(arr: T[]): (value: string) => value is T
+export function oneOf<T extends string>(arr: Set<T>): (value: string) => value is T
+export function oneOf(arr: string[] | Set<string>): any {
+  const set = new Set(arr)
+  return (str: string) => set.has(str)
+}
 
 export const concat = (append: string) => (str: string) => str + append
 
@@ -63,7 +69,7 @@ export const template = (info: Dict<any>) =>
 
 export const eq = pipe(O.string, O.eq)
 
-const WHITESPACE_CHARS = [
+export const WHITESPACE_CHARS = [
   ' ',
   '\f',
   '\n',
@@ -93,10 +99,9 @@ export const trimWhile = (fn: (char: string) => boolean) => {
   }
 }
 
-export const trim = run(() => {
-  const set = new Set(WHITESPACE_CHARS)
-  return trimWhile((c) => set.has(c))
-})
+export const isWhitespace = oneOf(WHITESPACE_CHARS)
+
+export const trim = trimWhile(isWhitespace)
 
 /**
  * @namespace Str
@@ -122,6 +127,21 @@ export const Str = {
    * Predicate to verify if the string is empty or not
    */
   isEmpty,
+
+  /**
+   * @description
+   * Checks if string is one of the given values
+   * This function can also act as a literal string type guard
+   *
+   * @example
+   * ```ts
+   * const isMouseEvent = Str.oneOf(['click', 'hover', 'focus'] as const)
+   *
+   * expect(isMouseEvent('click')).toBe(true)
+   * expect(isMouseEvent('unknown')).toBe(false)
+   * ```
+   */
+  oneOf,
 
   /**
    * @description
@@ -327,6 +347,12 @@ export const Str = {
    * ```
    */
   eq,
+
+  /**
+   * @description
+   * Check if the given character is a whitespace character.
+   */
+  isWhitespace,
 
   /**
    * @description

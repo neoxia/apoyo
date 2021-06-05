@@ -108,15 +108,14 @@ describe('Csv.streamAsync', () => {
 
     let total = 0
     const result = await pipe(
-      async () => {
+      Task.thunk(async () => {
         for await (const rows of seq) {
           total += rows.length
           throw new Error('Abort')
         }
         return total
-      },
-      Task.tryCatch,
-      Task.run
+      }),
+      Task.tryCatch
     )
 
     const error = Result.isKo(result) ? result.ko : undefined
@@ -142,13 +141,12 @@ describe('Csv.streamAsync', () => {
     let total = 0
 
     const result = await pipe(
-      async () => {
+      Task.thunk(async () => {
         for await (const rows of seq) {
           total += rows.length
         }
-      },
-      Task.tryCatch,
-      Task.run
+      }),
+      Task.tryCatch
     )
     const error = Result.isKo(result) ? result.ko : undefined
 
@@ -164,13 +162,12 @@ describe('Csv.streamAsync', () => {
     let total = 0
 
     const result = await pipe(
-      async () => {
+      Task.thunk(async () => {
         for await (const rows of seq) {
           total += rows.length
         }
-      },
-      Task.tryCatch,
-      Task.run
+      }),
+      Task.tryCatch
     )
     const error = Result.isKo(result) ? result.ko : undefined
 
