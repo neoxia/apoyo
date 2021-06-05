@@ -18,14 +18,14 @@ describe('useInterval', () => {
     const Test: FC = () => {
       const count = useInterval(1000)
 
-      return <p>"{count}"</p>
+      return <p>{count}</p>
     }
 
     // Render
     render(<Test />)
 
     // Checks
-    expect(screen.getByText('"0"')).toBeInTheDocument()
+    expect(screen.getByText('0')).toBeInTheDocument()
     expect(setInterval).toHaveBeenCalledWith(expect.any(Function), 1000)
 
     // Advance by 1 second
@@ -33,6 +33,6 @@ describe('useInterval', () => {
       jest.advanceTimersByTime(1000)
     })
 
-    expect(screen.getByText('"1"')).toBeInTheDocument()
+    expect(screen.getByText('1')).toBeInTheDocument()
   })
 })
