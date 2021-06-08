@@ -1,11 +1,11 @@
 import { Dict, InverseRefinement, NonEmptyArray, Option, pipe, Predicate, Refinement, Result } from '@apoyo/std'
+
 import { DecodeError } from './DecodeError'
 
 export type DecoderResult<A> = Result<A, DecodeError>
 
 export type Decoder<I, O> = {
-  name: string
-  (input: I): DecoderResult<O>
+  decode(input: I): DecoderResult<O>
 }
 
 export namespace Decoder {
@@ -13,25 +13,30 @@ export namespace Decoder {
   export type InputOf<A> = A extends Decoder<infer B, unknown> ? Option.Struct<B> : never
 }
 
-export const create = <I, O>(fn: (input: I) => DecoderResult<O>) => fn
+export const create = <I, O>(fn: (input: I) => DecoderResult<O>): Decoder<I, O> => ({
+  decode: fn
+})
 
-export const fromGuard = <I, O extends I>(
-  fn: Refinement<I, O>,
-  message: string,
-  meta?: Dict<unknown>
-): Decoder<I, O> => (input) => (fn(input) ? Result.ok(input) : Result.ko(DecodeError.value(input, message, meta)))
+export const fromGuard = <I, O extends I>(fn: Refinement<I, O>, message: string, meta?: Dict<unknown>): Decoder<I, O> =>
+  create((input) => (fn(input) ? Result.ok(input) : Result.ko(DecodeError.value(input, message, meta))))
 
-export const parse = <B, C>(fn: Decoder<B, C>) => <A>(decoder: Decoder<A, B>): Decoder<A, C> => (input) =>
-  pipe(input, decoder, Result.chain(fn))
+export const parse = <B, C>(fn: (input: B) => DecoderResult<C>) => <A>(decoder: Decoder<A, B>): Decoder<A, C> =>
+  create((input) => pipe(input, validate(decoder), Result.chain(fn)))
 
-export const map = <A, B>(fn: (input: A) => B) => <I>(decoder: Decoder<I, A>): Decoder<I, B> => (input) =>
-  pipe(input, decoder, Result.map(fn))
+export const chain = <B, C>(fn: (input: B) => Decoder<B, C>) => <A>(decoder: Decoder<A, B>): Decoder<A, C> =>
+  pipe(
+    decoder,
+    parse((value) => pipe(value, validate(fn(value))))
+  )
 
-export const nullable = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | null> => (input: I) =>
-  input === null ? Result.ok(null) : decoder(input)
+export const map = <A, B>(fn: (input: A) => B) => <I>(decoder: Decoder<I, A>): Decoder<I, B> =>
+  create((input) => pipe(input, validate(decoder), Result.map(fn)))
 
-export const optional = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | undefined> => (input: I) =>
-  input === undefined ? Result.ok(undefined) : decoder(input)
+export const nullable = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | null> =>
+  create((input: I) => (input === null ? Result.ok(null) : pipe(input, validate(decoder))))
+
+export const optional = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | undefined> =>
+  create((input: I) => (input === undefined ? Result.ok(undefined) : pipe(input, validate(decoder))))
 
 export const guard = <O>(fn: (input: O) => Option<DecodeError>) =>
   parse((input: O) => {
@@ -72,10 +77,10 @@ export const ref = <A>(decoder: Decoder<unknown, A>) => decoder
 export function validate<O>(decoder: Decoder<unknown, O>): (input: unknown) => DecoderResult<O>
 export function validate<I, O>(decoder: Decoder<I, O>): (input: I) => DecoderResult<O>
 export function validate<I, O>(decoder: Decoder<I, O>) {
-  return (input: I) => decoder(input)
+  return (input: I) => decoder.decode(input)
 }
 
-export const lazy = <I, O>(fn: () => Decoder<I, O>): Decoder<I, O> => (input) => pipe(input, fn())
+export const lazy = <I, O>(fn: () => Decoder<I, O>): Decoder<I, O> => create((input) => pipe(input, validate(fn())))
 
 export function union<I, O1, O2>(a: Decoder<I, O1>, b: Decoder<I, O2>): Decoder<I, O1 | O2>
 export function union<I, O1, O2, O3>(a: Decoder<I, O1>, b: Decoder<I, O2>, c: Decoder<I, O3>): Decoder<I, O1 | O2 | O3>
@@ -86,7 +91,7 @@ export function union<I, O1, O2, O3, O4>(
   d: Decoder<I, O4>
 ): Decoder<I, O1 | O2 | O3 | O4>
 export function union(...members: NonEmptyArray<Decoder<unknown, unknown>>): Decoder<unknown, unknown> {
-  return (input) =>
+  return create((input) =>
     pipe(
       members,
       Result.unionBy((member, index) =>
@@ -98,9 +103,10 @@ export function union(...members: NonEmptyArray<Decoder<unknown, unknown>>): Dec
       ),
       Result.mapError(DecodeError.union)
     )
+  )
 }
 
-export const unknown: Decoder<unknown, unknown> = Result.ok
+export const unknown: Decoder<unknown, unknown> = create(Result.ok)
 
 /**
  * @namespace Decoder
@@ -202,6 +208,13 @@ export const Decoder = {
    * ```
    */
   parse,
+
+  /**
+   * @description
+   * Chain another decoder to execute with the current input.
+   * This allows you to dynamically compute the decoder to use depending on a value.
+   */
+  chain,
 
   /**
    * @description

@@ -37,6 +37,12 @@ export const fromNumber = pipe(
   )
 )
 
+export const equals = <T extends boolean>(bool: T) =>
+  pipe(
+    boolean,
+    Decoder.filter((value): value is T => value === bool, `boolean is not ${bool}`)
+  )
+
 /**
  * @namespace BooleanDecoder
  *
@@ -49,6 +55,20 @@ export const BooleanDecoder = {
    * Check if the input is a boolean.
    */
   boolean,
+
+  /**
+   * @description
+   * Check if the boolean is true or false
+   *
+   * @example
+   * ```
+   * const decoder = BooleanDecoder.equals(true)
+   *
+   * expect(pipe(true, Decoder.validate(decoder), Result.isOk)).toBe(true)
+   * expect(pipe(false, Decoder.validate(decoder), Result.isKo)).toBe(true)
+   * ```
+   */
+  equals,
 
   /**
    * @description
