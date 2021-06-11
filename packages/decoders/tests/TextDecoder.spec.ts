@@ -14,6 +14,18 @@ describe('TextDecoder.string', () => {
   })
 })
 
+describe('TextDecoder.length', () => {
+  const decoder = pipe(TextDecoder.string, TextDecoder.length(1))
+  it('should succeed', () => {
+    expect(pipe('I', Decoder.validate(decoder), Result.isOk)).toBe(true)
+  })
+
+  it('should fail', () => {
+    expect(pipe('', Decoder.validate(decoder), Result.isKo)).toBe(true)
+    expect(pipe('II', Decoder.validate(decoder), Result.isKo)).toBe(true)
+  })
+})
+
 describe('TextDecoder.min', () => {
   const decoder = pipe(TextDecoder.string, TextDecoder.min(1))
   it('should succeed', () => {
@@ -43,7 +55,7 @@ describe('TextDecoder.max', () => {
 describe('TextDecoder.varchar', () => {
   const decoder = pipe(TextDecoder.varchar(1, 5))
   it('should succeed', () => {
-    const res = pipe('Hello ', Decoder.validate(decoder))
+    const res = pipe('Hello', Decoder.validate(decoder))
     expect(Result.isOk(res)).toBe(true)
   })
 

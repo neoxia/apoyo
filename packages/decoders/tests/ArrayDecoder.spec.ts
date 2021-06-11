@@ -20,7 +20,7 @@ describe('ArrayDecoder.array', () => {
   })
 })
 
-describe('Decode.nonEmptyArray', () => {
+describe('ArrayDecoder.nonEmptyArray', () => {
   const decodeArr = ArrayDecoder.nonEmptyArray(TextDecoder.string)
 
   it('should succeed', () => {
@@ -30,5 +30,44 @@ describe('Decode.nonEmptyArray', () => {
 
   it('should fail with empty string', () => {
     expect(pipe([], Decoder.validate(decodeArr), Result.isKo)).toBe(true)
+  })
+})
+
+describe('ArrayDecoder.length', () => {
+  const decodeArr = pipe(ArrayDecoder.array(TextDecoder.string), ArrayDecoder.length(2))
+
+  it('should succeed', () => {
+    expect(pipe(['Hello', 'World'], Decoder.validate(decodeArr), Result.isOk)).toBe(true)
+  })
+
+  it('should fail', () => {
+    expect(pipe(['Hello'], Decoder.validate(decodeArr), Result.isKo)).toBe(true)
+    expect(pipe(['Hello', 'World', 'Foo'], Decoder.validate(decodeArr), Result.isKo)).toBe(true)
+  })
+})
+
+describe('ArrayDecoder.min', () => {
+  const decodeArr = pipe(ArrayDecoder.array(TextDecoder.string), ArrayDecoder.min(2))
+
+  it('should succeed', () => {
+    expect(pipe(['Hello', 'World'], Decoder.validate(decodeArr), Result.isOk)).toBe(true)
+    expect(pipe(['Hello', 'World', 'Foo'], Decoder.validate(decodeArr), Result.isOk)).toBe(true)
+  })
+
+  it('should fail', () => {
+    expect(pipe(['Hello'], Decoder.validate(decodeArr), Result.isKo)).toBe(true)
+  })
+})
+
+describe('ArrayDecoder.max', () => {
+  const decodeArr = pipe(ArrayDecoder.array(TextDecoder.string), ArrayDecoder.max(2))
+
+  it('should succeed', () => {
+    expect(pipe(['Hello'], Decoder.validate(decodeArr), Result.isOk)).toBe(true)
+    expect(pipe(['Hello', 'World'], Decoder.validate(decodeArr), Result.isOk)).toBe(true)
+  })
+
+  it('should fail', () => {
+    expect(pipe(['Hello', 'World', 'Foo'], Decoder.validate(decodeArr), Result.isKo)).toBe(true)
   })
 })

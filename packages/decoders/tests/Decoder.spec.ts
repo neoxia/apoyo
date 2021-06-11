@@ -56,6 +56,23 @@ describe('Decode.reject', () => {
   it('should fail', () => {
     expect(pipe('', Decoder.validate(decoder), Result.isKo)).toBe(true)
   })
+
+  it('should fail with meta', () => {
+    const decoderWithMeta = pipe(
+      TextDecoder.string,
+      Decoder.reject((x) => x.length === 0, `string should not be empty`, {
+        code: 'E_NOT_EMPTY'
+      })
+    )
+
+    const expected = Result.ko(
+      DecodeError.value('', `string should not be empty`, {
+        code: 'E_NOT_EMPTY'
+      })
+    )
+    expect(expected.ko.meta.code).toBe('E_NOT_EMPTY')
+    expect(pipe('', Decoder.validate(decoderWithMeta))).toEqual(expected)
+  })
 })
 
 describe('Decoder.optional', () => {

@@ -43,3 +43,18 @@ describe('BooleanDecoder.fromNumber', () => {
     expect(pipe(2, Decoder.validate(BooleanDecoder.fromNumber), Result.isKo)).toBe(true)
   })
 })
+
+describe('BooleanDecoder.equals', () => {
+  it('should succeed', () => {
+    expect(pipe(false, Decoder.validate(BooleanDecoder.equals(false)), Result.get)).toBe(false)
+    expect(pipe(true, Decoder.validate(BooleanDecoder.equals(true)), Result.get)).toBe(true)
+  })
+
+  it('should fail', () => {
+    expect(pipe(0, Decoder.validate(BooleanDecoder.equals(false)), Result.isKo)).toBe(true)
+    expect(pipe(true, Decoder.validate(BooleanDecoder.equals(false)), Result.isKo)).toBe(true)
+
+    expect(pipe(1, Decoder.validate(BooleanDecoder.equals(true)), Result.isKo)).toBe(true)
+    expect(pipe(false, Decoder.validate(BooleanDecoder.equals(true)), Result.isKo)).toBe(true)
+  })
+})

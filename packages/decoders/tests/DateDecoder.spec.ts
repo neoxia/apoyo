@@ -40,3 +40,19 @@ describe('DateDecoder.datetime', () => {
     expect(pipe(42, Decoder.validate(DateDecoder.datetime), Result.isKo)).toBe(true)
   })
 })
+
+describe('DateDecoder.native', () => {
+  it('should succeed', () => {
+    expect(pipe('2020-01-01T10:00:00', Decoder.validate(DateDecoder.native), Result.get)).toBeInstanceOf(Date)
+    expect(pipe('2020-01-01 10:00:00', Decoder.validate(DateDecoder.native), Result.get)).toBeInstanceOf(Date)
+    expect(pipe('2020-01-01', Decoder.validate(DateDecoder.native), Result.get)).toBeInstanceOf(Date)
+  })
+
+  it('should fail', () => {
+    expect(pipe('2020-13-01 10:00', Decoder.validate(DateDecoder.native), Result.isKo)).toBe(true)
+    expect(pipe('2020-12-36 10:00', Decoder.validate(DateDecoder.native), Result.isKo)).toBe(true)
+    expect(pipe('2020-12-01 30:00', Decoder.validate(DateDecoder.native), Result.isKo)).toBe(true)
+    expect(pipe('2020-12-01 10:70', Decoder.validate(DateDecoder.native), Result.isKo)).toBe(true)
+    expect(pipe(42, Decoder.validate(DateDecoder.native), Result.isKo)).toBe(true)
+  })
+})
