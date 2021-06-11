@@ -5,7 +5,7 @@ describe('Decoder.map', () => {
   const flooredNumber = pipe(NumberDecoder.number, Decoder.map(Math.floor))
 
   it('should succeed', () => {
-    const res = pipe(flooredNumber(42.2531726), Result.get)
+    const res = pipe(42.2531726, Decoder.validate(flooredNumber), Result.get)
     expect(res).toBe(42)
   })
 })
@@ -25,7 +25,7 @@ describe('Decoder.parse', () => {
   )
 
   it('should succeed', () => {
-    const res = pipe(numberFromString('42'), Result.get)
+    const res = pipe('42', Decoder.validate(numberFromString), Result.get)
     expect(res).toBe(42)
   })
 })
@@ -37,10 +37,10 @@ describe('Decoder.filter', () => {
   )
 
   it('should succeed', () => {
-    expect(pipe(decoder('42'), Result.isOk)).toBe(true)
+    expect(pipe('42', Decoder.validate(decoder), Result.isOk)).toBe(true)
   })
   it('should fail', () => {
-    expect(pipe(decoder(''), Result.isKo)).toBe(true)
+    expect(pipe('', Decoder.validate(decoder), Result.isKo)).toBe(true)
   })
 })
 
@@ -51,34 +51,51 @@ describe('Decode.reject', () => {
   )
 
   it('should succeed', () => {
-    expect(pipe(decoder('42'), Result.isOk)).toBe(true)
+    expect(pipe('42', Decoder.validate(decoder), Result.isOk)).toBe(true)
   })
   it('should fail', () => {
-    expect(pipe(decoder(''), Result.isKo)).toBe(true)
+    expect(pipe('', Decoder.validate(decoder), Result.isKo)).toBe(true)
+  })
+
+  it('should fail with meta', () => {
+    const decoderWithMeta = pipe(
+      TextDecoder.string,
+      Decoder.reject((x) => x.length === 0, `string should not be empty`, {
+        code: 'E_NOT_EMPTY'
+      })
+    )
+
+    const expected = Result.ko(
+      DecodeError.value('', `string should not be empty`, {
+        code: 'E_NOT_EMPTY'
+      })
+    )
+    expect(expected.ko.meta.code).toBe('E_NOT_EMPTY')
+    expect(pipe('', Decoder.validate(decoderWithMeta))).toEqual(expected)
   })
 })
 
 describe('Decoder.optional', () => {
   it('should succeed', () => {
-    expect(pipe(42, Decoder.optional(NumberDecoder.number), Result.isOk)).toBe(true)
-    expect(pipe(undefined, Decoder.optional(NumberDecoder.number), Result.isOk)).toBe(true)
+    expect(pipe(42, Decoder.validate(Decoder.optional(NumberDecoder.number)), Result.isOk)).toBe(true)
+    expect(pipe(undefined, Decoder.validate(Decoder.optional(NumberDecoder.number)), Result.isOk)).toBe(true)
   })
 
   it('should fail', () => {
-    expect(pipe(null, Decoder.optional(NumberDecoder.number), Result.isKo)).toBe(true)
-    expect(pipe(undefined, NumberDecoder.number, Result.isKo)).toBe(true)
+    expect(pipe(null, Decoder.validate(Decoder.optional(NumberDecoder.number)), Result.isKo)).toBe(true)
+    expect(pipe(undefined, Decoder.validate(NumberDecoder.number), Result.isKo)).toBe(true)
   })
 })
 
 describe('Decoder.nullable', () => {
   it('should succeed', () => {
-    expect(pipe(42, NumberDecoder.number, Result.isOk)).toBe(true)
-    expect(pipe(null, Decoder.nullable(NumberDecoder.number), Result.isOk)).toBe(true)
+    expect(pipe(42, Decoder.validate(NumberDecoder.number), Result.isOk)).toBe(true)
+    expect(pipe(null, Decoder.validate(Decoder.nullable(NumberDecoder.number)), Result.isOk)).toBe(true)
   })
 
   it('should fail', () => {
-    expect(pipe(null, NumberDecoder.number, Result.isKo)).toBe(true)
-    expect(pipe(undefined, Decoder.nullable(NumberDecoder.number), Result.isKo)).toBe(true)
+    expect(pipe(null, Decoder.validate(NumberDecoder.number), Result.isKo)).toBe(true)
+    expect(pipe(undefined, Decoder.validate(Decoder.nullable(NumberDecoder.number)), Result.isKo)).toBe(true)
   })
 })
 
@@ -121,12 +138,12 @@ describe('Decoder.lazy', () => {
   }
 
   it('should work', () => {
-    expect(pipe(t, decodeStringTree1, Result.isOk)).toBe(true)
-    expect(pipe(t, decodeStringTree2, Result.isOk)).toBe(true)
+    expect(pipe(t, Decoder.validate(decodeStringTree1), Result.isOk)).toBe(true)
+    expect(pipe(t, Decoder.validate(decodeStringTree2), Result.isOk)).toBe(true)
   })
 
   it('should work with generic types', () => {
-    expect(pipe(t, decodeGenericTree(TextDecoder.string), Result.isOk)).toBe(true)
+    expect(pipe(t, Decoder.validate(decodeGenericTree(TextDecoder.string)), Result.isOk)).toBe(true)
   })
 })
 
@@ -134,13 +151,13 @@ describe('Decode.union', () => {
   const stringOrNumber = Decoder.union(NumberDecoder.fromString, NumberDecoder.number, TextDecoder.string)
 
   it('should succeed', () => {
-    expect(pipe(stringOrNumber('42'), Result.get)).toBe(42)
-    expect(pipe(stringOrNumber(42), Result.get)).toBe(42)
-    expect(pipe(stringOrNumber('string'), Result.get)).toBe('string')
+    expect(pipe('42', Decoder.validate(stringOrNumber), Result.get)).toBe(42)
+    expect(pipe(42, Decoder.validate(stringOrNumber), Result.get)).toBe(42)
+    expect(pipe('string', Decoder.validate(stringOrNumber), Result.get)).toBe('string')
   })
 
   it('should fail', () => {
-    const res = pipe(stringOrNumber(false), Result.isKo)
+    const res = pipe(false, Decoder.validate(stringOrNumber), Result.isKo)
     expect(res).toBe(true)
   })
 })

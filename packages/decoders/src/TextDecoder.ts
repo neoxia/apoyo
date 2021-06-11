@@ -12,6 +12,11 @@ export const string: TextDecoder<unknown> = Decoder.fromGuard(
   `value is not a string`
 )
 
+export const length = (len: number) =>
+  Decoder.filter((input: string) => input.length === len, `string should contain exactly ${len} characters`, {
+    length: len
+  })
+
 export const min = (minLength: number) =>
   Decoder.filter(
     (input: string) => input.length >= minLength,
@@ -45,6 +50,7 @@ export const optional = flow(
 )
 
 export const trim = Decoder.map(Str.trim)
+export const htmlEscape = Decoder.map(Str.htmlEscape)
 
 export const email = pipe(
   string,
@@ -86,6 +92,12 @@ export const TextDecoder = {
    * Check if the input is a string
    */
   string,
+
+  /**
+   * @description
+   * Check the length of the string
+   */
+  length,
 
   /**
    * @description
@@ -248,5 +260,29 @@ export const TextDecoder = {
    * expect(pipe("unknown", Decoder.validate(decoder), Result.isKo)).toBe(true)
    * ```
    */
-  equals
+  equals,
+
+  /**
+   * @description
+   * Escapes the HTML in the string.
+   *
+   * @example
+   * ```ts
+   * const decoder = pipe(
+   *   TextDecoder.string,
+   *   TextDecoder.trim,
+   *   TextDecoder.htmlEscape,
+   *   TextDecoder.between(1, 2000)
+   * )
+   *
+   * const escaped = pipe(
+   *   "<script>window.alert("Hello")</script>",
+   *   Decoder.validate(decoder),
+   *   Result.get
+   * )
+   *
+   * expect(escaped).toBe('&lt;script&gt;window.alert(&quot;Hello&quot;)&lt;/script&gt;')
+   * ```
+   */
+  htmlEscape
 }
