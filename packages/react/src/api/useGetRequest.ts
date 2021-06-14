@@ -45,7 +45,7 @@ export function useGetRequest<R>(generator: APIGetRequestGenerator<R>, cacheId: 
     return () => {
       source.cancel()
     }
-  }, [generator, reload, setCache])
+  }, [generator, reload])
 
   useEffect(() => {
     if (state.data) setCache(state.data)
@@ -53,7 +53,7 @@ export function useGetRequest<R>(generator: APIGetRequestGenerator<R>, cacheId: 
 
   useEffect(() => {
     setState((old) => ({ ...old, data }))
-  }, [cacheId])
+  }, [data])
 
   return {
     ...state,
