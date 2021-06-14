@@ -12,13 +12,15 @@ type Struct<A extends Dict<unknown>> = {
   [P in keyof A]: Decoder<unknown, A[P]>
 }
 
-const create = <I, O extends Dict>(props: Dict, decoder: Decoder<I, O>): ObjectDecoder<I, O> =>
-  Object.assign(decoder, { props })
+const create = <I, O extends Dict>(props: Dict, decoder: Decoder<I, O>): ObjectDecoder<I, O> => ({
+  props,
+  ...decoder
+})
 
-export const unknownDict: Decoder<unknown, Dict<unknown>> = (input: unknown) =>
-  typeof input === 'object' && input !== null
-    ? Result.ok(input as Dict<unknown>)
-    : Result.ko(DecodeError.value(input, `value is not an object`))
+export const unknownDict: Decoder<unknown, Dict<unknown>> = Decoder.fromGuard(
+  (input: unknown): input is Dict<unknown> => typeof input === 'object' && input !== null && !Array.isArray(input),
+  `value is not an object`
+)
 
 export const dict = <A>(decoder: Decoder<unknown, A>): Decoder<unknown, Dict<A>> => {
   return pipe(

@@ -10,7 +10,10 @@ export const int: IntegerDecoder<unknown> = pipe(
   Decoder.filter((nb): nb is Int => nb % 1 === 0, `number is not a integer`)
 )
 
-export const fromString = pipe(NumberDecoder.fromString, Decoder.parse(int))
+export const fromString = pipe(
+  NumberDecoder.fromString,
+  Decoder.chain(() => int)
+)
 
 export const min = NumberDecoder.min as (minimum: number) => <I>(decoder: IntegerDecoder<I>) => IntegerDecoder<I>
 export const max = NumberDecoder.max as (maximum: number) => <I>(decoder: IntegerDecoder<I>) => IntegerDecoder<I>

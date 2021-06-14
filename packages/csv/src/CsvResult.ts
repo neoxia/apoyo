@@ -1,5 +1,5 @@
 import { Arr, pipe, Result } from '@apoyo/std'
-import { DecodeError } from '@apoyo/decoders'
+import { DecodeError, Decoder } from '@apoyo/decoders'
 import { CsvParser } from './CsvParser'
 import { CsvError } from './CsvError'
 
@@ -18,8 +18,8 @@ export const fromRow = (row: CsvParser.Row): CsvResult<unknown> =>
         errors: row.errors
       })
 
-export const decode = <A, B>(decoder: (input: A) => Result<B, DecodeError>) => (row: CsvOk<A>): CsvResult<B> => {
-  const result = decoder(row.data)
+export const decode = <A, B>(decoder: Decoder<A, B>) => (row: CsvOk<A>): CsvResult<B> => {
+  const result = pipe(row.data, Decoder.validate(decoder))
   if (Result.isOk(result)) {
     return Result.ok({
       row: row.row,

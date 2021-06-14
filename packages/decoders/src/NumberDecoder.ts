@@ -9,7 +9,11 @@ export const number: NumberDecoder<unknown> = Decoder.fromGuard(
   `value is not a number`
 )
 
-export const fromString = pipe(TextDecoder.string, Decoder.map(parseFloat), Decoder.parse(number))
+export const fromString = pipe(
+  TextDecoder.string,
+  Decoder.map(parseFloat),
+  Decoder.chain(() => number)
+)
 
 export const min = (minimum: number) =>
   Decoder.filter((input: number) => input >= minimum, `number should be greater or equal than ${minimum}`, {

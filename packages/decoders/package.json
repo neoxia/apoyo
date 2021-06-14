@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/decoders",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Validation utilities",
   "main": "lib/index.js",
   "module": "es6/index.js",
@@ -32,7 +32,7 @@
     "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
   },
   "dependencies": {
-    "@apoyo/std": "^0.0.6"
+    "@apoyo/std": "^0.0.7"
   },
   "devDependencies": {
     "@types/jest": "22.2.2",

@@ -69,12 +69,15 @@ Here's how you can do with Apoyo's decoders:
 
 ```typescript
 import { DecodeError } from '@apoyo/decoders'
-import { Result } from '@apoyo/std'
+import { pipe, Result } from '@apoyo/std'
 import { TodoModel } from './models'
 
 export const handler = async (event: HttpEvent) => {
   // Result is an union between OK and KO result
-  const result = TodoPostDto(event.body)
+  const result = pipe(
+    event.body, 
+    Decoder.validate(TodoPostDto)
+  )
 
   // Use type guard isKo to properly cast result
   if (Result.isKo(result)) {

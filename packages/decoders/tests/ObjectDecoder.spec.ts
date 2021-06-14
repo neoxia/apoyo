@@ -10,19 +10,19 @@ describe('ObjectDecoder.dict', () => {
         foo: 'bar',
         hello: 'world'
       },
-      decodeStringDict,
+      Decoder.validate(decodeStringDict),
       Result.isOk
     )
     expect(res).toBe(true)
   })
 
   it('should fail with string', () => {
-    const res = pipe(decodeStringDict('Hello'), Result.isKo)
+    const res = pipe('Hello', Decoder.validate(decodeStringDict), Result.isKo)
     expect(res).toBe(true)
   })
 
   it('should fail with dict of bad type', () => {
-    const res = pipe(decodeStringDict({ foo: 42 }), Result.isKo)
+    const res = pipe({ foo: 42 }, Decoder.validate(decodeStringDict), Result.isKo)
     expect(res).toBe(true)
   })
 })
@@ -52,8 +52,8 @@ describe('ObjectDecoder.struct', () => {
       }
     ]
 
-    expect(pipe(todos[0], TodoDto, Result.isOk)).toBe(true)
-    expect(pipe(todos[1], TodoDto, Result.isOk)).toBe(true)
+    expect(pipe(todos[0], Decoder.validate(TodoDto), Result.isOk)).toBe(true)
+    expect(pipe(todos[1], Decoder.validate(TodoDto), Result.isOk)).toBe(true)
   })
 
   it('should strip additional fields', () => {
@@ -69,16 +69,16 @@ describe('ObjectDecoder.struct', () => {
       created_at: new Date()
     }
 
-    expect(pipe(todo, TodoDto, Result.get)).toEqual(base)
+    expect(pipe(todo, Decoder.validate(TodoDto), Result.get)).toEqual(base)
   })
 
   it('should fail with string', () => {
-    const res = pipe(TodoDto('Hello'), Result.isKo)
+    const res = pipe('Hello', Decoder.validate(TodoDto), Result.isKo)
     expect(res).toBe(true)
   })
 
   it('should fail with empty struct', () => {
-    const res = pipe(TodoDto({}), Result.isKo)
+    const res = pipe({}, Decoder.validate(TodoDto), Result.isKo)
     expect(res).toBe(true)
   })
 
@@ -88,7 +88,7 @@ describe('ObjectDecoder.struct', () => {
       title: 'Wake up',
       done: true
     }
-    expect(pipe(TodoDto(todo), Result.isKo)).toBe(true)
+    expect(pipe(todo, Decoder.validate(TodoDto), Result.isKo)).toBe(true)
   })
 
   it('should fail with invalid field', () => {
@@ -98,7 +98,7 @@ describe('ObjectDecoder.struct', () => {
       title: 'Wake up',
       done: true
     }
-    expect(pipe(TodoDto(todo), Result.isKo)).toBe(true)
+    expect(pipe(todo, Decoder.validate(TodoDto), Result.isKo)).toBe(true)
   })
 })
 
@@ -110,7 +110,7 @@ describe('ObjectDecoder.omit', () => {
     const todo: TodoPostDto = {
       title: 'Wake up'
     }
-    expect(pipe(todo, TodoPostDto, Result.isOk)).toBe(true)
+    expect(pipe(todo, Decoder.validate(TodoPostDto), Result.isOk)).toBe(true)
   })
 
   it('should skip id and done properties', () => {
@@ -119,7 +119,7 @@ describe('ObjectDecoder.omit', () => {
       done: false,
       title: 'Wake up'
     }
-    expect(pipe(todo, TodoPostDto, Result.get)).toEqual({
+    expect(pipe(todo, Decoder.validate(TodoPostDto), Result.get)).toEqual({
       title: 'Wake up'
     })
   })
@@ -133,7 +133,7 @@ describe('ObjectDecoder.pick', () => {
     const todo: TodoPostDto = {
       title: 'Wake up'
     }
-    expect(pipe(todo, TodoPostDto, Result.isOk)).toBe(true)
+    expect(pipe(todo, Decoder.validate(TodoPostDto), Result.isOk)).toBe(true)
   })
 
   it('should skip id and done properties', () => {
@@ -142,7 +142,7 @@ describe('ObjectDecoder.pick', () => {
       done: false,
       title: 'Wake up'
     }
-    expect(pipe(todo, TodoPostDto, Result.get)).toEqual({
+    expect(pipe(todo, Decoder.validate(TodoPostDto), Result.get)).toEqual({
       title: 'Wake up'
     })
   })
@@ -154,7 +154,7 @@ describe('ObjectDecoder.partial', () => {
 
   it('should succeed without any properties', () => {
     const todo: TodoPutDto = {}
-    expect(pipe(todo, TodoPutDto, Result.isOk)).toBe(true)
+    expect(pipe(todo, Decoder.validate(TodoPutDto), Result.isOk)).toBe(true)
   })
 
   it('should succeed with properties', () => {
@@ -163,7 +163,7 @@ describe('ObjectDecoder.partial', () => {
       done: false,
       title: 'Wake up'
     }
-    expect(pipe(todo, TodoPutDto, Result.get)).toEqual({
+    expect(pipe(todo, Decoder.validate(TodoPutDto), Result.get)).toEqual({
       title: 'Wake up',
       done: false
     })
@@ -193,7 +193,7 @@ describe('ObjectDecoder.guard', () => {
       password: 'mypassword',
       passwordRepeat: 'mypassword'
     }
-    const result = pipe(dto, SignupDto)
+    const result = pipe(dto, Decoder.validate(SignupDto))
     expect(pipe(result, Result.isOk)).toBe(true)
   })
 
@@ -203,7 +203,7 @@ describe('ObjectDecoder.guard', () => {
       password: 'mypassword',
       passwordRepeat: 'mypassword12345'
     }
-    const result = pipe(dto, SignupDto)
+    const result = pipe(dto, Decoder.validate(SignupDto))
     expect(pipe(result, Result.isKo)).toBe(true)
   })
 })

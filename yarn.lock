@@ -2,11 +2,6 @@
 # yarn lockfile v1
 
 
-"@apoyo/std@^0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@apoyo/std/-/std-0.0.6.tgz#a598316d1259e3bc4e1545a4d0b41de02d9bd760"
-  integrity sha512-natW+VQ2J7ew3330MIm5Y35HV/QfPSobAXrk1DUhsajWV4RGBzj8LsdtCHKArjIhuAKNLXhtcAV4tOLaBqJlyg==
-
 "@babel/code-frame@7.12.11":
   version "7.12.11"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.12.11.tgz#f4ad435aa263db935b8f10f2c552d23fb716a63f"
