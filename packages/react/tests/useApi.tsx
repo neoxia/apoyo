@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import axios from 'axios'
-import React from 'react'
+import React, { FC } from 'react'
 
 import { useAPI } from '../src/api/useApi'
 import { ApiCache } from '../src'
@@ -84,7 +84,7 @@ for (const op of ['get', 'head', 'options'] as Array<'get' | 'head' | 'options'>
 
         return (
           <>
-            <button onClick={reload}>load</button>
+            <button onClick={reload}>reload</button>
             <p>{loading ? 'loading ...' : data}</p>
           </>
         )
@@ -106,8 +106,7 @@ for (const op of ['get', 'head', 'options'] as Array<'get' | 'head' | 'options'>
       })
 
       // Reload
-      const btn = screen.getByText('load')
-      btn.click()
+      screen.getByText('reload').click()
 
       await waitFor(() => {
         expect(screen.getByText('loading ...')).toBeInTheDocument()
@@ -222,6 +221,226 @@ for (const op of ['get', 'head', 'options'] as Array<'get' | 'head' | 'options'>
 
       expect(axios[op]).toBeCalledTimes(1)
       expect(screen.getByText('updated')).toBeInTheDocument()
+    })
+  })
+}
+
+describe('useApi.delete', () => {
+  // Tests
+  it('should send delete request on click (result from hook)', async () => {
+    // Mocks
+    jest.spyOn(axios, 'delete').mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      return { data: 'done' }
+    })
+
+    // Component
+    const Test = () => {
+      // API
+      const { send, data, loading } = useAPI.delete<string>('/api/test')
+
+      // Callbacks
+      return (
+        <>
+          <p>{loading ? 'loading' : 'loaded'}</p>
+          <p>{data || 'null'}</p>
+          <button onClick={() => send({ id: 1 })}>delete</button>
+        </>
+      )
+    }
+
+    // Render
+    render(<Test />)
+
+    // Check
+    expect(screen.getByText('loaded')).toBeInTheDocument()
+    expect(screen.getByText('null')).toBeInTheDocument()
+    expect(axios.delete).not.toBeCalled()
+
+    // Delete
+    screen.getByText('delete').click()
+
+    await waitFor(() => {
+      expect(screen.getByText('loading')).toBeInTheDocument()
+    })
+
+    expect(axios.delete).toBeCalledTimes(1)
+    expect(axios.delete).toBeCalledWith('/api/test', {
+      cancelToken: expect.any(axios.CancelToken),
+      params: { id: 1 }
+    })
+
+    jest.advanceTimersByTime(1000)
+
+    await waitFor(() => {
+      expect(screen.getByText('loaded')).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('done')).toBeInTheDocument()
+  })
+
+  it('should send delete request on click (result from promise)', async () => {
+    // Mocks
+    jest.spyOn(axios, 'delete').mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      return { data: 'done' }
+    })
+
+    // Component
+    const Test: FC<{ onDelete: (res: string) => void }> = ({ onDelete }) => {
+      // API
+      const { send, loading } = useAPI.delete<string>('/api/test')
+
+      // Callbacks
+      return (
+        <>
+          <p>{loading ? 'loading' : 'loaded'}</p>
+          <button onClick={() => send({ id: 1 }).then(onDelete)}>delete</button>
+        </>
+      )
+    }
+
+    // Render
+    const handleDelete = jest.fn()
+    render(<Test onDelete={handleDelete} />)
+
+    // Check
+    expect(screen.getByText('loaded')).toBeInTheDocument()
+    expect(axios.delete).not.toBeCalled()
+    expect(handleDelete).not.toBeCalled()
+
+    // Delete
+    screen.getByText('delete').click()
+
+    await waitFor(() => {
+      expect(screen.getByText('loading')).toBeInTheDocument()
+    })
+
+    expect(axios.delete).toBeCalledTimes(1)
+    expect(axios.delete).toBeCalledWith('/api/test', {
+      cancelToken: expect.any(axios.CancelToken),
+      params: { id: 1 }
+    })
+
+    jest.advanceTimersByTime(1000)
+
+    await waitFor(() => {
+      expect(screen.getByText('loaded')).toBeInTheDocument()
+    })
+
+    expect(handleDelete).toBeCalledTimes(1)
+    expect(handleDelete).toBeCalledWith('done')
+  })
+})
+
+for (const op of ['post', 'patch', 'put'] as Array<'post' | 'patch' | 'put'>) {
+  describe(`useApi.${op}`, () => {
+    // Tests
+    it('should send request on click (result from hook)', async () => {
+      // Mocks
+      jest.spyOn(axios, op).mockImplementation(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        return { data: 'done' }
+      })
+
+      // Component
+      const Test = () => {
+        // API
+        const { send, data, loading } = useAPI[op]<{ id: number }, string>('/api/test')
+
+        // Callbacks
+        return (
+          <>
+            <p>{loading ? 'loading' : 'loaded'}</p>
+            <p>{data || 'null'}</p>
+            <button onClick={() => send({ id: 1 })}>send</button>
+          </>
+        )
+      }
+
+      // Render
+      render(<Test />)
+
+      // Check
+      expect(screen.getByText('loaded')).toBeInTheDocument()
+      expect(screen.getByText('null')).toBeInTheDocument()
+      expect(axios[op]).not.toBeCalled()
+
+      // Delete
+      screen.getByText('send').click()
+
+      await waitFor(() => {
+        expect(screen.getByText('loading')).toBeInTheDocument()
+      })
+
+      expect(axios[op]).toBeCalledTimes(1)
+      expect(axios[op]).toBeCalledWith(
+        '/api/test',
+        { id: 1 },
+        { cancelToken: expect.any(axios.CancelToken), params: {} }
+      )
+
+      jest.advanceTimersByTime(1000)
+
+      await waitFor(() => {
+        expect(screen.getByText('loaded')).toBeInTheDocument()
+      })
+
+      expect(screen.getByText('done')).toBeInTheDocument()
+    })
+
+    it('should send request on click (result from promise)', async () => {
+      // Mocks
+      jest.spyOn(axios, op).mockImplementation(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        return { data: 'done' }
+      })
+
+      // Component
+      const Test: FC<{ onDone: (res: string) => void }> = ({ onDone }) => {
+        // API
+        const { send, loading } = useAPI[op]<{ id: number }, string>('/api/test')
+
+        // Callbacks
+        return (
+          <>
+            <p>{loading ? 'loading' : 'loaded'}</p>
+            <button onClick={() => send({ id: 1 }).then(onDone)}>send</button>
+          </>
+        )
+      }
+
+      // Render
+      const handleDone = jest.fn()
+      render(<Test onDone={handleDone} />)
+
+      // Check
+      expect(screen.getByText('loaded')).toBeInTheDocument()
+      expect(axios[op]).not.toBeCalled()
+      expect(handleDone).not.toBeCalled()
+
+      // Delete
+      screen.getByText('send').click()
+
+      await waitFor(() => {
+        expect(screen.getByText('loading')).toBeInTheDocument()
+      })
+
+      expect(axios[op]).toBeCalledTimes(1)
+      expect(axios[op]).toBeCalledWith(
+        '/api/test',
+        { id: 1 },
+        { cancelToken: expect.any(axios.CancelToken), params: {} }
+      )
+
+      jest.advanceTimersByTime(1000)
+
+      await waitFor(() => {
+        expect(screen.getByText('loaded')).toBeInTheDocument()
+      })
+
+      expect(handleDone).toBeCalledTimes(1)
+      expect(handleDone).toBeCalledWith('done')
     })
   })
 }
