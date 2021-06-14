@@ -2,8 +2,7 @@
   "extends": "../../tsconfig.es.json",
   "compilerOptions": {
     "jsx": "react",
-    "outDir": "./dist/es6",
-    "skipLibCheck": true
+    "outDir": "./dist/es6"
   },
   "include": ["src"]
 }
