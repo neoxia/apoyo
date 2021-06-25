@@ -109,7 +109,7 @@ describe('Task.all', () => {
   })
 
   it('should execute tasks in parallel', async () => {
-    const mock = jest.fn<number>((x: number) => x)
+    const mock = jest.fn((x: number) => x)
 
     const a = pipe(
       Task.sleep(20),
@@ -146,7 +146,7 @@ describe('Task.sequence', () => {
   })
 
   it('should execute tasks in sequence', async () => {
-    const mock = jest.fn<number>((x: number) => x)
+    const mock = jest.fn((x: number) => x)
 
     const a = pipe(
       Task.sleep(20),
@@ -208,7 +208,7 @@ describe('Task.concurrent', () => {
   })
 
   it('should execute tasks in concurrency', async () => {
-    const mock = jest.fn<number>((x: number) => x)
+    const mock = jest.fn((x: number) => x)
 
     const a = pipe(
       Task.sleep(20),

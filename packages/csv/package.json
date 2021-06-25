@@ -39,7 +39,7 @@
     "papaparse": "^5.3.0"
   },
   "devDependencies": {
-    "@types/jest": "22.2.2",
+    "@types/jest": "^26.0.23",
     "@types/node": "^12.6.8",
     "jest": "^26.4.2",
     "rimraf": "2.6.2",
