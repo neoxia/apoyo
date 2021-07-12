@@ -35,7 +35,7 @@ export const contramap = <A, B>(fn: (value: A) => B) => (ord: Ord<B>): Ord<A> =>
 
 export const inverse = <A>(ord: Ord<A>): Ord<A> => (a, b) => ord(b, a)
 
-export const option = <A>(ord: Ord<A>): Ord<Option<A>> => (a, b) =>
+export const optional = <A>(ord: Ord<A>): Ord<Option<A>> => (a, b) =>
   a === b ? 0 : isSome(a) ? (isSome(b) ? ord(a, b) : -1) : 1
 
 export const nullable = <A>(ord: Ord<A>): Ord<A | null> => (a, b) =>
@@ -178,7 +178,7 @@ export const Ord = {
    * ```ts
    * const optionalNb = pipe(
    *   Ord.number,
-   *   Ord.option
+   *   Ord.optional
    * )
    *
    * const nbs = pipe(
@@ -189,7 +189,7 @@ export const Ord = {
    * expect(nbs).toEqual([1,2,3,undefined])
    * ```
    */
-  option,
+  optional,
 
   /**
    * @description
@@ -197,7 +197,7 @@ export const Ord = {
    *
    * Nullable values are placed last.
    *
-   * @see `Ord.option` for optional (undefined) values
+   * @see `Ord.optional` for optional (undefined) values
    *
    * @example
    * ```ts

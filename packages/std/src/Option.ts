@@ -1,6 +1,5 @@
 import { Dict } from './Dict'
 import { not, Predicate, Refinement, throwError as throwErr } from './function'
-import { isIO, of } from './IO'
 
 export type Falsy = null | undefined | '' | 0 | false
 export type Option<A> = A | undefined
@@ -55,15 +54,19 @@ export function reject(fn: any) {
   return filter(not(fn))
 }
 
-export function get(onNone: () => never): <A>(value: Option<A>) => never
-export function get<B>(onNone: () => B): <A>(value: Option<A>) => Some<A> | B
-export function get<B>(defaultValue: B): <A>(value: Option<A>) => Some<A> | B
-export function get(fn: unknown | (() => unknown)) {
-  const io = isIO(fn) ? fn : of(fn)
-  return (value: Option<unknown>): unknown => (isSome(value) ? value : io())
+export function get<A>(onNone: () => A): (value: Option<A>) => A
+export function get<A>(defaultValue: A): (value: Option<A>) => A
+export function get(valueOrFn: unknown | (() => unknown)) {
+  return (value: Option<unknown>): unknown =>
+    isSome(value) ? value : typeof valueOrFn === 'function' ? valueOrFn() : valueOrFn
 }
 
-export const throwError = (err: Error) => <A>(value: Option<A>) => (isSome(value) ? value : throwErr(err))
+export function throwError<A>(onNone: () => Error): (value: Option<A>) => A
+export function throwError<A>(err: Error): (value: Option<A>) => A
+export function throwError(errOrFn: Error | (() => Error)) {
+  return (value: Option<unknown>): unknown =>
+    isSome(value) ? value : typeof errOrFn === 'function' ? throwErr(errOrFn()) : throwErr(errOrFn)
+}
 
 /**
  * @namespace Option

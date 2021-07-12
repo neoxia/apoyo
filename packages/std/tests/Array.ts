@@ -471,7 +471,7 @@ describe('Array.sort', () => {
     const a = [1, undefined, 9, 3, undefined, 2, 7, 3, 4]
     const aCopy = a.slice()
 
-    const ordArr = pipe(Ord.number, Ord.option, Ord.inverse)
+    const ordArr = pipe(Ord.number, Ord.optional, Ord.inverse)
     const b = pipe(a, Arr.sort(ordArr))
     expect(a).toEqual(aCopy)
     expect(b).toEqual([undefined, undefined, 9, 7, 4, 3, 3, 2, 1])
