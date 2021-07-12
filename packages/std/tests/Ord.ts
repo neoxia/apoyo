@@ -66,8 +66,8 @@ describe('Ord.inverse', () => {
   })
 })
 
-describe('Ord.option', () => {
-  const ord = pipe(Ord.number, Ord.option)
+describe('Ord.optional', () => {
+  const ord = pipe(Ord.number, Ord.optional)
 
   it('should return correct ordering', () => {
     expect(ord(undefined, undefined)).toBe(Ordering.EQ)
@@ -108,8 +108,8 @@ describe('Ord.nullable', () => {
   })
 })
 
-describe('first Ord.option + then Ord.inverse', () => {
-  const ord = pipe(Ord.number, Ord.option, Ord.inverse)
+describe('first Ord.optional + then Ord.inverse', () => {
+  const ord = pipe(Ord.number, Ord.optional, Ord.inverse)
 
   it('should return correct ordering', () => {
     // All orderings should be inversed
@@ -133,8 +133,8 @@ describe('first Ord.option + then Ord.inverse', () => {
   })
 })
 
-describe('first Ord.inverse + then Ord.option', () => {
-  const ord = pipe(Ord.number, Ord.inverse, Ord.option)
+describe('first Ord.inverse + then Ord.optional', () => {
+  const ord = pipe(Ord.number, Ord.inverse, Ord.optional)
 
   it('should return correct ordering', () => {
     // Should be the same as option ordering
@@ -248,7 +248,7 @@ describe('Ord.concat', () => {
   })
 })
 
-describe('Ord.concat + Ord.option', () => {
+describe('Ord.concat + Ord.optional', () => {
   interface Contact {
     interacted_at?: string
     created_at: string
@@ -277,7 +277,7 @@ describe('Ord.concat + Ord.option', () => {
   const ordByInteractedAt = pipe(
     Ord.date,
     Ord.inverse,
-    Ord.option,
+    Ord.optional,
     Ord.contramap((c: Contact) => (c.interacted_at ? new Date(c.interacted_at) : undefined))
   )
   const ordByCreatedAt = pipe(

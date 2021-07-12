@@ -1,6 +1,5 @@
 import type { Arr } from './Array'
 import type { Dict } from './Dict'
-import { of } from './IO'
 
 export * from './pipe'
 export * from './flow'
@@ -27,7 +26,7 @@ export function fcurry2<A, B, C>(fn: (x: A, y: B) => C): FCurry2<A, B, C> {
 }
 
 export const identity = <A>(a: A): A => a
-export const constant = of
+export const constant = <A>(a: A) => () => a
 export const cast = <A>(a: unknown) => a as A
 
 export function not<A, B extends A>(fn: Refinement<A, B>): Refinement<A, InverseRefinement<A, B>>
@@ -102,3 +101,5 @@ export const once = <Args extends any[], A>(fn: (...args: Args) => A) => {
     return result
   }
 }
+
+export const run = <A>(fn: () => A) => fn()
