@@ -25,6 +25,8 @@ export const native = <E extends Enum<E>>(enumType: E): EnumDecoder<unknown, E[k
   )
 }
 
+export const from = native
+
 export const literal = <A extends readonly [Literal, ...Literal[]]>(...values: [...A]): Decoder<unknown, A[number]> => {
   const set = new Set(values)
   return create(
@@ -61,6 +63,28 @@ export const EnumDecoder = {
    * ```
    */
   native,
+
+  /**
+   * @deprecated Use `EnumDecoder.native` instead.
+   *
+   * @description
+   * Checks if a value is included in the given enum
+   *
+   * @example
+   * ```ts
+   * enum Status {
+   *   ACTIVE = "active",
+   *   INACTIVE = "inactive",
+   *   ARCHIVED = "archived"
+   * }
+   *
+   * const decoder = EnumDecoder.native(Status)
+   *
+   * expect(pipe("active", Decoder.validate(decoder), Result.get)).toBe(Status.ACTIVE)
+   * expect(pipe("xxx", Decoder.validate(decoder), Result.isKo)).toBe(true)
+   * ```
+   */
+  from,
 
   /**
    * @description

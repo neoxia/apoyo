@@ -33,7 +33,7 @@ export const main = async () => {
   const UserDto = ObjectDecoder.struct({
     id: TextDecoder.string,
     email: TextDecoder.email,
-    status: EnumDecoder.from(UserStatus),
+    status: EnumDecoder.native(UserStatus),
     birthdate: pipe(DateDecoder.date, Decoder.parse(validateAge))
   })
 
