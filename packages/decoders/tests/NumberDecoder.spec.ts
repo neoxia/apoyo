@@ -24,7 +24,6 @@ describe('NumberDecoder.min', () => {
 
   it('should fail', () => {
     expect(pipe(-42, Decoder.validate(decoder), Result.isKo)).toBe(true)
-    expect(pipe('42', Decoder.validate(decoder), Result.isKo)).toBe(true)
   })
 })
 
@@ -38,7 +37,6 @@ describe('NumberDecoder.max', () => {
 
   it('should fail', () => {
     expect(pipe(42, Decoder.validate(decoder), Result.isKo)).toBe(true)
-    expect(pipe('42', Decoder.validate(decoder), Result.isKo)).toBe(true)
   })
 })
 
