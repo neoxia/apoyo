@@ -78,7 +78,7 @@ export const EnumDecoder = {
    *   ARCHIVED = "archived"
    * }
    *
-   * const decoder = EnumDecoder.native(Status)
+   * const decoder = EnumDecoder.from(Status)
    *
    * expect(pipe("active", Decoder.validate(decoder), Result.get)).toBe(Status.ACTIVE)
    * expect(pipe("xxx", Decoder.validate(decoder), Result.isKo)).toBe(true)
