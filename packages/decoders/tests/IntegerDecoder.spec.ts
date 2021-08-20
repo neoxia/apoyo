@@ -1,17 +1,17 @@
 import { pipe, Result } from '@apoyo/std'
 import { Decoder, IntegerDecoder } from '../src'
 
-describe('IntegerDecoder.int', () => {
+describe('IntegerDecoder.strict', () => {
   it('should succeed', () => {
-    expect(pipe(42, Decoder.validate(IntegerDecoder.int), Result.isOk)).toBe(true)
-    expect(pipe(-42, Decoder.validate(IntegerDecoder.int), Result.isOk)).toBe(true)
-    expect(pipe(0, Decoder.validate(IntegerDecoder.int), Result.isOk)).toBe(true)
+    expect(pipe(42, Decoder.validate(IntegerDecoder.strict), Result.isOk)).toBe(true)
+    expect(pipe(-42, Decoder.validate(IntegerDecoder.strict), Result.isOk)).toBe(true)
+    expect(pipe(0, Decoder.validate(IntegerDecoder.strict), Result.isOk)).toBe(true)
   })
 
   it('should fail', () => {
-    expect(pipe(NaN, Decoder.validate(IntegerDecoder.int), Result.isKo)).toBe(true)
-    expect(pipe(42.24, Decoder.validate(IntegerDecoder.int), Result.isKo)).toBe(true)
-    expect(pipe(-42.12, Decoder.validate(IntegerDecoder.int), Result.isKo)).toBe(true)
+    expect(pipe(NaN, Decoder.validate(IntegerDecoder.strict), Result.isKo)).toBe(true)
+    expect(pipe(42.24, Decoder.validate(IntegerDecoder.strict), Result.isKo)).toBe(true)
+    expect(pipe(-42.12, Decoder.validate(IntegerDecoder.strict), Result.isKo)).toBe(true)
   })
 })
 
@@ -88,5 +88,22 @@ describe('IntegerDecoder.fromString', () => {
 
     // Not an integer
     expect(pipe('7.2', Decoder.validate(decoder), Result.isKo)).toBe(true)
+  })
+})
+
+describe('IntegerDecoder.int', () => {
+  it('should succeed', () => {
+    expect(pipe(42, Decoder.validate(IntegerDecoder.int), Result.isOk)).toBe(true)
+    expect(pipe(-42, Decoder.validate(IntegerDecoder.int), Result.isOk)).toBe(true)
+    expect(pipe(0, Decoder.validate(IntegerDecoder.int), Result.isOk)).toBe(true)
+    expect(pipe('-42', Decoder.validate(IntegerDecoder.int), Result.isOk)).toBe(true)
+    expect(pipe('42', Decoder.validate(IntegerDecoder.int), Result.isOk)).toBe(true)
+  })
+
+  it('should fail', () => {
+    expect(pipe(NaN, Decoder.validate(IntegerDecoder.int), Result.isKo)).toBe(true)
+    expect(pipe(42.24, Decoder.validate(IntegerDecoder.int), Result.isKo)).toBe(true)
+    expect(pipe(-42.12, Decoder.validate(IntegerDecoder.int), Result.isKo)).toBe(true)
+    expect(pipe('42.12', Decoder.validate(IntegerDecoder.int), Result.isKo)).toBe(true)
   })
 })

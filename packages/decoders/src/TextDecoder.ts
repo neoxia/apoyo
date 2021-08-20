@@ -1,4 +1,5 @@
 import { flow, pipe, Str } from '@apoyo/std'
+import { EnumDecoder } from './EnumDecoder'
 import { Decoder } from './Decoder'
 import { Email, UUID } from './types'
 
@@ -62,23 +63,8 @@ export const uuid = pipe(
   Decoder.filter((str): str is UUID => REGEXP_UUID.test(str), `string is not an uuid`)
 )
 
-export const equals = <T extends string>(value: T) =>
-  pipe(
-    string,
-    Decoder.filter((str): str is T => str === value, `string is not equal to value ${JSON.stringify(value)}`)
-  )
-
-export function oneOf<T extends string>(arr: T[]): Decoder<unknown, T>
-export function oneOf<T extends string>(arr: Set<T>): Decoder<unknown, T>
-export function oneOf(arr: string[] | Set<string>): any {
-  const set = new Set(arr)
-  return pipe(
-    string,
-    Decoder.filter((str: string) => set.has(str), `string is not included in the given values`, {
-      values: arr
-    })
-  )
-}
+export const equals = EnumDecoder.literal
+export const oneOf = EnumDecoder.isIn
 
 /**
  * @namespace TextDecoder
@@ -235,6 +221,8 @@ export const TextDecoder = {
   optional,
 
   /**
+   * @deprecated Use `EnumDecoder.isIn` instead.
+   *
    * @description
    * Check if the string is included in the given values
    *
@@ -249,6 +237,8 @@ export const TextDecoder = {
   oneOf,
 
   /**
+   * @deprecated Use `EnumDecoder.literal` instead.
+   *
    * @description
    * Check if the string is included in the given values
    *

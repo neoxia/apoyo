@@ -9,7 +9,7 @@ export type BooleanDecoder<I> = Decoder<I, boolean>
 const TEXT_TRUE = new Set(['true', 'yes', 'y', '1'])
 const TEXT_FALSE = new Set(['false', 'no', 'no', '0'])
 
-export const boolean: BooleanDecoder<unknown> = Decoder.fromGuard(
+export const strict: BooleanDecoder<unknown> = Decoder.fromGuard(
   (input: unknown): input is boolean => typeof input === 'boolean',
   `value is not a boolean`
 )
@@ -27,7 +27,7 @@ export const fromString = pipe(
 )
 
 export const fromNumber = pipe(
-  IntegerDecoder.int,
+  IntegerDecoder.strict,
   Decoder.parse((nb) =>
     nb === 1
       ? Result.ok(true)
@@ -35,6 +35,11 @@ export const fromNumber = pipe(
       ? Result.ok(false)
       : Result.ko(DecodeError.value(nb, `number is not a boolean`))
   )
+)
+
+export const boolean: BooleanDecoder<unknown> = pipe(
+  Decoder.union(strict, fromString, fromNumber),
+  Decoder.withMessage(`value is not a boolean`)
 )
 
 export const equals = <T extends boolean>(bool: T) =>
@@ -53,6 +58,16 @@ export const BooleanDecoder = {
   /**
    * @description
    * Check if the input is a boolean.
+   *
+   * This function is strict and does not autocast the input into a boolean.
+   */
+  strict,
+
+  /**
+   * @description
+   * Check if the input is a boolean.
+   *
+   * This function will autocast the input into a boolean if possible.
    */
   boolean,
 

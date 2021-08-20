@@ -1,10 +1,10 @@
 import { pipe, Result } from '@apoyo/std'
 import { BooleanDecoder, Decoder } from '../src'
 
-describe('BooleanDecoder.boolean', () => {
+describe('BooleanDecoder.strict', () => {
   it('should succeed', () => {
-    expect(pipe(true, Decoder.validate(BooleanDecoder.boolean), Result.get)).toBe(true)
-    expect(pipe(false, Decoder.validate(BooleanDecoder.boolean), Result.get)).toBe(false)
+    expect(pipe(true, Decoder.validate(BooleanDecoder.strict), Result.get)).toBe(true)
+    expect(pipe(false, Decoder.validate(BooleanDecoder.strict), Result.get)).toBe(false)
   })
 
   it('should fail', () => {
@@ -56,5 +56,21 @@ describe('BooleanDecoder.equals', () => {
 
     expect(pipe(1, Decoder.validate(BooleanDecoder.equals(true)), Result.isKo)).toBe(true)
     expect(pipe(false, Decoder.validate(BooleanDecoder.equals(true)), Result.isKo)).toBe(true)
+  })
+})
+
+describe('BooleanDecoder.boolean', () => {
+  it('should succeed', () => {
+    expect(pipe(true, Decoder.validate(BooleanDecoder.boolean), Result.get)).toBe(true)
+    expect(pipe(false, Decoder.validate(BooleanDecoder.boolean), Result.get)).toBe(false)
+    expect(pipe(1, Decoder.validate(BooleanDecoder.boolean), Result.get)).toBe(true)
+    expect(pipe(0, Decoder.validate(BooleanDecoder.boolean), Result.get)).toBe(false)
+    expect(pipe('true', Decoder.validate(BooleanDecoder.boolean), Result.get)).toBe(true)
+    expect(pipe('false', Decoder.validate(BooleanDecoder.boolean), Result.get)).toBe(false)
+  })
+
+  it('should fail', () => {
+    expect(pipe('42', Decoder.validate(BooleanDecoder.boolean), Result.isKo)).toBe(true)
+    expect(pipe(42, Decoder.validate(BooleanDecoder.boolean), Result.isKo)).toBe(true)
   })
 })

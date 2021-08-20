@@ -136,27 +136,3 @@ describe('TextDecoder.optional', () => {
     expect(pipe(null, Decoder.validate(decoder), Result.isKo)).toBe(true)
   })
 })
-
-describe('TextDecoder.equals', () => {
-  const decoder = pipe(TextDecoder.equals('ongoing'))
-  it('should succeed', () => {
-    expect(pipe('ongoing', Decoder.validate(decoder), Result.isOk)).toBe(true)
-  })
-
-  it('should fail', () => {
-    expect(pipe('anything else', Decoder.validate(decoder), Result.isKo)).toBe(true)
-  })
-})
-
-describe('TextDecoder.oneOf', () => {
-  const decoder = pipe(TextDecoder.oneOf(['todo', 'ongoing', 'done']))
-  it('should succeed', () => {
-    expect(pipe('todo', Decoder.validate(decoder), Result.isOk)).toBe(true)
-    expect(pipe('ongoing', Decoder.validate(decoder), Result.isOk)).toBe(true)
-    expect(pipe('done', Decoder.validate(decoder), Result.isOk)).toBe(true)
-  })
-
-  it('should fail', () => {
-    expect(pipe('anything else', Decoder.validate(decoder), Result.isKo)).toBe(true)
-  })
-})
