@@ -330,7 +330,7 @@ export const ObjectDecoder = {
    * ```ts
    * const Response = pipe(
    *   ObjectDecoder.struct({
-   *     status: TextDecoder.oneOf(['OK', 'KO']),
+   *     status: EnumDecoder.literal('OK', 'KO'),
    *     message: TextDecoder.string,
    *   }),
    *   ObjectDecoder.additionalProperties

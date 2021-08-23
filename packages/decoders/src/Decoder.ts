@@ -32,6 +32,15 @@ export const chain = <B, C>(fn: (input: B) => Decoder<B, C>) => <A>(decoder: Dec
 export const map = <A, B>(fn: (input: A) => B) => <I>(decoder: Decoder<I, A>): Decoder<I, B> =>
   create((input) => pipe(input, validate(decoder), Result.map(fn)))
 
+export const withMessage = (msg: string, meta?: Dict<unknown>) => <I, A>(decoder: Decoder<I, A>): Decoder<I, A> =>
+  create((input) =>
+    pipe(
+      input,
+      validate(decoder),
+      Result.mapError(() => DecodeError.value(input, msg, meta))
+    )
+  )
+
 export const nullable = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | null> =>
   create((input: I) => (input === null ? Result.ok(null) : pipe(input, validate(decoder))))
 
@@ -172,6 +181,30 @@ export const Decoder = {
    * ```
    */
   map,
+
+  /**
+   * @description
+   * Catch the validation error and create a new error with the given message.
+   *
+   * @example
+   * ```ts
+   * const decoder = pipe(
+   *   Decoder.union(
+   *     NumberDecoder.number,
+   *     NumberDecoder.fromString
+   *   ),
+   *   Decoder.withMessage('The given value is not a number', {
+   *     code: 'invalid_number'
+   *   })
+   * )
+   *
+   * const expectedError = DecodeError.value('  Hello  ', 'This value is not a number', {
+   *   code: 'invalid_number'
+   * })
+   * expect(pipe('  Hello  ', Decoder.validate(decoder))).toEqual(Result.ko(expectedError))
+   * ```
+   */
+  withMessage,
 
   /**
    * @description

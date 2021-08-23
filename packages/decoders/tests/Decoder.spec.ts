@@ -161,3 +161,21 @@ describe('Decode.union', () => {
     expect(res).toBe(true)
   })
 })
+
+describe('Decode.withMessage', () => {
+  const message = 'The given value is not a number'
+  const decoder = pipe(
+    Decoder.union(NumberDecoder.number, NumberDecoder.fromString),
+    Decoder.withMessage(message, {
+      code: 'invalid_number'
+    })
+  )
+
+  it('should return expected message', () => {
+    const input = '  Hello  '
+    const expectedError = DecodeError.value(input, message, {
+      code: 'invalid_number'
+    })
+    expect(pipe(input, Decoder.validate(decoder))).toEqual(Result.ko(expectedError))
+  })
+})

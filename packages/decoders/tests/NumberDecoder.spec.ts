@@ -1,16 +1,16 @@
 import { pipe, Result } from '@apoyo/std'
 import { Decoder, NumberDecoder } from '../src'
 
-describe('NumberDecoder.number', () => {
+describe('NumberDecoder.strict', () => {
   it('should succeed', () => {
-    expect(pipe(42, Decoder.validate(NumberDecoder.number), Result.get)).toBe(42)
-    expect(pipe(-42, Decoder.validate(NumberDecoder.number), Result.get)).toBe(-42)
-    expect(pipe(42.12, Decoder.validate(NumberDecoder.number), Result.get)).toBe(42.12)
+    expect(pipe(42, Decoder.validate(NumberDecoder.strict), Result.get)).toBe(42)
+    expect(pipe(-42, Decoder.validate(NumberDecoder.strict), Result.get)).toBe(-42)
+    expect(pipe(42.12, Decoder.validate(NumberDecoder.strict), Result.get)).toBe(42.12)
   })
 
   it('should fail', () => {
-    expect(pipe(NaN, Decoder.validate(NumberDecoder.number), Result.isKo)).toBe(true)
-    expect(pipe('42', Decoder.validate(NumberDecoder.number), Result.isKo)).toBe(true)
+    expect(pipe(NaN, Decoder.validate(NumberDecoder.strict), Result.isKo)).toBe(true)
+    expect(pipe('42', Decoder.validate(NumberDecoder.strict), Result.isKo)).toBe(true)
   })
 })
 
@@ -24,7 +24,6 @@ describe('NumberDecoder.min', () => {
 
   it('should fail', () => {
     expect(pipe(-42, Decoder.validate(decoder), Result.isKo)).toBe(true)
-    expect(pipe('42', Decoder.validate(decoder), Result.isKo)).toBe(true)
   })
 })
 
@@ -38,7 +37,6 @@ describe('NumberDecoder.max', () => {
 
   it('should fail', () => {
     expect(pipe(42, Decoder.validate(decoder), Result.isKo)).toBe(true)
-    expect(pipe('42', Decoder.validate(decoder), Result.isKo)).toBe(true)
   })
 })
 
@@ -71,5 +69,20 @@ describe('NumberDecoder.fromString', () => {
     // Not in range
     expect(pipe('-1', Decoder.validate(decoder), Result.isKo)).toBe(true)
     expect(pipe('9', Decoder.validate(decoder), Result.isKo)).toBe(true)
+  })
+})
+
+describe('NumberDecoder.number', () => {
+  it('should succeed', () => {
+    expect(pipe(42, Decoder.validate(NumberDecoder.number), Result.get)).toBe(42)
+    expect(pipe(-42, Decoder.validate(NumberDecoder.number), Result.get)).toBe(-42)
+    expect(pipe(42.12, Decoder.validate(NumberDecoder.number), Result.get)).toBe(42.12)
+    expect(pipe('42', Decoder.validate(NumberDecoder.number), Result.get)).toBe(42)
+    expect(pipe('42.12', Decoder.validate(NumberDecoder.number), Result.get)).toBe(42.12)
+  })
+
+  it('should fail', () => {
+    expect(pipe(NaN, Decoder.validate(NumberDecoder.number), Result.isKo)).toBe(true)
+    expect(pipe('Hello', Decoder.validate(NumberDecoder.number), Result.isKo)).toBe(true)
   })
 })

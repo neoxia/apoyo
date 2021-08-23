@@ -235,6 +235,8 @@ export const TextDecoder = {
   optional,
 
   /**
+   * @deprecated Use `EnumDecoder.isIn` instead.
+   *
    * @description
    * Check if the string is included in the given values
    *
@@ -249,6 +251,8 @@ export const TextDecoder = {
   oneOf,
 
   /**
+   * @deprecated Use `EnumDecoder.literal` instead.
+   *
    * @description
    * Check if the string is included in the given values
    *

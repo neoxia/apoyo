@@ -18,8 +18,8 @@ export async function main() {
   const RowDecoder = ObjectDecoder.struct({
     id: TextDecoder.string,
     name: TextDecoder.string,
-    age: pipe(IntegerDecoder.fromString, IntegerDecoder.between(0, 120)),
-    isActive: BooleanDecoder.fromString,
+    age: pipe(IntegerDecoder.int, IntegerDecoder.between(0, 120)),
+    isActive: BooleanDecoder.boolean,
     email: TextDecoder.email
   })
 

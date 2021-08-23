@@ -5,14 +5,19 @@ import { Int } from './types'
 
 export type IntegerDecoder<I> = Decoder<I, Int>
 
-export const int: IntegerDecoder<unknown> = pipe(
-  NumberDecoder.number,
+export const strict: IntegerDecoder<unknown> = pipe(
+  NumberDecoder.strict,
   Decoder.filter((nb): nb is Int => nb % 1 === 0, `number is not a integer`)
 )
 
 export const fromString = pipe(
   NumberDecoder.fromString,
-  Decoder.chain(() => int)
+  Decoder.chain(() => strict)
+)
+
+export const int: IntegerDecoder<unknown> = pipe(
+  Decoder.union(strict, fromString),
+  Decoder.withMessage(`value is not a integer`)
 )
 
 export const min = NumberDecoder.min as (minimum: number) => <I>(decoder: IntegerDecoder<I>) => IntegerDecoder<I>
@@ -38,6 +43,17 @@ export const IntegerDecoder = {
    * @description
    * Check if the input is an integer.
    * If the integer is NaN or contains decimals, the number will fail validation.
+   *
+   * This function is strict and does not autocast the input into a number.
+   */
+  strict,
+
+  /**
+   * @description
+   * Check if the input is an integer.
+   * If the integer is NaN or contains decimals, the number will fail validation.
+   *
+   * This function will autocast the input into a number if possible.
    */
   int,
 

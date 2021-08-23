@@ -4,7 +4,7 @@ import { TextDecoder } from './TextDecoder'
 
 export type NumberDecoder<I> = Decoder<I, number>
 
-export const number: NumberDecoder<unknown> = Decoder.fromGuard(
+export const strict: NumberDecoder<unknown> = Decoder.fromGuard(
   (input: unknown): input is number => typeof input === 'number' && !Number.isNaN(input),
   `value is not a number`
 )
@@ -12,7 +12,12 @@ export const number: NumberDecoder<unknown> = Decoder.fromGuard(
 export const fromString = pipe(
   TextDecoder.string,
   Decoder.map(parseFloat),
-  Decoder.chain(() => number)
+  Decoder.chain(() => strict)
+)
+
+export const number: NumberDecoder<unknown> = pipe(
+  Decoder.union(strict, fromString),
+  Decoder.withMessage(`value is not a number`)
 )
 
 export const min = (minimum: number) =>
@@ -39,6 +44,17 @@ export const NumberDecoder = {
    * @description
    * Check if the input is a number.
    * If the number is NaN, the number will fail validation.
+   *
+   * This function is strict and does not autocast the input into a number.
+   */
+  strict,
+
+  /**
+   * @description
+   * Check if the input is a number.
+   * If the number is NaN, the number will fail validation.
+   *
+   * This function will autocast the input into a number if possible.
    */
   number,
 
