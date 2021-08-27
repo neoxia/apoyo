@@ -1,4 +1,4 @@
-import { pipe, Result } from '@apoyo/std'
+import { Option, pipe, Result } from '@apoyo/std'
 import {
   ArrayDecoder,
   BooleanDecoder,
@@ -47,13 +47,14 @@ export const main = async () => {
       ArrayDecoder.array(TagDto),
       ArrayDecoder.between(0, 5),
       Decoder.optional,
-      Decoder.map((input) => (input === undefined ? [] : input))
+      Decoder.map(Option.get(() => []))
     ),
     description: pipe(
       TextDecoder.varchar(0, 2000),
       Decoder.nullable,
       Decoder.optional,
-      Decoder.map((input) => (input === '' || input === undefined ? null : input))
+      Decoder.map(Option.fromString),
+      Decoder.map(Option.get(null))
     ),
     createdAt: DateDecoder.datetime,
     updatedAt: DateDecoder.datetime
