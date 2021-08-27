@@ -37,12 +37,24 @@ export const main = async () => {
     birthdate: pipe(DateDecoder.date, Decoder.parse(validateAge))
   })
 
+  const TagDto = pipe(TextDecoder.string, TextDecoder.between(1, 32))
+
   const TodoDto = ObjectDecoder.struct({
     id: TextDecoder.string,
     title: TextDecoder.varchar(1, 100),
-    tags: ArrayDecoder.array(TextDecoder.varchar(1, 100)),
     done: pipe(BooleanDecoder.boolean),
-    description: pipe(TextDecoder.varchar(0, 2000), TextDecoder.nullable),
+    tags: pipe(
+      ArrayDecoder.array(TagDto),
+      ArrayDecoder.between(0, 5),
+      Decoder.optional,
+      Decoder.map((input) => (input === undefined ? [] : input))
+    ),
+    description: pipe(
+      TextDecoder.varchar(0, 2000),
+      Decoder.nullable,
+      Decoder.optional,
+      Decoder.map((input) => (input === '' || input === undefined ? null : input))
+    ),
     createdAt: DateDecoder.datetime,
     updatedAt: DateDecoder.datetime
   })

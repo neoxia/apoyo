@@ -12,10 +12,36 @@ However, we would appreciate any feedback you have on how to improve this librar
 
 `npm install @apoyo/decoders`
 
-## Usage
+## Introduction
+
+In `@apoyo/decoders`, a `Decoder` is an object used validate and transform an input of type `I`, to an output of type `O`, or an `DecodeError`.
 
 ```ts
-import { ObjectDecoder, DateDecoder, IntegerDecoder, TextDecoder, Decoder, BooleanDecoder } from '@apoyo/decoders'
+export interface Decoder<I, O> {
+  decode: (input: I) => Result<O, DecodeError>
+}
+```
+
+*Example:* `Decoder<unknown, string>` will take an input of type `unknown`, and return either a `string` or an `DecodeError`.
+
+## Existing decoders
+
+A lot of the most commonly used decoders are provided by this library:
+
+- Decoder contains general purpose helpers
+- TextDecoder for string validations
+- NumberDecoder for number validation
+- IntegerDecoder
+- BooleanDecoder
+- ArrayDecoder
+- ObjectDecoder
+
+If is also very easy to [create custom decoders from scratch](/guide/decoders/creating-custom-decoders).
+
+## Definition
+
+```ts
+import { ObjectDecoder, ArrayDecoder, DateDecoder, IntegerDecoder, TextDecoder, Decoder, BooleanDecoder } from '@apoyo/decoders'
 import { pipe, Result } from '@apoyo/std'
 
 const validateAge = (dob: string) => {
@@ -31,15 +57,39 @@ const validateAge = (dob: string) => {
   return Result.ok(dob)
 }
 
-const TodoDto = ObjectDecoder.struct({
+const UserDto = ObjectDecoder.struct({
   id: TextDecoder.string,
   email: TextDecoder.email,
   name: pipe(TextDecoder.varchar(1, 100), Decoder.nullable),
   dob: pipe(DateDecoder.date, Decoder.parse(validateAge), Decoder.nullable),
   age: IntegerDecoder.range(0, 120),
+  createdAt: DateDecoder.datetime,
+  updatedAt: DateDecoder.datetime
+})
+
+const TagDto = pipe(
+  TextDecoder.string,
+  TextDecoder.between(1, 32)
+)
+
+const TodoDto = ObjectDecoder.struct({
+  id: TextDecoder.string,
   title: TextDecoder.varchar(1, 100),
   done: pipe(BooleanDecoder.boolean),
-  description: pipe(TextDecoder.varchar(0, 2000), TextDecoder.nullable),
+  // tags: string[]
+  tags: pipe(
+    ArrayDecoder.array(TagDto),
+    ArrayDecoder.between(0, 5),
+    Decoder.optional,
+    Decoder.map((input) => (input === undefined ? [] : input))
+  ),
+  // description: string | null
+  description: pipe(
+    TextDecoder.varchar(0, 2000),
+    Decoder.nullable,
+    Decoder.optional,
+    Decoder.map((input) => (input === '' || input === undefined ? null : input))
+  ),
   createdAt: DateDecoder.datetime,
   updatedAt: DateDecoder.datetime
 })
@@ -51,6 +101,36 @@ interface TodoDto extends Decoder.TypeOf<typeof TodoDto> {}
 interface TodoPostDto extends Decoder.TypeOf<typeof TodoPostDto> {}
 interface TodoPutDto extends Decoder.TypeOf<typeof TodoPutDto> {}
 
+```
+
+## Usage
+
+```ts
+const result = pipe(
+  input,
+  Decoder.validate(TodoDto)
+)
+
+if (Result.isKo(result)) {
+  return new Error(`Validation failed:\n${DecodeError.draw(result.ko)}`)
+}
+
+const dto = result.ok
+console.log(`Validation successful`, dto)
+```
+
+## Optional vs nullable
+
+In `@apoyo/decoders`, like in Typescript, we differentiate between `null` and `undefined` types.
+As such, if you need to support both, you need to chain both helpers:
+
+```ts
+// Decoder<unknown, string | null | undefined>
+const myDecoder = pipe(
+  TextDecoder.string,
+  Decoder.optional,
+  Decoder.nullable
+)
 ```
 
 ## Example
