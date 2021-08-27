@@ -17,7 +17,7 @@ const myBool: Decoder<unknown, boolean> = {
 }
 ```
 
-We recommend however creating decoders with the provided helpers and utilities:
+We **recommend** however creating decoders with the provided helpers and utilities:
 
 - `Decoder.create` to create a decoder:
 

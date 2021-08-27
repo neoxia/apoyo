@@ -149,7 +149,7 @@ export interface Flat {
   value: unknown
   message: string
   meta: Dict
-  path?: string
+  ...
 }
 ```
 
