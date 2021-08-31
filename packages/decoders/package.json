@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/decoders",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Validation utilities",
   "main": "lib/index.js",
   "module": "es6/index.js",
@@ -31,10 +31,8 @@
     "prebuild": "npm run clean",
     "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
   },
-  "dependencies": {
-    "@apoyo/std": "^0.0.8"
-  },
   "devDependencies": {
+    "@apoyo/std": "^0.0.8",
     "@types/jest": "^26.0.23",
     "@types/node": "^12.6.8",
     "jest": "^26.4.2",
@@ -42,6 +40,9 @@
     "ts-jest": "^26.3.0",
     "ts-node": "^8.0.2",
     "typescript": "^4.1.2"
+  },
+  "peerDependencies": {
+    "@apoyo/std": "^0.0.8"
   },
   "publishConfig": {
     "access": "public"
