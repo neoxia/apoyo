@@ -10,6 +10,10 @@ However, we would appreciate any feedback you have on how to improve this librar
 
 ## Installation
 
+Install peer dependencies:
+`npm install @apoyo/std`
+
+Install package:
 `npm install @apoyo/decoders`
 
 ## Introduction
