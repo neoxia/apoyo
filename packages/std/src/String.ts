@@ -41,6 +41,9 @@ export const truncate = (maxLength: number, suffix = '...') => (str: string) =>
 export const replace = (regexp: RegExp | string, replacer: string | Str.Replacer) => (str: string) =>
   str.replace(regexp, replacer as any)
 
+export const replaceAll = (regexp: string, replacer: string | Str.Replacer) =>
+  replace(new RegExp(regexp, 'g'), replacer)
+
 export const regexpEscape = flow(replace(/[|\\{}()[\]^$+*?.]/g, '\\$&'), replace(/-/g, '\\x2d'))
 
 export const htmlEscape = flow(
@@ -231,20 +234,37 @@ export const Str = {
 
   /**
    * @description
-   * Replace occurences in a string.
+   * Replace first occurence (or all if a global RegExp has been specified) in a string.
    * This function is the pipeable equivalent to the native replace function.
    *
    * @example
    * ```ts
    * const str = pipe(
-   *   'Hello John',
+   *   'Hello John, John',
    *   Str.replace('John', 'Doe')
    * )
    *
-   * expect(str).toBe('Hello Doe')
+   * expect(str).toBe('Hello Doe, John')
    * ```
    */
   replace,
+
+  /**
+   * @description
+   * Replace all occurences in a string.
+   * This function is the pipeable equivalent to the native replaceAll function.
+   *
+   * @example
+   * ```ts
+   * const str = pipe(
+   *   'Hello John, John',
+   *   Str.replaceAll('John', 'Doe')
+   * )
+   *
+   * expect(str).toBe('Hello Doe, Doe')
+   * ```
+   */
+  replaceAll,
 
   /**
    * @description

@@ -1,4 +1,4 @@
-import { add, Arr, Dict, identity, not, pipe, throwError, tuple, tupled, untupled } from '../src'
+import { add, Arr, Dict, identity, not, pipe, run, throwError, tuple, tupled, untupled } from '../src'
 
 describe('add', () => {
   it('should addition 2 numbers', () => {
@@ -71,5 +71,11 @@ describe('untupled', () => {
 describe('throwError', () => {
   it('should throw', () => {
     expect(() => throwError('error')).toThrow('error')
+  })
+})
+
+describe('run', () => {
+  it('should run', () => {
+    expect(run(() => 1)).toEqual(1)
   })
 })

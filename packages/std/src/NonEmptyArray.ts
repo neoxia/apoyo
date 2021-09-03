@@ -1,4 +1,4 @@
-import { isNonEmpty } from './Array'
+import * as Arr from './Array'
 import { pipe } from './function'
 import { Option } from './Option'
 import * as Ord from './Ord'
@@ -10,7 +10,7 @@ export const of = <A>(value: A): NonEmptyArray<A> => [value]
 export function fromArray<A>(arr: NonEmptyArray<A>): NonEmptyArray<A>
 export function fromArray<A>(arr: A[]): Option<NonEmptyArray<A>>
 export function fromArray<A>(arr: A[]) {
-  return isNonEmpty(arr) ? arr : undefined
+  return Arr.isNonEmpty(arr) ? arr : undefined
 }
 
 export const head = <A>(arr: NonEmptyArray<A>): A => arr[0]
@@ -32,6 +32,10 @@ export const map = <A, B>(fn: (value: A) => B) => (arr: NonEmptyArray<A>): NonEm
 
 export const min = <A>(ord: Ord.Ord<A>) => (arr: NonEmptyArray<A>): A => arr.reduce(Ord.min(ord), arr[0])
 export const max = <A>(ord: Ord.Ord<A>) => min(Ord.inverse(ord))
+
+export const sort = (Arr.sort as unknown) as {
+  <A>(ord: Ord.Ord<A>): <C extends A>(arr: NonEmptyArray<C>) => NonEmptyArray<C>
+}
 
 /**
  * @namespace NonEmptyArray
@@ -186,5 +190,25 @@ export const NonEmptyArray = {
    * expect(greatestNb).toBe(7)
    * ```
    */
-  max
+  max,
+
+  /**
+   * @description
+   * Sort array by the given `Ord` function.
+   *
+   * This function is the same as `Arr.sort`, but for `NonEmptyArray`s.
+   *
+   * @param ord - The order is used to determine which element is greater
+   *
+   * @example
+   * ```ts
+   * const nbs = pipe(
+   *   [1,4,2,3],
+   *   NonEmptyArray.sort(Ord.number)
+   * )
+   *
+   * expect(nbs).toEqual([1,2,3,4])
+   * ```
+   */
+  sort
 }

@@ -97,7 +97,7 @@ export const slice = (start?: number, end?: number) => <A>(arr: A[]) => arr.slic
 export const take = (nb: number) => slice(0, nb)
 export const skip = (nb: number) => slice(nb)
 
-export const sort = <A>(ord: Ord<A>) => (arr: A[]) =>
+export const sort = <A>(ord: Ord<A>) => <C extends A>(arr: C[]): C[] =>
   arr
     .map(of)
     .sort(pipe(ord, contramap(NEA.head)))

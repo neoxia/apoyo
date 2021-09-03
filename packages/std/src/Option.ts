@@ -33,7 +33,7 @@ export const fromNullable = <T>(value: T | null): Option<T> => (value === null ?
 
 export const fromFalsy = <T>(value: T | Falsy): Option<T> => (!value ? undefined : value)
 
-export const fromString = (value: string): Option<string> => (value.length === 0 ? undefined : value)
+export const fromString = <T>(value: T | string): Option<T | string> => (value === '' ? undefined : value)
 
 export const fromNumber = (value: number): Option<number> => (isNaN(value) ? undefined : value)
 
@@ -54,11 +54,13 @@ export function reject(fn: any) {
   return filter(not(fn))
 }
 
-export function get<A>(onNone: () => A): (value: Option<A>) => A
-export function get<A>(defaultValue: A): (value: Option<A>) => A
+export function get(onNone: () => never): <A>(value: Option<A>) => never
+export function get(onNone: () => never[]): <A extends any[]>(value: Option<A>) => Some<A>
+export function get(defaultValue: never[]): <A extends any[]>(value: Option<A>) => Some<A>
+export function get<B>(onNone: () => B): <A>(value: Option<A>) => Some<A> | B
+export function get<B>(defaultValue: B): <A>(value: Option<A>) => Some<A> | B
 export function get(valueOrFn: unknown | (() => unknown)) {
-  return (value: Option<unknown>): unknown =>
-    isSome(value) ? value : typeof valueOrFn === 'function' ? valueOrFn() : valueOrFn
+  return (value: Option<any>) => (isSome(value) ? value : typeof valueOrFn === 'function' ? valueOrFn() : valueOrFn)
 }
 
 export function throwError<A>(onNone: () => Error): (value: Option<A>) => A
