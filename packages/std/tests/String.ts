@@ -68,7 +68,14 @@ describe('String.template', () => {
 
 describe('String.replace', () => {
   it('should return expected result', () => {
-    expect(pipe('Hello world', Str.replace(/o/g, 'a'))).toBe('Hella warld')
+    expect(pipe('Hello world! Hello John!', Str.replace('Hello', 'Hey'))).toBe('Hey world! Hello John!')
+    expect(pipe('Hello world! Hello John!', Str.replace(/Hello/g, 'Hey'))).toBe('Hey world! Hey John!')
+  })
+})
+
+describe('String.replaceAll', () => {
+  it('should return expected result', () => {
+    expect(pipe('Hello world! Hello John!', Str.replaceAll('Hello', 'Hey'))).toBe('Hey world! Hey John!')
   })
 })
 

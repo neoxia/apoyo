@@ -41,15 +41,25 @@ export const optional = <A>(ord: Ord<A>): Ord<Option<A>> => (a, b) =>
 export const nullable = <A>(ord: Ord<A>): Ord<A | null> => (a, b) =>
   a === b ? 0 : a !== null ? (b !== null ? ord(a, b) : -1) : 1
 
-export const concat = <A>(...ords: [Ord<A>, Ord<A>, ...Ord<A>[]]): Ord<A> => (a, b) => {
-  for (let i = 0; i < ords.length; ++i) {
-    const ord = ords[i]
-    const result = ord(a, b)
-    if (result !== 0) {
-      return result
+export function concat<A>(...ords: [Ord<A>]): Ord<A>
+export function concat<A, B>(...ords: [Ord<A>, Ord<B>]): Ord<A & B>
+export function concat<A, B, C>(...ords: [Ord<A>, Ord<B>, Ord<C>]): Ord<A & B & C>
+export function concat<A, B, C, D>(...ords: [Ord<A>, Ord<B>, Ord<C>, Ord<D>]): Ord<A & B & C & D>
+export function concat<A, B, C, D, E>(...ords: [Ord<A>, Ord<B>, Ord<C>, Ord<D>, Ord<E>]): Ord<A & B & C & D & E>
+export function concat<A, B, C, D, E, F>(
+  ...ords: [Ord<A>, Ord<B>, Ord<C>, Ord<D>, Ord<E>, Ord<F>]
+): Ord<A & B & C & D & E & F>
+export function concat(...ords: [Ord<any>, ...Ord<any>[]]): Ord<any> {
+  return (a, b) => {
+    for (let i = 0; i < ords.length; ++i) {
+      const ord = ords[i]
+      const result = ord(a, b)
+      if (result !== 0) {
+        return result
+      }
     }
+    return 0
   }
-  return 0
 }
 
 export const eq = <A>(ord: Ord<A>) =>
