@@ -1,4 +1,4 @@
-import { pipe, Arr, first, identity, Result, Ord } from '../src'
+import { pipe, Arr, first, identity, Result, Ord, Option } from '../src'
 
 describe('Array.head', () => {
   it('should return first value when not empty', () => {
@@ -409,6 +409,30 @@ describe('Array.min', () => {
   it('should return undefined on empty array', () => {
     expect(pipe([], Arr.min(Ord.number))).toBe(undefined)
   })
+
+  it('should be typed correctly', () => {
+    type Todo = {
+      id: string
+      title: string
+    }
+    const todos: Todo[] = [
+      {
+        id: '2',
+        title: 'Eat breakfast'
+      },
+      {
+        id: '1',
+        title: 'Wake up'
+      }
+    ]
+    const ordById = pipe(
+      Ord.string,
+      Ord.contramap((item: { id: string }) => item.id)
+    )
+
+    const first: Option<Todo> = pipe(todos, Arr.min(ordById))
+    expect(first).toBe(todos[1])
+  })
 })
 
 describe('Array.max', () => {
@@ -418,6 +442,30 @@ describe('Array.max', () => {
 
   it('should return undefined on empty array', () => {
     expect(pipe([], Arr.max(Ord.number))).toBe(undefined)
+  })
+
+  it('should be typed correctly', () => {
+    type Todo = {
+      id: string
+      title: string
+    }
+    const todos: Todo[] = [
+      {
+        id: '2',
+        title: 'Eat breakfast'
+      },
+      {
+        id: '1',
+        title: 'Wake up'
+      }
+    ]
+    const ordById = pipe(
+      Ord.string,
+      Ord.contramap((item: { id: string }) => item.id)
+    )
+
+    const first: Option<Todo> = pipe(todos, Arr.max(ordById))
+    expect(first).toBe(todos[0])
   })
 })
 

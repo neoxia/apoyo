@@ -185,7 +185,8 @@ export const separate = <A, E>(arr: Array<Result<A, E>>) => pipe(arr, partitionM
 
 export const isNonEmpty = <A>(arr: A[]): arr is NonEmptyArray<A> => arr.length > 0
 
-export const min = <A>(ord: Ord<A>) => (arr: A[]): Option<A> => (isNonEmpty(arr) ? pipe(arr, NEA.min(ord)) : undefined)
+export const min = <A>(ord: Ord<A>) => <C extends A>(arr: C[]): Option<C> =>
+  isNonEmpty(arr) ? pipe(arr, NEA.min(ord)) : undefined
 
 export const max = <A>(ord: Ord<A>) => min(inverse(ord))
 

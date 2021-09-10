@@ -1,22 +1,27 @@
-import * as Arr from './Array'
+import type { Ord } from './Ord'
+import type { Option } from './Option'
+
 import { pipe } from './function'
-import { Option } from './Option'
-import * as Ord from './Ord'
+import * as Order from './Ord'
+import * as Arr from './Array'
 
 export type NonEmptyArray<A> = [A, ...A[]]
 
 export const of = <A>(value: A): NonEmptyArray<A> => [value]
 
+export function fromArray<A>(arr: Readonly<NonEmptyArray<A>>): NonEmptyArray<A>
 export function fromArray<A>(arr: NonEmptyArray<A>): NonEmptyArray<A>
 export function fromArray<A>(arr: A[]): Option<NonEmptyArray<A>>
-export function fromArray<A>(arr: A[]) {
+export function fromArray(arr: any): any {
   return Arr.isNonEmpty(arr) ? arr : undefined
 }
 
-export const head = <A>(arr: NonEmptyArray<A>): A => arr[0]
-export const last = <A>(arr: NonEmptyArray<A>): A => arr[arr.length - 1]
+export const head = <A>(arr: NonEmptyArray<A> | Readonly<NonEmptyArray<A>>): A => arr[0]
+export const last = <A>(arr: NonEmptyArray<A> | Readonly<NonEmptyArray<A>>): A => arr[arr.length - 1]
 
-export const mapIndexed = <A, B>(fn: (value: A, index: number) => B) => (arr: NonEmptyArray<A>): NonEmptyArray<B> => {
+export const mapIndexed = <A, B>(fn: (value: A, index: number) => B) => (
+  arr: NonEmptyArray<A> | Readonly<NonEmptyArray<A>>
+): NonEmptyArray<B> => {
   const res: NonEmptyArray<B> = [fn(arr[0], 0)]
   for (let i = 1; i < arr.length; ++i) {
     res.push(fn(arr[i], i))
@@ -24,17 +29,20 @@ export const mapIndexed = <A, B>(fn: (value: A, index: number) => B) => (arr: No
   return res
 }
 
-export const map = <A, B>(fn: (value: A) => B) => (arr: NonEmptyArray<A>): NonEmptyArray<B> =>
+export const map = <A, B>(fn: (value: A) => B) => (
+  arr: NonEmptyArray<A> | Readonly<NonEmptyArray<A>>
+): NonEmptyArray<B> =>
   pipe(
     arr,
     mapIndexed((value) => fn(value))
   )
 
-export const min = <A>(ord: Ord.Ord<A>) => (arr: NonEmptyArray<A>): A => arr.reduce(Ord.min(ord), arr[0])
-export const max = <A>(ord: Ord.Ord<A>) => min(Ord.inverse(ord))
+export const min = <A>(ord: Ord<A>) => <C extends A>(arr: NonEmptyArray<C> | Readonly<NonEmptyArray<C>>): C =>
+  arr.reduce(Order.min(ord), arr[0])
+export const max = <A>(ord: Ord<A>) => min(Order.inverse(ord))
 
-export const sort = (Arr.sort as unknown) as {
-  <A>(ord: Ord.Ord<A>): <C extends A>(arr: NonEmptyArray<C>) => NonEmptyArray<C>
+export const sort = (<A>(ord: Ord<A>) => Arr.sort(ord) as unknown) as {
+  <A>(ord: Ord<A>): <C extends A>(arr: NonEmptyArray<C> | Readonly<NonEmptyArray<C>>) => NonEmptyArray<C>
 }
 
 /**
