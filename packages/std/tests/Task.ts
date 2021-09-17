@@ -350,3 +350,155 @@ describe('Task.tapError', () => {
     expect(mock.mock.calls[0][1]?.message).toBe('Internal error')
   })
 })
+
+describe('Task.taskify', () => {
+  it('should work', async () => {
+    const increment = (x: number) => Promise.resolve(x + 1)
+    const task = pipe(42, Task.taskify(increment))
+    expect(await task).toBe(43)
+  })
+})
+
+describe('Task.retry', () => {
+  it('should work', async () => {
+    const mock = jest.fn()
+    const result = await pipe(
+      Task.reject(Err.of('test')),
+      Task.retry((err, attempt) => {
+        mock(`attempt ${attempt} failed`, attempt)
+        if (attempt >= 3) {
+          throw err
+        }
+        return
+      }),
+      Task.tryCatch
+    )
+    expect(pipe(result, Result.isKo)).toBe(true)
+    expect(
+      pipe(
+        result,
+        Result.mapError((e: any) => e.message),
+        Result.swap,
+        Result.get
+      )
+    ).toBe('test')
+
+    expect(mock.mock.calls.length).toBe(3)
+    expect(mock.mock.calls[0][1]).toBe(1)
+    expect(mock.mock.calls[1][1]).toBe(2)
+    expect(mock.mock.calls[2][1]).toBe(3)
+  })
+
+  it('should not retry when task resolves', async () => {
+    const mock = jest.fn()
+    const result = await pipe(
+      Task.resolve(42),
+      Task.retry((err, attempt) => {
+        mock(`attempt ${attempt} failed`, attempt)
+        if (attempt >= 3) {
+          throw err
+        }
+        return
+      }),
+      Task.tryCatch
+    )
+    expect(pipe(result, Result.isOk)).toBe(true)
+    expect(pipe(result, Result.get)).toBe(42)
+
+    expect(mock.mock.calls.length).toBe(0)
+  })
+})
+
+describe('Task.retryBy', () => {
+  it('should attempt N times', async () => {
+    const mock = jest.fn()
+    const result = await pipe(
+      Task.reject(Err.of('test')),
+      Task.tapError(() => mock()),
+      Task.retryBy({
+        attempts: 3
+      }),
+      Task.tryCatch
+    )
+    expect(pipe(result, Result.isKo)).toBe(true)
+    expect(
+      pipe(
+        result,
+        Result.mapError((e: any) => e.message),
+        Result.swap,
+        Result.get
+      )
+    ).toBe('test')
+
+    expect(mock.mock.calls.length).toBe(3)
+  })
+
+  it('should only retry when condition is fullfilled', async () => {
+    const mock = jest.fn()
+    const result = await pipe(
+      Task.reject(Err.of('test', { code: 'test' })),
+      Task.tapError(() => mock()),
+      Task.retryBy({
+        attempts: 3,
+        delay: 0,
+        when: (err) => err.code === 'test'
+      }),
+      Task.tryCatch
+    )
+    expect(pipe(result, Result.isKo)).toBe(true)
+    expect(
+      pipe(
+        result,
+        Result.mapError((e: any) => e.message),
+        Result.swap,
+        Result.get
+      )
+    ).toBe('test')
+
+    expect(mock.mock.calls.length).toBe(3)
+  })
+
+  it('should not retry when condition is not fullfilled', async () => {
+    const mock = jest.fn()
+    const result = await pipe(
+      Task.reject(Err.of('test')),
+      Task.tapError(() => mock()),
+      Task.retryBy({
+        attempts: 3,
+        delay: 0,
+        when: (err) => err.code === 'test'
+      }),
+      Task.tryCatch
+    )
+    expect(pipe(result, Result.isKo)).toBe(true)
+    expect(
+      pipe(
+        result,
+        Result.mapError((e: any) => e.message),
+        Result.swap,
+        Result.get
+      )
+    ).toBe('test')
+
+    expect(mock.mock.calls.length).toBe(1)
+  })
+
+  it('should not retry when task resolves', async () => {
+    const mock = jest.fn()
+    const result = await pipe(
+      Task.resolve(42),
+      Task.tap(() => mock()),
+      Task.tapError(() => mock()),
+      Task.retryBy({
+        attempts: 3,
+        delay: 0,
+        when: (err) => err.code === 'test'
+      }),
+      Task.tryCatch
+    )
+    expect(pipe(result, Result.isOk)).toBe(true)
+    expect(pipe(result, Result.get)).toBe(42)
+
+    expect(mock.mock.calls.length).toBe(1)
+  })
+})

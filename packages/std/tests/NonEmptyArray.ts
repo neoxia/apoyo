@@ -54,14 +54,21 @@ describe('NonEmptyArray.map', () => {
 
 describe('NonEmptyArray.min', () => {
   it('should return smallest', () => {
-    const res = pipe([1, 2, 3, 0, 6], NonEmptyArray.min(Ord.number))
+    const res = pipe([1, 2, 3, 0, 6] as const, NonEmptyArray.min(Ord.number))
     expect(res).toEqual(0)
   })
 })
 
 describe('NonEmptyArray.max', () => {
   it('should return greatest', () => {
-    const res = pipe([1, 2, 3, 0, 6], NonEmptyArray.max(Ord.number))
+    const res = pipe([1, 2, 3, 0, 6] as const, NonEmptyArray.max(Ord.number))
     expect(res).toEqual(6)
+  })
+})
+
+describe('NonEmptyArray.sort', () => {
+  it('should return smallest', () => {
+    const res = pipe([1, 2, 3, 0, 6] as const, NonEmptyArray.sort(Ord.number))
+    expect(res).toEqual([0, 1, 2, 3, 6])
   })
 })
