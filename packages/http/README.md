@@ -1,18 +1,13 @@
-# Apoyo - Std
+# Apoyo - Http
 
 [![npm version](https://badgen.net/npm/v/@apoyo/http)](https://www.npmjs.com/package/@apoyo/std)
-[![build size](https://badgen.net/bundlephobia/min/@apoyo/http)](https://bundlephobia.com/result?p=@apoyo/std)
-
-**Warning**: This package is still in development and features may still change, be renamed or removed.
-
-However, we would appreciate any feedback you have on how to improve this library:
-
-- Which features are missing?
-- Which features are hard to understand or unnecessary?
-- Which features need to be improved?
 
 ## Installation
 
+Install peer dependencies:
+`npm install @apoyo/std`
+
+Install package:
 `npm install @apoyo/http`
 
 ## Motivation
@@ -23,17 +18,19 @@ However, that is where they stop. They don't offer a general `Response` interfac
 
 This library exposes generic HTTP response interfaces, usable with any framework or library, as well as a bunch of utilities to create all possible responses cleanly and easily.
 
-In this library, a `Http.Response` can take a lot of forms:
+## Response types
 
-- `Http.Result`, which contains a normal `body` / content that needs to be send to the client:
-  - This may be text or json.
-  - This may be an HTTP error or not.
+In this library, a `Http.Response` can take 4 forms:
+
+### Http Results
+
+Most of the time, your response will be a simple `Http.Result`, which contains a normal `body` / content that needs to be send to the client:
+
+- This may be text or json.
+- This may be an HTTP error or not.
 
 ```ts
-/*
- * `Route.handler` may be any function you write, that takes a function of type `(req: any) => Http.Response | Promise<Http.Response>` and transforms it into a request handler for your HTTP library.
- */
-const GetTodos = Route.handler(async (req) => {
+const GetTodos = withExpress(async (req: Express.Request) => {
   if (!req.user) {
     throw Http.Unauthorized()
   }
@@ -42,11 +39,57 @@ const GetTodos = Route.handler(async (req) => {
 })
 ```
 
-- `Http.Redirect`, which contains data to redirect the user to a given page.
-  - This may not be supported by your library (ex: AWS Lambda). In this case you should throw and return and error to your user.
+**Note**: You will need to create a "wrapper", which transforms your function into a HTTP Handler that your framework can support.
+
+*Example with express*:
 
 ```ts
-const Home = Route.handler(async (req) => {
+const withExpress = (fn: (req: Express.Request) => Http.Response | Promise<Http.Response>) => {
+  return async (req: Express.Request, res: Express.Response) => {
+    const response = await pipe(
+      Http.tryCatch(() => fn(req)),
+      Prom.catchError(err => Prom.resolve(Http.InternalError({
+        cause: process.env.NODE_ENV === 'production' ? undefined : err
+      })))
+    )
+
+    // Handle Response.Callback
+    if (typeof response.type === 'function') {
+      return response(res)
+    }
+
+    res.status(response.status)
+    res.set(response.headers)
+
+    // Handle Response.Result
+    if (response.type === ResponseType.Result) {
+      if (response.body === undefined || typeof response.body === 'string') {
+        return res.send(response.body)
+      } else {
+        return res.json(response.body)
+      }
+    }
+    // Handle Response.Redirect
+    if (response.type === ResponseType.Redirect) {
+      return res.redirect(response.url)
+    }
+    // Handle Response.Stream
+    if (response.type === ResponseType.Stream) {
+      return response.stream.pipe(res)
+    }
+  }
+}
+```
+
+**Note**: This is a very simple adapter, and you may need to change it to better suit your use-case and allow better configurability.
+
+### Http redirections
+
+Sometimes, you need to redirect the user to another page.
+You can use the `Http.Redirect` type for those situations.
+
+```ts
+const Home = withExpress(async (req: Express.Request) => {
   if (!req.user) {
     throw Http.redirect('/login')
   }
@@ -54,11 +97,12 @@ const Home = Route.handler(async (req) => {
 })
 ```
 
-- `Http.Stream`, which contains a `ReadableStream` to stream to your client.
-  - This may not be supported by your library (ex: AWS Lambda). In this case you should throw and return and error to your user.
+### Http streams
+
+Sometimes, it is also necessary to stream data to the client. In that case, you can use the type `Http.Stream`, which contains a `ReadableStream` to stream to your client.
 
 ```ts
-const Home = Route.handler(async (req) => {
+const DownloadExample = withExpress(async (req: Express.Request) => {
   // Build your response from the ground up:
   return pipe(
     Response.status(200),
@@ -72,7 +116,18 @@ const Home = Route.handler(async (req) => {
 })
 ```
 
-- `Http.Callback`, which is simply a function, taking as a parameter the native `Response` from your library. This should only be used if no other solutions exist.
+### Native callbacks
+
+In the case no abstraction exists for what you need, you can use an `Http.Callback`, which is simply a function, taking as a parameter the native `Response` from your library.
+
+```ts
+const Home = withExpress(async (req: Express.Request) => {
+  // Bad, as you can use `return Http.send('Bad')` instead
+  return (res: Express.Response) => {
+    res.status(200).send('Bad')
+  }
+})
+```
 
 ## License
 

@@ -1,7 +1,7 @@
 {
   "name": "@apoyo/http",
   "version": "0.0.1",
-  "description": "HTTP utility library",
+  "description": "HTTP response utility library",
   "main": "lib/index.js",
   "module": "es6/index.js",
   "typings": "lib/index.d.ts",
@@ -11,13 +11,14 @@
   "tags": [
     "utils",
     "http",
-    "http responses",
+    "responses",
+    "agnostic",
     "typescript"
   ],
   "keywords": [
     "utils",
     "http",
-    "http responses",
+    "responses",
     "typescript"
   ],
   "repository": {

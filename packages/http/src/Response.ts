@@ -1,4 +1,4 @@
-import { Dict, Enum, pipe, Str } from '@apoyo/std'
+import { Dict, Enum, Str } from '@apoyo/std'
 
 import { Json } from './Json'
 
@@ -13,11 +13,10 @@ export namespace Response {
   export interface Open {
     status: number
     headers: Dict
-    cookies: Dict
   }
   export interface Result extends Open {
     type: ResponseType.RESULT
-    body?: string
+    body?: Json
   }
   export interface Redirect extends Open {
     type: ResponseType.REDIRECT
@@ -36,8 +35,7 @@ const isResponse = (input: any): input is Response => hasType(input.type)
 
 const status = (status: number): Response.Open => ({
   status,
-  headers: {},
-  cookies: {}
+  headers: {}
 })
 
 const header = (name: string, value: string) => (res: Response.Open): Response.Open => ({
@@ -48,22 +46,11 @@ const header = (name: string, value: string) => (res: Response.Open): Response.O
   }
 })
 
-const cookie = (name: string, value: string) => (res: Response.Open): Response.Open => ({
-  ...res,
-  cookies: {
-    ...res.cookies,
-    [name]: value
-  }
-})
-
-const send = (body?: string) => (res: Response.Open): Response.Result => ({
+const send = (body?: Json) => (res: Response.Open): Response.Result => ({
   ...res,
   type: ResponseType.RESULT,
   body
 })
-
-const json = (data?: Json) => (res: Response.Open): Response.Result =>
-  pipe(res, send(data ? JSON.stringify(data) : undefined))
 
 const redirect = (url: string) => (res: Response.Open): Response.Redirect => ({
   ...res,
@@ -81,9 +68,7 @@ export const Response = {
   isResponse,
   status,
   send,
-  json,
   header,
-  cookie,
   redirect,
   stream
 }
