@@ -44,38 +44,50 @@ const GetTodos = withExpress(async (req: Express.Request) => {
 *Example with express*:
 
 ```ts
-const withExpress = (fn: (req: Express.Request) => Http.Response | Promise<Http.Response>) => {
+export const withExpress = (fn: (req: Express.Request) => Http.Response | Promise<Http.Response>) => {
   return async (req: Express.Request, res: Express.Response) => {
     const response = await pipe(
       Http.tryCatch(() => fn(req)),
-      Prom.catchError(err => Prom.resolve(Http.InternalError({
-        cause: process.env.NODE_ENV === 'production' ? undefined : err
-      })))
+      Prom.catchError((err) =>
+        Prom.resolve(
+          Http.InternalError({
+            cause: process.env.NODE_ENV === 'production' ? undefined : err
+          })
+        )
+      )
     )
 
     // Handle Response.Callback
-    if (typeof response.type === 'function') {
-      return response(res)
+    if (typeof response === 'function') {
+      response(res)
+      return
     }
 
     res.status(response.status)
     res.set(response.headers)
 
     // Handle Response.Result
-    if (response.type === ResponseType.Result) {
+    if (response.type === ResponseType.RESULT) {
       if (response.body === undefined || typeof response.body === 'string') {
-        return res.send(response.body)
+        res.send(response.body)
       } else {
-        return res.json(response.body)
+        res.json(response.body)
       }
+      return
     }
     // Handle Response.Redirect
-    if (response.type === ResponseType.Redirect) {
-      return res.redirect(response.url)
+    if (response.type === ResponseType.REDIRECT) {
+      res.redirect(response.url)
+      return
     }
     // Handle Response.Stream
-    if (response.type === ResponseType.Stream) {
-      return response.stream.pipe(res)
+    if (response.type === ResponseType.STREAM) {
+      pipeline(response.stream, res, (err) => {
+        if (err) {
+          res.end()
+        }
+      })
+      return
     }
   }
 }
