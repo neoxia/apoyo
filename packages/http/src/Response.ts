@@ -24,7 +24,7 @@ export namespace Response {
   }
   export interface Stream extends Open {
     type: ResponseType.STREAM
-    stream: ReadableStream
+    stream: NodeJS.ReadableStream
   }
   export type Callback = (...args: any[]) => void
 }
@@ -58,7 +58,7 @@ const redirect = (url: string) => (res: Response.Open): Response.Redirect => ({
   url
 })
 
-const stream = (readable: ReadableStream) => (res: Response.Open): Response.Stream => ({
+const stream = (readable: NodeJS.ReadableStream) => (res: Response.Open): Response.Stream => ({
   ...res,
   type: ResponseType.STREAM,
   stream: readable
