@@ -5,7 +5,17 @@ import { Decoder } from './Decoder'
 
 export type ArrayDecoder<I, O extends any[]> = Decoder<I, O>
 
-export const unknownArray = Decoder.fromGuard(Arr.isArray, `value is not an array`)
+export const enum ArrayCode {
+  ARRAY = 'array',
+  NON_EMPTY_ARRAY = 'array.nonEmpty',
+  LENGTH = 'array.length',
+  MIN = 'array.min',
+  MAX = 'array.max'
+}
+
+export const unknownArray = Decoder.fromGuard(Arr.isArray, `value is not an array`, {
+  code: ArrayCode.ARRAY
+})
 
 export const array = <A>(decoder: Decoder<unknown, A>): ArrayDecoder<unknown, A[]> =>
   pipe(
@@ -27,10 +37,16 @@ export const array = <A>(decoder: Decoder<unknown, A>): ArrayDecoder<unknown, A[
   )
 
 export const nonEmptyArray = <O>(decoder: Decoder<unknown, O>) =>
-  pipe(array(decoder), Decoder.filter(Arr.isNonEmpty, `array should not be empty`))
+  pipe(
+    array(decoder),
+    Decoder.filter(Arr.isNonEmpty, `array should not be empty`, {
+      code: ArrayCode.NON_EMPTY_ARRAY
+    })
+  )
 
 export const length = (len: number) =>
   Decoder.filter((arr: unknown[]) => arr.length === len, `array should contain exactly ${len} elements`, {
+    code: ArrayCode.LENGTH,
     length: len
   }) as {
     <D extends ArrayDecoder<any, any>>(value: D): D
@@ -38,6 +54,7 @@ export const length = (len: number) =>
 
 export const min = (minLength: number) =>
   Decoder.filter((arr: unknown[]) => arr.length >= minLength, `array should contain at least ${minLength} elements`, {
+    code: ArrayCode.MIN,
     minLength
   }) as {
     <D extends ArrayDecoder<any, any>>(value: D): D
@@ -45,6 +62,7 @@ export const min = (minLength: number) =>
 
 export const max = (maxLength: number) =>
   Decoder.filter((arr: unknown[]) => arr.length <= maxLength, `array should contain at most ${maxLength} elements`, {
+    code: ArrayCode.MAX,
     maxLength
   }) as {
     <D extends ArrayDecoder<any, any>>(value: D): D

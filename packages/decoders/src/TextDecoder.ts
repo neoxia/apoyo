@@ -7,13 +7,28 @@ const REGEXP_EMAIL = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}
 
 export type TextDecoder<I> = Decoder<I, string>
 
+export const enum TextCode {
+  STRING = 'string',
+  LENGTH = 'string.length',
+  MIN = 'string.min',
+  MAX = 'string.max',
+  EMAIL = 'string.email',
+  UUID = 'string.uuid',
+  EQUALS = 'string.equals',
+  ONE_OF = 'string.oneOf'
+}
+
 export const string: TextDecoder<unknown> = Decoder.fromGuard(
   (input: unknown): input is string => typeof input === 'string',
-  `value is not a string`
+  `value is not a string`,
+  {
+    code: TextCode.STRING
+  }
 )
 
 export const length = (len: number) =>
   Decoder.filter((input: string) => input.length === len, `string should contain exactly ${len} characters`, {
+    code: TextCode.LENGTH,
     length: len
   })
 
@@ -22,6 +37,7 @@ export const min = (minLength: number) =>
     (input: string) => input.length >= minLength,
     `string should contain at least ${minLength} characters`,
     {
+      code: TextCode.MIN,
       minLength
     }
   )
@@ -31,6 +47,7 @@ export const max = (maxLength: number) =>
     (input: string) => input.length <= maxLength,
     `string should contain at most ${maxLength} characters`,
     {
+      code: TextCode.MAX,
       maxLength
     }
   )
@@ -54,18 +71,24 @@ export const htmlEscape = Decoder.map(Str.htmlEscape)
 
 export const email = pipe(
   string,
-  Decoder.filter((str): str is Email => REGEXP_EMAIL.test(str), `string is not an email`)
+  Decoder.filter((str): str is Email => REGEXP_EMAIL.test(str), `string is not an email`, {
+    code: TextCode.EMAIL
+  })
 )
 
 export const uuid = pipe(
   string,
-  Decoder.filter((str): str is UUID => REGEXP_UUID.test(str), `string is not an uuid`)
+  Decoder.filter((str): str is UUID => REGEXP_UUID.test(str), `string is not an uuid`, {
+    code: TextCode.UUID
+  })
 )
 
 export const equals = <T extends string>(value: T) =>
   pipe(
     string,
-    Decoder.filter((str): str is T => str === value, `string is not equal to value ${JSON.stringify(value)}`)
+    Decoder.filter((str): str is T => str === value, `string is not equal to value ${JSON.stringify(value)}`, {
+      code: TextCode.EQUALS
+    })
   )
 
 export function oneOf<T extends string>(arr: T[]): Decoder<unknown, T>
@@ -75,6 +98,7 @@ export function oneOf(arr: string[] | Set<string>): any {
   return pipe(
     string,
     Decoder.filter((str: string) => set.has(str), `string is not included in the given values`, {
+      code: TextCode.ONE_OF,
       values: arr
     })
   )

@@ -11,13 +11,31 @@ export const isDatetimeFormat = (str: string): str is ISO.Datetime => REGEXP_DAT
 
 export type DateDecoder<I, O extends ISO.Date | ISO.Datetime> = Decoder<I, O>
 
-export const date = pipe(TextDecoder.string, Decoder.filter(isDateFormat, `string is not a date string`))
-export const datetime = pipe(TextDecoder.string, Decoder.filter(isDatetimeFormat, `string is not a datetime string`))
+export const enum DateCode {
+  DATE = 'date.date',
+  DATETIME = 'date.datetime',
+  NATIVE = 'date.native'
+}
+
+export const date = pipe(
+  TextDecoder.string,
+  Decoder.filter(isDateFormat, `string is not a date string`, {
+    code: DateCode.DATE
+  })
+)
+export const datetime = pipe(
+  TextDecoder.string,
+  Decoder.filter(isDatetimeFormat, `string is not a datetime string`, {
+    code: DateCode.DATETIME
+  })
+)
 
 export const native: Decoder<unknown, Date> = pipe(
   TextDecoder.string,
   Decoder.map((str) => new Date(str)),
-  Decoder.filter((date): date is Date => !Number.isNaN(date.getTime()), `string is not a valid Date`)
+  Decoder.filter((date): date is Date => !Number.isNaN(date.getTime()), `string is not a valid Date`, {
+    code: DateCode.NATIVE
+  })
 )
 
 /**

@@ -9,9 +9,20 @@ export type BooleanDecoder<I> = Decoder<I, boolean>
 const TEXT_TRUE = new Set(['true', 'yes', 'y', '1'])
 const TEXT_FALSE = new Set(['false', 'no', 'no', '0'])
 
+export const enum BooleanCode {
+  STRICT = 'bool.strict',
+  FROM_STRING = 'bool.fromString',
+  FROM_NUMBER = 'bool.fromNumber',
+  BOOL = 'bool',
+  EQUALS = 'bool.equals'
+}
+
 export const strict: BooleanDecoder<unknown> = Decoder.fromGuard(
   (input: unknown): input is boolean => typeof input === 'boolean',
-  `value is not a boolean`
+  `value is not a boolean`,
+  {
+    code: BooleanCode.STRICT
+  }
 )
 
 export const fromString = pipe(
@@ -23,6 +34,9 @@ export const fromString = pipe(
       : TEXT_FALSE.has(low)
       ? Result.ok(false)
       : Result.ko(DecodeError.value(str, `string is not a boolean`))
+  }),
+  Decoder.withMessage(`could not parse input string into a boolean`, {
+    code: BooleanCode.FROM_STRING
   })
 )
 
@@ -34,18 +48,25 @@ export const fromNumber = pipe(
       : nb === 0
       ? Result.ok(false)
       : Result.ko(DecodeError.value(nb, `number is not a boolean`))
-  )
+  ),
+  Decoder.withMessage(`could not parse input number into a boolean`, {
+    code: BooleanCode.FROM_NUMBER
+  })
 )
 
 export const boolean: BooleanDecoder<unknown> = pipe(
   Decoder.union(strict, fromString, fromNumber),
-  Decoder.withMessage(`value is not a boolean`)
+  Decoder.withMessage(`value is not a boolean`, {
+    code: BooleanCode.BOOL
+  })
 )
 
 export const equals = <T extends boolean>(bool: T) =>
   pipe(
     boolean,
-    Decoder.filter((value): value is T => value === bool, `boolean is not ${bool}`)
+    Decoder.filter((value): value is T => value === bool, `boolean is not ${bool}`, {
+      code: BooleanCode.EQUALS
+    })
   )
 
 /**

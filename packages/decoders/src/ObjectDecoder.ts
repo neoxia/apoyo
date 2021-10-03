@@ -8,6 +8,10 @@ export type ObjectDecoder<I, O extends Dict> = Decoder<I, O> & {
   props: Dict
 }
 
+export const enum ObjectCode {
+  DICT = 'dict'
+}
+
 type Struct<A extends Dict<unknown>> = {
   [P in keyof A]: Decoder<unknown, A[P]>
 }
@@ -19,7 +23,10 @@ const create = <I, O extends Dict>(props: Dict, decoder: Decoder<I, O>): ObjectD
 
 export const unknownDict: Decoder<unknown, Dict<unknown>> = Decoder.fromGuard(
   (input: unknown): input is Dict<unknown> => typeof input === 'object' && input !== null && !Array.isArray(input),
-  `value is not an object`
+  `value is not an object`,
+  {
+    code: ObjectCode.DICT
+  }
 )
 
 export const dict = <A>(decoder: Decoder<unknown, A>): Decoder<unknown, Dict<A>> => {
