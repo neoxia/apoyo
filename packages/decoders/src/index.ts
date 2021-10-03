@@ -1,4 +1,5 @@
 export * from './types'
+export { ErrorCode } from './Errors'
 export { Decoder, DecoderResult } from './Decoder'
 export { DecodeError, DecodeErrorTag } from './DecodeError'
 export { TextDecoder, TextCode } from './TextDecoder'

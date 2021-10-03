@@ -1,6 +1,7 @@
 import { Dict, InverseRefinement, NonEmptyArray, Option, pipe, Predicate, Refinement, Result } from '@apoyo/std'
 
 import { DecodeError } from './DecodeError'
+import { ErrorCode } from './Errors'
 
 export type DecoderResult<A> = Result<A, DecodeError>
 
@@ -60,7 +61,7 @@ export const optional = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | undefined
 export const required = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | undefined> =>
   create((input: I) =>
     input === undefined || input === null
-      ? Result.ko(DecodeError.value(input, 'input is required'))
+      ? Result.ko(DecodeError.value(input, 'input is required', { code: ErrorCode.REQUIRED }))
       : pipe(input, validate(decoder))
   )
 
