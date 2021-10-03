@@ -341,7 +341,7 @@ export const DecodeError = {
    * Flatten your `DecodeError` into an `DecodeError.Flat`.
    * This allows you to more easily format custom errors.
    *
-   * It is however recommanded to simply use `DecodeError.format` or `DecodeError.formatBy` instead.
+   * It is however recommended to simply use `DecodeError.format` or `DecodeError.formatBy` instead.
    */
   flatten,
 
