@@ -302,17 +302,15 @@ export const getPath = (err: DecodeError.Flat): string => {
   )
 }
 
-export const format = formatBy(
-  (e): DecodeError.Formatted => {
-    return {
-      value: e.value,
-      message: e.message,
-      meta: e.meta,
-      description: getDescription(e),
-      path: getPath(e)
-    }
-  }
-)
+export const getFormatted = (e: DecodeError.Flat): DecodeError.Formatted => ({
+  value: e.value,
+  message: e.message,
+  meta: e.meta,
+  description: getDescription(e),
+  path: getPath(e)
+})
+
+export const format = formatBy(getFormatted)
 
 /**
  * @deprecated Use `DecodeError.format` or `DecodeError.formatBy` to fully customize your error messages
@@ -358,6 +356,13 @@ export const DecodeError = {
    * Use `DecodeError.flatten` to transform your `DecodeError` into an `DecodeError.Flat`
    */
   getPath,
+
+  /**
+   * @description
+   * Get formatted error from a `DecodeError.Flat`.
+   * Use `DecodeError.flatten` to transform your `DecodeError` into an `DecodeError.Flat`
+   */
+  getFormatted,
 
   /**
    * @description
