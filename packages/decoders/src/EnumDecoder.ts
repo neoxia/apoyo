@@ -1,16 +1,11 @@
 import { Enum } from '@apoyo/std'
 import { Decoder } from './Decoder'
+import { ErrorCode } from './Errors'
 
 export type Literal = string | number | boolean | null
 
 export type EnumDecoder<I, O> = Decoder<I, O> & {
   values: Set<unknown>
-}
-
-export const enum EnumCode {
-  NATIVE = 'enum.native',
-  LITERAL = 'enum.literal',
-  IS_IN = 'enum.isIn'
 }
 
 const create = <I, O>(values: Set<unknown>, decoder: Decoder<I, O>): EnumDecoder<I, O> => ({
@@ -26,7 +21,7 @@ export const native = <E extends Enum<E>>(enumType: E): EnumDecoder<unknown, E[k
   return create(
     set,
     Decoder.fromGuard(inSet(set), `input does not match any value in enumeration`, {
-      code: EnumCode.NATIVE,
+      code: ErrorCode.ENUM,
       values
     })
   )
@@ -39,7 +34,7 @@ export const literal = <A extends readonly [Literal, ...Literal[]]>(...values: [
   return create(
     set,
     Decoder.fromGuard(inSet(set), `value is not equal to ${values.join(', or ')}`, {
-      code: EnumCode.LITERAL,
+      code: ErrorCode.ENUM_LITERAL,
       values
     })
   )
@@ -51,7 +46,7 @@ export function isIn(arr: any[] | Set<any>): any {
   return create(
     set,
     Decoder.fromGuard(inSet(set), `string is not included in the allowed list of values`, {
-      code: EnumCode.IS_IN
+      code: ErrorCode.ENUM_IS_IN
     })
   )
 }

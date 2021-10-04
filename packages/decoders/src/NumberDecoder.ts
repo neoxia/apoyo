@@ -1,22 +1,15 @@
 import { flow, pipe } from '@apoyo/std'
 import { Decoder } from './Decoder'
+import { ErrorCode } from './Errors'
 import { TextDecoder } from './TextDecoder'
 
 export type NumberDecoder<I> = Decoder<I, number>
-
-export const enum NumberCode {
-  STRICT = 'number.strict',
-  FROM_STRING = 'number.fromString',
-  NUMBER = 'number',
-  MIN = 'number.min',
-  MAX = 'number.max'
-}
 
 export const strict: NumberDecoder<unknown> = Decoder.fromGuard(
   (input: unknown): input is number => typeof input === 'number' && !Number.isNaN(input),
   `value is not a number`,
   {
-    code: NumberCode.STRICT
+    code: ErrorCode.NUMBER_STRICT
   }
 )
 
@@ -25,26 +18,26 @@ export const fromString = pipe(
   Decoder.map(parseFloat),
   Decoder.chain(() => strict),
   Decoder.withMessage(`could not parse input string into a number`, {
-    code: NumberCode.FROM_STRING
+    code: ErrorCode.NUMBER_FROM_STRING
   })
 )
 
 export const number: NumberDecoder<unknown> = pipe(
   Decoder.union(strict, fromString),
   Decoder.withMessage(`value is not a number`, {
-    code: NumberCode.NUMBER
+    code: ErrorCode.NUMBER
   })
 )
 
 export const min = (minimum: number) =>
   Decoder.filter((input: number) => input >= minimum, `number should be greater or equal than ${minimum}`, {
-    code: NumberCode.MIN,
+    code: ErrorCode.NUMBER_MIN,
     minimum
   })
 
 export const max = (maximum: number) =>
   Decoder.filter((input: number) => input <= maximum, `number should be lower or equal than ${maximum}`, {
-    code: NumberCode.MAX,
+    code: ErrorCode.NUMBER_MAX,
     maximum
   })
 

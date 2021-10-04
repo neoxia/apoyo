@@ -1,22 +1,15 @@
 import { pipe } from '@apoyo/std'
 import { Decoder } from './Decoder'
+import { ErrorCode } from './Errors'
 import { NumberDecoder } from './NumberDecoder'
 import { Int } from './types'
 
 export type IntegerDecoder<I> = Decoder<I, Int>
 
-export const enum IntegerCode {
-  STRICT = 'int.strict',
-  FROM_STRING = 'int.fromString',
-  INT = 'int',
-  MIN = 'int.min',
-  MAX = 'int.max'
-}
-
 export const strict: IntegerDecoder<unknown> = pipe(
   NumberDecoder.strict,
   Decoder.filter((nb): nb is Int => nb % 1 === 0, `number is not a integer`, {
-    code: IntegerCode.STRICT
+    code: ErrorCode.INT_STRICT
   })
 )
 
@@ -24,14 +17,14 @@ export const fromString = pipe(
   NumberDecoder.fromString,
   Decoder.chain(() => strict),
   Decoder.withMessage(`could not parse input string into an integer`, {
-    code: IntegerCode.FROM_STRING
+    code: ErrorCode.INT_FROM_STRING
   })
 )
 
 export const int: IntegerDecoder<unknown> = pipe(
   Decoder.union(strict, fromString),
   Decoder.withMessage(`value is not a integer`, {
-    code: IntegerCode.INT
+    code: ErrorCode.INT
   })
 )
 

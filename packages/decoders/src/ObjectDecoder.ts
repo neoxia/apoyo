@@ -2,14 +2,11 @@ import { Dict, Obj, Option, pipe, Result } from '@apoyo/std'
 import { NonEmptyArray } from '@apoyo/std'
 import { DecodeError } from './DecodeError'
 import { Decoder } from './Decoder'
+import { ErrorCode } from './Errors'
 import { TextDecoder } from './TextDecoder'
 
 export type ObjectDecoder<I, O extends Dict> = Decoder<I, O> & {
   props: Dict
-}
-
-export const enum ObjectCode {
-  DICT = 'dict'
 }
 
 type Struct<A extends Dict<unknown>> = {
@@ -25,7 +22,7 @@ export const unknownDict: Decoder<unknown, Dict<unknown>> = Decoder.fromGuard(
   (input: unknown): input is Dict<unknown> => typeof input === 'object' && input !== null && !Array.isArray(input),
   `value is not an object`,
   {
-    code: ObjectCode.DICT
+    code: ErrorCode.DICT
   }
 )
 
