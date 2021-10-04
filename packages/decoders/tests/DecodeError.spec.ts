@@ -1,5 +1,5 @@
 import { pipe } from '@apoyo/std'
-import { DecodeError } from '../src'
+import { DecodeError, DecodeErrorTag } from '../src'
 
 describe('DecodeError.toTree', () => {
   it('should exec Value case', () => {
@@ -100,7 +100,16 @@ describe('DecodeError.flatten', () => {
         value: err.value,
         message: err.message,
         meta: err.meta,
-        path: ['index 0']
+        path: [
+          {
+            tag: DecodeErrorTag.ARRAY,
+            kind: 'array'
+          },
+          {
+            tag: DecodeErrorTag.INDEX,
+            index: 0
+          }
+        ]
       }
     ])
   })
@@ -114,7 +123,16 @@ describe('DecodeError.flatten', () => {
         value: err.value,
         message: err.message,
         meta: err.meta,
-        path: ['property "name"']
+        path: [
+          {
+            tag: DecodeErrorTag.OBJECT,
+            kind: 'object'
+          },
+          {
+            tag: DecodeErrorTag.KEY,
+            key: 'name'
+          }
+        ]
       }
     ])
   })
@@ -130,13 +148,31 @@ describe('DecodeError.flatten', () => {
         value: 42,
         message: 'value is not a string',
         meta: {},
-        path: ['union (member 0)']
+        path: [
+          {
+            tag: DecodeErrorTag.UNION,
+            kind: 'union'
+          },
+          {
+            tag: DecodeErrorTag.MEMBER,
+            index: 0
+          }
+        ]
       },
       {
         value: 42,
         message: 'value is not a string',
         meta: {},
-        path: ['union (member 1)']
+        path: [
+          {
+            tag: DecodeErrorTag.UNION,
+            kind: 'union'
+          },
+          {
+            tag: DecodeErrorTag.MEMBER,
+            index: 1
+          }
+        ]
       }
     ])
   })
@@ -166,19 +202,142 @@ describe('DecodeError.flatten', () => {
         value: false,
         message: 'value is not a string',
         meta: {},
-        path: ['index 0', 'property "id"', 'union (member 0)']
+        path: [
+          {
+            tag: DecodeErrorTag.ARRAY,
+            kind: 'array'
+          },
+          {
+            tag: DecodeErrorTag.INDEX,
+            index: 0
+          },
+          {
+            tag: DecodeErrorTag.OBJECT,
+            kind: 'object'
+          },
+          {
+            tag: DecodeErrorTag.KEY,
+            key: 'id'
+          },
+          {
+            tag: DecodeErrorTag.UNION,
+            kind: 'union'
+          },
+          {
+            tag: DecodeErrorTag.MEMBER,
+            index: 0
+          }
+        ]
       },
       {
         value: false,
         message: 'value is not a number',
         meta: {},
-        path: ['index 0', 'property "id"', 'union (member 1)']
+        path: [
+          {
+            tag: DecodeErrorTag.ARRAY,
+            kind: 'array'
+          },
+          {
+            tag: DecodeErrorTag.INDEX,
+            index: 0
+          },
+          {
+            tag: DecodeErrorTag.OBJECT,
+            kind: 'object'
+          },
+          {
+            tag: DecodeErrorTag.KEY,
+            key: 'id'
+          },
+          {
+            tag: DecodeErrorTag.UNION,
+            kind: 'union'
+          },
+          {
+            tag: DecodeErrorTag.MEMBER,
+            index: 1
+          }
+        ]
       },
       {
         value: 42,
         message: 'value is not a string',
         meta: {},
-        path: ['index 0', 'property "name"']
+        path: [
+          {
+            tag: DecodeErrorTag.ARRAY,
+            kind: 'array'
+          },
+          {
+            tag: DecodeErrorTag.INDEX,
+            index: 0
+          },
+          {
+            tag: DecodeErrorTag.OBJECT,
+            kind: 'object'
+          },
+          {
+            tag: DecodeErrorTag.KEY,
+            key: 'name'
+          }
+        ]
+      }
+    ])
+  })
+})
+
+describe('DecodeError.format', () => {
+  it('should return expected results for arrays', () => {
+    const err = DecodeError.value(42, 'value is not a string')
+    const errors = pipe(DecodeError.array([DecodeError.index(0, err)]), DecodeError.format)
+
+    expect(errors).toEqual([
+      {
+        value: err.value,
+        message: err.message,
+        meta: err.meta,
+        description: `cannot decode 42: value is not a string, at array, at index 0`,
+        path: '[0]'
+      }
+    ])
+  })
+
+  it('should return expected results for objects', () => {
+    const err = DecodeError.value(42, 'value is not a string')
+    const errors = pipe(DecodeError.object([DecodeError.key('name', err)]), DecodeError.format)
+
+    expect(errors).toEqual([
+      {
+        value: err.value,
+        message: err.message,
+        meta: err.meta,
+        description: `cannot decode 42: value is not a string, at object, at property "name"`,
+        path: 'name'
+      }
+    ])
+  })
+
+  it('should return expected results for unions', () => {
+    const valueErr = DecodeError.value(42, 'value is not a string')
+    const unionErr = pipe(DecodeError.union([DecodeError.member(0, valueErr), DecodeError.member(1, valueErr)]))
+
+    const errors = pipe(unionErr, DecodeError.format)
+
+    expect(errors).toEqual([
+      {
+        value: 42,
+        message: 'value is not a string',
+        meta: {},
+        description: `cannot decode 42: value is not a string, at union, at member 0`,
+        path: ''
+      },
+      {
+        value: 42,
+        message: 'value is not a string',
+        meta: {},
+        description: `cannot decode 42: value is not a string, at union, at member 1`,
+        path: ''
       }
     ])
   })

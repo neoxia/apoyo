@@ -1,5 +1,6 @@
 import { pipe } from '@apoyo/std'
 import { Decoder } from './Decoder'
+import { ErrorCode } from './Errors'
 import { NumberDecoder } from './NumberDecoder'
 import { Int } from './types'
 
@@ -7,17 +8,24 @@ export type IntegerDecoder<I> = Decoder<I, Int>
 
 export const strict: IntegerDecoder<unknown> = pipe(
   NumberDecoder.strict,
-  Decoder.filter((nb): nb is Int => nb % 1 === 0, `number is not a integer`)
+  Decoder.filter((nb): nb is Int => nb % 1 === 0, `number is not a integer`, {
+    code: ErrorCode.INT_STRICT
+  })
 )
 
 export const fromString = pipe(
   NumberDecoder.fromString,
-  Decoder.chain(() => strict)
+  Decoder.chain(() => strict),
+  Decoder.withMessage(`could not parse input string into an integer`, {
+    code: ErrorCode.INT_FROM_STRING
+  })
 )
 
 export const int: IntegerDecoder<unknown> = pipe(
   Decoder.union(strict, fromString),
-  Decoder.withMessage(`value is not a integer`)
+  Decoder.withMessage(`value is not a integer`, {
+    code: ErrorCode.INT
+  })
 )
 
 export const min = NumberDecoder.min as (minimum: number) => <I>(decoder: IntegerDecoder<I>) => IntegerDecoder<I>
