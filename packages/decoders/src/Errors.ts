@@ -5,6 +5,7 @@ export const enum ErrorCode {
   STRING_LENGTH = 'string.length',
   STRING_MIN = 'string.min',
   STRING_MAX = 'string.max',
+  STRING_PATTERN = 'string.pattern',
   STRING_EMAIL = 'string.email',
   STRING_UUID = 'string.uuid',
   STRING_EQUALS = 'string.equals',
@@ -13,6 +14,9 @@ export const enum ErrorCode {
   STRING_DATETIME = 'string.datetime',
 
   DATE = 'date',
+  DATE_STRICT = 'date.strict',
+  DATE_MIN = 'date.min',
+  DATE_MAX = 'date.max',
 
   NUMBER = 'number',
   NUMBER_STRICT = 'number.strict',
