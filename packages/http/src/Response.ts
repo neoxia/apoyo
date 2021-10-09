@@ -64,11 +64,30 @@ const stream = (readable: NodeJS.ReadableStream) => (res: Response.Open): Respon
   stream: readable
 })
 
+const match = <T>(cases: {
+  Result: (value: Response.Result) => T
+  Redirect: (value: Response.Redirect) => T
+  Stream: (value: Response.Stream) => T
+  Callback: (value: Response.Callback) => T
+}) => (res: Response) => {
+  if (typeof res === 'function') {
+    return cases.Callback(res)
+  }
+  if (res.type === ResponseType.RESULT) {
+    return cases.Result(res)
+  }
+  if (res.type === ResponseType.REDIRECT) {
+    return cases.Redirect(res)
+  }
+  return cases.Stream(res)
+}
+
 export const Response = {
   isResponse,
   status,
   send,
   header,
   redirect,
-  stream
+  stream,
+  match
 }

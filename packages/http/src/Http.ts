@@ -12,7 +12,7 @@ export namespace Http {
 export const send = (body?: Json, status = 200): Http.Response => pipe(Res.status(status), Res.send(body))
 
 export const redirect = (url: string, status = 302): Http.Response => pipe(Res.status(status), Res.redirect(url))
-export const download = (stream: ReadableStream, fileName?: string, fileType?: string): Http.Response =>
+export const download = (stream: NodeJS.ReadableStream, fileName?: string, fileType?: string): Http.Response =>
   pipe(
     Res.status(200),
     (res) => (fileName ? pipe(res, Res.header('Content-Disposition', `attachment; filename="${fileName}"`)) : res),

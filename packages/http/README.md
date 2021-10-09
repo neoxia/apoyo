@@ -57,38 +57,35 @@ export const withExpress = (fn: (req: Express.Request) => Http.Response | Promis
       )
     )
 
-    // Handle Response.Callback
-    if (typeof response === 'function') {
-      response(res)
-      return
-    }
-
-    res.status(response.status)
-    res.set(response.headers)
-
-    // Handle Response.Result
-    if (response.type === ResponseType.RESULT) {
-      if (response.body === undefined || typeof response.body === 'string') {
-        res.send(response.body)
-      } else {
-        res.json(response.body)
-      }
-      return
-    }
-    // Handle Response.Redirect
-    if (response.type === ResponseType.REDIRECT) {
-      res.redirect(response.url)
-      return
-    }
-    // Handle Response.Stream
-    if (response.type === ResponseType.STREAM) {
-      pipeline(response.stream, res, (err) => {
-        if (err) {
-          res.end()
-        }
+    pipe(
+      response,
+      Response.match({
+        Result: (response) => {
+          res.status(response.status)
+          res.set(response.headers)
+          if (response.body === undefined || typeof response.body === 'string') {
+            res.send(response.body)
+          } else {
+            res.json(response.body)
+          }
+        },
+        Redirect: (response) => {
+          res.status(response.status)
+          res.set(response.headers)
+          res.redirect(response.url)
+        },
+        Stream: (response) => {
+          res.status(response.status)
+          res.set(response.headers)
+          pipeline(response.stream, res, (err) => {
+            if (err) {
+              res.end()
+            }
+          })
+        },
+        Callback: (cb) => cb(res)
       })
-      return
-    }
+    )
   }
 }
 ```
