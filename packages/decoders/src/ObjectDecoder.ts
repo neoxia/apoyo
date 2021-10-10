@@ -68,10 +68,9 @@ export const struct = <A extends Dict>(props: Struct<A>, name?: string): ObjectD
   )
 }
 
-export const guard =
-  <I, O extends Dict>(fn: (input: O) => Option<DecodeError.Value | DecodeError.ObjectLike>) =>
-  (decoder: ObjectDecoder<I, O>) =>
-    create(decoder.props, pipe(decoder, Decoder.guard(fn)))
+export const guard = <I, O extends Dict>(fn: (input: O) => Option<DecodeError.Value | DecodeError.ObjectLike>) => (
+  decoder: ObjectDecoder<I, O>
+) => create(decoder.props, pipe(decoder, Decoder.guard(fn)))
 
 export function omit<I, O extends Dict, B extends keyof O>(
   props: B[]

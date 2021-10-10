@@ -127,25 +127,23 @@ export const union = (errors: DecodeError.Member[], name?: string): DecodeError.
   errors
 })
 
-export const fold =
-  <T>(cases: {
-    value(err: DecodeError.Value): T
-    array(err: DecodeError.ArrayLike): T
-    object(err: DecodeError.ObjectLike): T
-    union(err: DecodeError.UnionLike): T
-  }) =>
-  (err: DecodeError): T => {
-    switch (err.tag) {
-      case DecodeErrorTag.VALUE:
-        return cases.value(err)
-      case DecodeErrorTag.ARRAY:
-        return cases.array(err)
-      case DecodeErrorTag.OBJECT:
-        return cases.object(err)
-      case DecodeErrorTag.UNION:
-        return cases.union(err)
-    }
+export const fold = <T>(cases: {
+  value(err: DecodeError.Value): T
+  array(err: DecodeError.ArrayLike): T
+  object(err: DecodeError.ObjectLike): T
+  union(err: DecodeError.UnionLike): T
+}) => (err: DecodeError): T => {
+  switch (err.tag) {
+    case DecodeErrorTag.VALUE:
+      return cases.value(err)
+    case DecodeErrorTag.ARRAY:
+      return cases.array(err)
+    case DecodeErrorTag.OBJECT:
+      return cases.object(err)
+    case DecodeErrorTag.UNION:
+      return cases.union(err)
   }
+}
 
 export const toTree: (e: DecodeError) => Tree<string> = fold({
   value: (err) => Tree.of(`cannot decode ${JSON.stringify(err.value)}: ${err.message}`),
@@ -259,10 +257,7 @@ export const flatten: (e: DecodeError) => DecodeError.Flat[] = fold({
     )
 })
 
-export const formatBy =
-  <T>(fn: (flat: DecodeError.Flat) => T) =>
-  (e: DecodeError) =>
-    pipe(e, flatten, Arr.map(fn))
+export const formatBy = <T>(fn: (flat: DecodeError.Flat) => T) => (e: DecodeError) => pipe(e, flatten, Arr.map(fn))
 
 export const getDescription = (err: DecodeError.Flat, separator = ', at ') => {
   const stack = pipe(

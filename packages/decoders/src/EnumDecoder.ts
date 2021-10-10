@@ -13,10 +13,7 @@ const create = <I, O>(values: Set<unknown>, decoder: Decoder<I, O>): EnumDecoder
   values
 })
 
-const inSet =
-  <T>(set: Set<T>) =>
-  (value: unknown): value is T =>
-    set.has(value as any)
+const inSet = <T>(set: Set<T>) => (value: unknown): value is T => set.has(value as any)
 
 export const native = <E extends Enum<E>>(enumType: E): EnumDecoder<unknown, E[keyof E]> => {
   const values = Enum.values(enumType)

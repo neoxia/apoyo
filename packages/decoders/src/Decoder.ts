@@ -23,42 +23,34 @@ export const of = <O>(value: O) => create(() => Result.ok(value))
 export const fromGuard = <I, O extends I>(fn: Refinement<I, O>, message: string, meta?: Dict<unknown>): Decoder<I, O> =>
   create((input) => (fn(input) ? Result.ok(input) : Result.ko(DecodeError.value(input, message, meta))))
 
-export const parse =
-  <B, C>(fn: (input: B) => DecoderResult<C>) =>
-  <A>(decoder: Decoder<A, B>): Decoder<A, C> =>
-    create((input) => pipe(input, validate(decoder), Result.chain(fn)))
+export const parse = <B, C>(fn: (input: B) => DecoderResult<C>) => <A>(decoder: Decoder<A, B>): Decoder<A, C> =>
+  create((input) => pipe(input, validate(decoder), Result.chain(fn)))
 
-export const chain =
-  <B, C>(fn: (input: B) => Decoder<B, C>) =>
-  <A>(decoder: Decoder<A, B>): Decoder<A, C> =>
+export const chain = <B, C>(fn: (input: B) => Decoder<B, C>) => <A>(decoder: Decoder<A, B>): Decoder<A, C> =>
+  pipe(
+    decoder,
+    parse((value) => pipe(value, validate(fn(value))))
+  )
+
+export const map = <A, B>(fn: (input: A) => B) => <I>(decoder: Decoder<I, A>): Decoder<I, B> =>
+  create((input) => pipe(input, validate(decoder), Result.map(fn)))
+
+export const mapError = <I>(fn: (err: DecodeError, input: I) => DecodeError) => <A>(
+  decoder: Decoder<I, A>
+): Decoder<I, A> =>
+  create((input) =>
     pipe(
-      decoder,
-      parse((value) => pipe(value, validate(fn(value))))
+      input,
+      validate(decoder),
+      Result.mapError((err) => fn(err, input))
     )
+  )
 
-export const map =
-  <A, B>(fn: (input: A) => B) =>
-  <I>(decoder: Decoder<I, A>): Decoder<I, B> =>
-    create((input) => pipe(input, validate(decoder), Result.map(fn)))
-
-export const mapError =
-  <I>(fn: (err: DecodeError, input: I) => DecodeError) =>
-  <A>(decoder: Decoder<I, A>): Decoder<I, A> =>
-    create((input) =>
-      pipe(
-        input,
-        validate(decoder),
-        Result.mapError((err) => fn(err, input))
-      )
-    )
-
-export const withMessage =
-  (msg: string, meta?: Dict<unknown>) =>
-  <I, A>(decoder: Decoder<I, A>): Decoder<I, A> =>
-    pipe(
-      decoder,
-      mapError<any>((_, input) => DecodeError.value(input, msg, meta))
-    )
+export const withMessage = (msg: string, meta?: Dict<unknown>) => <I, A>(decoder: Decoder<I, A>): Decoder<I, A> =>
+  pipe(
+    decoder,
+    mapError<any>((_, input) => DecodeError.value(input, msg, meta))
+  )
 
 export const nullable = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | null> =>
   create((input: I) => (input === null ? Result.ok(null) : pipe(input, validate(decoder))))
