@@ -34,7 +34,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@apoyo/std": "^0.0.8",
+    "@apoyo/std": "^0.0.10",
     "@types/jest": "^26.0.23",
     "@types/node": "^12.6.8",
     "jest": "^26.4.2",
