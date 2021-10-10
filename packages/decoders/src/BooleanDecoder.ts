@@ -1,6 +1,7 @@
 import { pipe, Result } from '@apoyo/std'
 import { DecodeError } from './DecodeError'
 import { Decoder } from './Decoder'
+import { ErrorCode } from './Errors'
 import { IntegerDecoder } from './IntegerDecoder'
 import { TextDecoder } from './TextDecoder'
 
@@ -11,7 +12,10 @@ const TEXT_FALSE = new Set(['false', 'no', 'no', '0'])
 
 export const strict: BooleanDecoder<unknown> = Decoder.fromGuard(
   (input: unknown): input is boolean => typeof input === 'boolean',
-  `value is not a boolean`
+  `value is not a boolean`,
+  {
+    code: ErrorCode.BOOL_STRICT
+  }
 )
 
 export const fromString = pipe(
@@ -23,6 +27,9 @@ export const fromString = pipe(
       : TEXT_FALSE.has(low)
       ? Result.ok(false)
       : Result.ko(DecodeError.value(str, `string is not a boolean`))
+  }),
+  Decoder.withMessage(`could not parse input string into a boolean`, {
+    code: ErrorCode.BOOL_FROM_STRING
   })
 )
 
@@ -34,18 +41,25 @@ export const fromNumber = pipe(
       : nb === 0
       ? Result.ok(false)
       : Result.ko(DecodeError.value(nb, `number is not a boolean`))
-  )
+  ),
+  Decoder.withMessage(`could not parse input number into a boolean`, {
+    code: ErrorCode.BOOL_FROM_NUMBER
+  })
 )
 
 export const boolean: BooleanDecoder<unknown> = pipe(
   Decoder.union(strict, fromString, fromNumber),
-  Decoder.withMessage(`value is not a boolean`)
+  Decoder.withMessage(`value is not a boolean`, {
+    code: ErrorCode.BOOL
+  })
 )
 
 export const equals = <T extends boolean>(bool: T) =>
   pipe(
     boolean,
-    Decoder.filter((value): value is T => value === bool, `boolean is not ${bool}`)
+    Decoder.filter((value): value is T => value === bool, `boolean is not ${bool}`, {
+      code: ErrorCode.BOOL_EQUALS
+    })
   )
 
 /**

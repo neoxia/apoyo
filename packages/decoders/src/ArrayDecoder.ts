@@ -2,10 +2,13 @@ import { Arr, flow, pipe, Result } from '@apoyo/std'
 
 import { DecodeError } from './DecodeError'
 import { Decoder } from './Decoder'
+import { ErrorCode } from './Errors'
 
 export type ArrayDecoder<I, O extends any[]> = Decoder<I, O>
 
-export const unknownArray = Decoder.fromGuard(Arr.isArray, `value is not an array`)
+export const unknownArray = Decoder.fromGuard(Arr.isArray, `value is not an array`, {
+  code: ErrorCode.ARRAY
+})
 
 export const array = <A>(decoder: Decoder<unknown, A>): ArrayDecoder<unknown, A[]> =>
   pipe(
@@ -27,10 +30,16 @@ export const array = <A>(decoder: Decoder<unknown, A>): ArrayDecoder<unknown, A[
   )
 
 export const nonEmptyArray = <O>(decoder: Decoder<unknown, O>) =>
-  pipe(array(decoder), Decoder.filter(Arr.isNonEmpty, `array should not be empty`))
+  pipe(
+    array(decoder),
+    Decoder.filter(Arr.isNonEmpty, `array should not be empty`, {
+      code: ErrorCode.ARRAY_NON_EMPTY
+    })
+  )
 
 export const length = (len: number) =>
   Decoder.filter((arr: unknown[]) => arr.length === len, `array should contain exactly ${len} elements`, {
+    code: ErrorCode.ARRAY_LENGTH,
     length: len
   }) as {
     <D extends ArrayDecoder<any, any>>(value: D): D
@@ -38,6 +47,7 @@ export const length = (len: number) =>
 
 export const min = (minLength: number) =>
   Decoder.filter((arr: unknown[]) => arr.length >= minLength, `array should contain at least ${minLength} elements`, {
+    code: ErrorCode.ARRAY_MIN,
     minLength
   }) as {
     <D extends ArrayDecoder<any, any>>(value: D): D
@@ -45,6 +55,7 @@ export const min = (minLength: number) =>
 
 export const max = (maxLength: number) =>
   Decoder.filter((arr: unknown[]) => arr.length <= maxLength, `array should contain at most ${maxLength} elements`, {
+    code: ErrorCode.ARRAY_MAX,
     maxLength
   }) as {
     <D extends ArrayDecoder<any, any>>(value: D): D

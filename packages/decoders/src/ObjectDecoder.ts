@@ -2,6 +2,7 @@ import { Dict, Obj, Option, pipe, Result } from '@apoyo/std'
 import { NonEmptyArray } from '@apoyo/std'
 import { DecodeError } from './DecodeError'
 import { Decoder } from './Decoder'
+import { ErrorCode } from './Errors'
 import { TextDecoder } from './TextDecoder'
 
 export type ObjectDecoder<I, O extends Dict> = Decoder<I, O> & {
@@ -19,7 +20,10 @@ const create = <I, O extends Dict>(props: Dict, decoder: Decoder<I, O>): ObjectD
 
 export const unknownDict: Decoder<unknown, Dict<unknown>> = Decoder.fromGuard(
   (input: unknown): input is Dict<unknown> => typeof input === 'object' && input !== null && !Array.isArray(input),
-  `value is not an object`
+  `value is not an object`,
+  {
+    code: ErrorCode.DICT
+  }
 )
 
 export const dict = <A>(decoder: Decoder<unknown, A>): Decoder<unknown, Dict<A>> => {
@@ -64,9 +68,10 @@ export const struct = <A extends Dict>(props: Struct<A>, name?: string): ObjectD
   )
 }
 
-export const guard = <I, O extends Dict>(fn: (input: O) => Option<DecodeError.Value | DecodeError.ObjectLike>) => (
-  decoder: ObjectDecoder<I, O>
-) => create(decoder.props, pipe(decoder, Decoder.guard(fn)))
+export const guard =
+  <I, O extends Dict>(fn: (input: O) => Option<DecodeError.Value | DecodeError.ObjectLike>) =>
+  (decoder: ObjectDecoder<I, O>) =>
+    create(decoder.props, pipe(decoder, Decoder.guard(fn)))
 
 export function omit<I, O extends Dict, B extends keyof O>(
   props: B[]

@@ -1,6 +1,7 @@
 import { Dict, InverseRefinement, NonEmptyArray, Option, pipe, Predicate, Refinement, Result } from '@apoyo/std'
 
 import { DecodeError } from './DecodeError'
+import { ErrorCode } from './Errors'
 
 export type DecoderResult<A> = Result<A, DecodeError>
 
@@ -17,35 +18,60 @@ export const create = <I, O>(fn: (input: I) => DecoderResult<O>): Decoder<I, O> 
   decode: fn
 })
 
+export const of = <O>(value: O) => create(() => Result.ok(value))
+
 export const fromGuard = <I, O extends I>(fn: Refinement<I, O>, message: string, meta?: Dict<unknown>): Decoder<I, O> =>
   create((input) => (fn(input) ? Result.ok(input) : Result.ko(DecodeError.value(input, message, meta))))
 
-export const parse = <B, C>(fn: (input: B) => DecoderResult<C>) => <A>(decoder: Decoder<A, B>): Decoder<A, C> =>
-  create((input) => pipe(input, validate(decoder), Result.chain(fn)))
+export const parse =
+  <B, C>(fn: (input: B) => DecoderResult<C>) =>
+  <A>(decoder: Decoder<A, B>): Decoder<A, C> =>
+    create((input) => pipe(input, validate(decoder), Result.chain(fn)))
 
-export const chain = <B, C>(fn: (input: B) => Decoder<B, C>) => <A>(decoder: Decoder<A, B>): Decoder<A, C> =>
-  pipe(
-    decoder,
-    parse((value) => pipe(value, validate(fn(value))))
-  )
-
-export const map = <A, B>(fn: (input: A) => B) => <I>(decoder: Decoder<I, A>): Decoder<I, B> =>
-  create((input) => pipe(input, validate(decoder), Result.map(fn)))
-
-export const withMessage = (msg: string, meta?: Dict<unknown>) => <I, A>(decoder: Decoder<I, A>): Decoder<I, A> =>
-  create((input) =>
+export const chain =
+  <B, C>(fn: (input: B) => Decoder<B, C>) =>
+  <A>(decoder: Decoder<A, B>): Decoder<A, C> =>
     pipe(
-      input,
-      validate(decoder),
-      Result.mapError(() => DecodeError.value(input, msg, meta))
+      decoder,
+      parse((value) => pipe(value, validate(fn(value))))
     )
-  )
+
+export const map =
+  <A, B>(fn: (input: A) => B) =>
+  <I>(decoder: Decoder<I, A>): Decoder<I, B> =>
+    create((input) => pipe(input, validate(decoder), Result.map(fn)))
+
+export const mapError =
+  <I>(fn: (err: DecodeError, input: I) => DecodeError) =>
+  <A>(decoder: Decoder<I, A>): Decoder<I, A> =>
+    create((input) =>
+      pipe(
+        input,
+        validate(decoder),
+        Result.mapError((err) => fn(err, input))
+      )
+    )
+
+export const withMessage =
+  (msg: string, meta?: Dict<unknown>) =>
+  <I, A>(decoder: Decoder<I, A>): Decoder<I, A> =>
+    pipe(
+      decoder,
+      mapError<any>((_, input) => DecodeError.value(input, msg, meta))
+    )
 
 export const nullable = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | null> =>
   create((input: I) => (input === null ? Result.ok(null) : pipe(input, validate(decoder))))
 
 export const optional = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | undefined> =>
   create((input: I) => (input === undefined ? Result.ok(undefined) : pipe(input, validate(decoder))))
+
+export const required = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | undefined> =>
+  create((input: I) =>
+    input === undefined || input === null
+      ? Result.ko(DecodeError.value(input, 'input is required', { code: ErrorCode.REQUIRED }))
+      : pipe(input, validate(decoder))
+  )
 
 export const guard = <O>(fn: (input: O) => Option<DecodeError>) =>
   parse((input: O) => {
@@ -115,6 +141,7 @@ export function union(...members: NonEmptyArray<Decoder<unknown, unknown>>): Dec
   )
 }
 
+export const any: Decoder<unknown, any> = create(Result.ok)
 export const unknown: Decoder<unknown, unknown> = create(Result.ok)
 
 /**
@@ -395,6 +422,20 @@ export const Decoder = {
 
   /**
    * @description
+   * Explicitely return an "input is required" error when input is "null" or "undefined"
+   *
+   * @example
+   * ```ts
+   * const decoder = pipe(
+   *   TextDecoder.string,
+   *   Decoder.required
+   * )
+   * ```
+   */
+  required,
+
+  /**
+   * @description
    * This function allows the creation of recursive type decoders.
    *
    * @example
@@ -478,5 +519,11 @@ export const Decoder = {
    * @description
    * `Decoder` for an unknown value
    */
-  unknown
+  unknown,
+
+  /**
+   * @description
+   * `Decoder` for any value
+   */
+  any
 }

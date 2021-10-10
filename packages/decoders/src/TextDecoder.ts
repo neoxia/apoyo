@@ -1,19 +1,25 @@
 import { flow, pipe, Str } from '@apoyo/std'
 import { Decoder } from './Decoder'
+import { ErrorCode } from './Errors'
 import { Email, UUID } from './types'
 
 const REGEXP_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-const REGEXP_EMAIL = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/
+const REGEXP_EMAIL =
+  /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/
 
 export type TextDecoder<I> = Decoder<I, string>
 
 export const string: TextDecoder<unknown> = Decoder.fromGuard(
   (input: unknown): input is string => typeof input === 'string',
-  `value is not a string`
+  `value is not a string`,
+  {
+    code: ErrorCode.STRING
+  }
 )
 
 export const length = (len: number) =>
   Decoder.filter((input: string) => input.length === len, `string should contain exactly ${len} characters`, {
+    code: ErrorCode.STRING_LENGTH,
     length: len
   })
 
@@ -22,6 +28,7 @@ export const min = (minLength: number) =>
     (input: string) => input.length >= minLength,
     `string should contain at least ${minLength} characters`,
     {
+      code: ErrorCode.STRING_MIN,
       minLength
     }
   )
@@ -31,6 +38,7 @@ export const max = (maxLength: number) =>
     (input: string) => input.length <= maxLength,
     `string should contain at most ${maxLength} characters`,
     {
+      code: ErrorCode.STRING_MAX,
       maxLength
     }
   )
@@ -54,18 +62,24 @@ export const htmlEscape = Decoder.map(Str.htmlEscape)
 
 export const email = pipe(
   string,
-  Decoder.filter((str): str is Email => REGEXP_EMAIL.test(str), `string is not an email`)
+  Decoder.filter((str): str is Email => REGEXP_EMAIL.test(str), `string is not an email`, {
+    code: ErrorCode.STRING_EMAIL
+  })
 )
 
 export const uuid = pipe(
   string,
-  Decoder.filter((str): str is UUID => REGEXP_UUID.test(str), `string is not an uuid`)
+  Decoder.filter((str): str is UUID => REGEXP_UUID.test(str), `string is not an uuid`, {
+    code: ErrorCode.STRING_UUID
+  })
 )
 
 export const equals = <T extends string>(value: T) =>
   pipe(
     string,
-    Decoder.filter((str): str is T => str === value, `string is not equal to value ${JSON.stringify(value)}`)
+    Decoder.filter((str): str is T => str === value, `string is not equal to value ${JSON.stringify(value)}`, {
+      code: ErrorCode.STRING_EQUALS
+    })
   )
 
 export function oneOf<T extends string>(arr: T[]): Decoder<unknown, T>
@@ -75,6 +89,7 @@ export function oneOf(arr: string[] | Set<string>): any {
   return pipe(
     string,
     Decoder.filter((str: string) => set.has(str), `string is not included in the given values`, {
+      code: ErrorCode.STRING_ONE_OF,
       values: arr
     })
   )
