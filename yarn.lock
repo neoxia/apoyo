@@ -2,11 +2,6 @@
 # yarn lockfile v1
 
 
-"@apoyo/std@^0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@apoyo/std/-/std-0.0.8.tgz#575ba5ed8ec79557da620334c7889a777e3792ec"
-  integrity sha512-c/fP9rONU73gyK+aaMR0tIROrRXMFsjZCrybdj973BALMSkzxo51jDYaHHAqL8Pq3Y0ZvWchCDqMA09rwclzXA==
-
 "@apoyo/std@^0.0.9":
   version "0.0.9"
   resolved "https://registry.yarnpkg.com/@apoyo/std/-/std-0.0.9.tgz#d209de0af0617314867b1dd8b3c4286fbd105f3b"
