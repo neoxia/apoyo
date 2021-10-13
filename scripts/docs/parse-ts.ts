@@ -1,5 +1,14 @@
-import { JSDoc, Node, ObjectLiteralExpression, SourceFile, ts, TypeFormatFlags, VariableStatement } from 'ts-morph'
-import { Arr, Option, pipe, Str, Err } from '@apoyo/std'
+import {
+  JSDoc,
+  ModuleDeclaration,
+  Node,
+  ObjectLiteralExpression,
+  SourceFile,
+  ts,
+  TypeFormatFlags,
+  VariableStatement
+} from 'ts-morph'
+import { Arr, Option, pipe, Str, Err, NonEmptyArray } from '@apoyo/std'
 import { DocElement, parseDoc } from './parse-tsdocs'
 
 const FORMAT_FLAGS =
@@ -39,7 +48,21 @@ export interface Decl {
   [key: string]: any
 }
 
-export const getType = (sourceFile: SourceFile, name: string): Option<Decl> => {
+export const getType = (sourceFile: SourceFile | ModuleDeclaration, name: string): Option<Decl> => {
+  const parts = name.split('.')
+  if (Arr.isNonEmpty(parts) && parts.length > 1) {
+    return pipe(
+      parts,
+      Arr.take(parts.length - 1),
+      Arr.reduce((ns: SourceFile | ModuleDeclaration | undefined, path) => ns?.getModule(path), sourceFile),
+      Option.map((ns) => getType(ns, NonEmptyArray.last(parts))),
+      Option.map((decl) => ({
+        ...decl,
+        name
+      }))
+    )
+  }
+
   const typeVar = sourceFile.getTypeAlias(name)
   if (typeVar) {
     return {

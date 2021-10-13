@@ -226,11 +226,62 @@ export const generateDecodersDocs = async (rootPath: string, docsPath: string) =
   })
 }
 
+export const generateHttpDocs = async (rootPath: string, docsPath: string) => {
+  const config: ProjectOptions = {
+    tsConfigFilePath: path.join(rootPath, 'tsconfig.common.json')
+  }
+  const project = pipe(
+    Result.tryCatch(() => new Project(config)),
+    Result.mapError(Err.chain('Could not initialize TS project')),
+    Result.get
+  )
+
+  project.addSourceFilesAtPaths(path.join(rootPath, 'src/**/*.ts'))
+
+  const files = {
+    response: project.getSourceFileOrThrow('Response.ts'),
+    http: project.getSourceFileOrThrow('Http.ts'),
+    httpCode: project.getSourceFileOrThrow('HttpCode.ts')
+  }
+
+  await markdownObject({
+    object: getObjectOrThrow(files.response, 'Response'),
+    title: 'Response overview',
+    path: path.join(docsPath, 'Response.md'),
+    additionals: {
+      types: Arr.compact([
+        getType(files.response, 'ResponseType'),
+        getType(files.response, 'Response'),
+        getType(files.response, 'Response.Open'),
+        getType(files.response, 'Response.Result'),
+        getType(files.response, 'Response.Redirect'),
+        getType(files.response, 'Response.Stream'),
+        getType(files.response, 'Response.Callback')
+      ])
+    }
+  })
+
+  await markdownObject({
+    object: getObjectOrThrow(files.http, 'Http'),
+    title: 'Http overview',
+    path: path.join(docsPath, 'Http.md')
+  })
+
+  await markdownObject({
+    title: 'Http codes overview',
+    path: path.join(docsPath, 'HttpCode.md'),
+    additionals: {
+      types: Arr.compact([getType(files.httpCode, 'HttpCode')])
+    }
+  })
+}
+
 export const main = async () => {
   const rootPath = path.resolve(__dirname, '..')
 
   await generateStdDocs(path.join(rootPath, `packages/std`), path.join(rootPath, `docs/guide/std/api`))
   await generateDecodersDocs(path.join(rootPath, `packages/decoders`), path.join(rootPath, `docs/guide/decoders/api`))
+  await generateHttpDocs(path.join(rootPath, `packages/http`), path.join(rootPath, `docs/guide/http/api`))
 }
 
 run(main)

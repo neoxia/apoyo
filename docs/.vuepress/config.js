@@ -73,6 +73,23 @@ module.exports = {
             ]
           }
         ]
+      },
+      {
+        title: 'Http',
+        collapsable: true,
+        children: [
+          '/guide/http/getting-started.md',
+          {
+            title: 'API',
+            collapsable: true,
+            sidebarDepth: 0,
+            children: [
+              ['/guide/http/api/Http.md', 'Http'],
+              ['/guide/http/api/HttpCode.md', 'HttpCode'],
+              ['/guide/http/api/Response.md', 'Response']
+            ]
+          }
+        ]
       }
     ],
     sidebarDepth: 1

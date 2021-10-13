@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { Arr, pipe } from '@apoyo/std'
+import { Arr, Option, pipe } from '@apoyo/std'
 import { Decl } from './parse-ts'
 
 const formatDecl = (decl: Decl) => {
@@ -69,7 +69,7 @@ const formatMarkdown = (nsFile: FormatNamespace) => {
 }
 
 interface MarkdownObjectOptions {
-  object: Decl
+  object?: Decl
   additionals?: {
     types?: Decl[]
     functions?: Decl[]
@@ -82,12 +82,14 @@ export const markdownObject = async (options: MarkdownObjectOptions) => {
   const obj = options.object
   const ns: FormatNamespace = {
     name: options.title,
-    description: obj.docs?.description,
-    example: obj.docs?.example,
+    description: obj?.docs?.description,
+    example: obj?.docs?.example,
     types: Arr.flatten([options.additionals?.types || []]),
     functions: Arr.flatten([
       pipe(
-        obj.properties as Decl[],
+        obj,
+        Option.map((obj): Option<Decl[]> => obj.properties),
+        Option.get([]),
         Arr.filter((p) => p.type === 'function')
       ),
       options.additionals?.functions || []
