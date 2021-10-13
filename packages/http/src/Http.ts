@@ -61,7 +61,11 @@ export const UnprocessableEntity = errorFactory(
   'unprocessable_entity',
   '422 Unprocessable Entity'
 )
-export const InternalError = errorFactory(HttpCode.INTERNAL_ERROR, 'internal_server_error', '500 Internal Server Error')
+export const InternalError = errorFactory(
+  HttpCode.INTERNAL_SERVER_ERROR,
+  'internal_server_error',
+  '500 Internal Server Error'
+)
 export const NotImplemented = errorFactory(HttpCode.NOT_IMPLEMENTED, 'not_implemented', '501 Not Implemented')
 export const BadGateway = errorFactory(HttpCode.BAD_GATEWAY, 'bad_gateway', '502 Bad Gateway')
 export const ServiceUnavailable = errorFactory(
