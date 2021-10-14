@@ -5,10 +5,12 @@ import { Json } from './Json'
 export enum ResponseType {
   RESULT = 'http.result',
   REDIRECT = 'http.redirect',
-  STREAM = 'http.stream'
+  STREAM = 'http.stream',
+  CALLBACK = 'http.callback',
+  NEXT = 'http.next'
 }
 
-export type Response = Response.Result | Response.Redirect | Response.Stream | Response.Callback
+export type Response = Response.Result | Response.Redirect | Response.Stream | Response.Callback | Response.Next
 export namespace Response {
   export interface Open {
     status: number
@@ -26,12 +28,22 @@ export namespace Response {
     type: ResponseType.STREAM
     stream: NodeJS.ReadableStream
   }
-  export type Callback = (...args: any[]) => void
+  export interface Callback {
+    type: ResponseType.CALLBACK
+    callback: (...args: any[]) => void
+  }
+  export interface Next {
+    type: ResponseType.NEXT
+  }
 }
 
 const hasType = Str.oneOf(Enum.values(ResponseType))
 
 const isResponse = (input: any): input is Response => hasType(input.type)
+
+const isResult = (input: Response): input is Response.Result => input.type === ResponseType.RESULT
+
+const isNext = (input: Response): input is Response.Next => input.type === ResponseType.NEXT
 
 const status = (status: number): Response.Open => ({
   status,
@@ -64,13 +76,23 @@ const stream = (readable: NodeJS.ReadableStream) => (res: Response.Open): Respon
   stream: readable
 })
 
+const callback = (fn: (...args: any[]) => any): Response.Callback => ({
+  type: ResponseType.CALLBACK,
+  callback: fn
+})
+
+const next = (): Response.Next => ({
+  type: ResponseType.NEXT
+})
+
 const match = <T>(cases: {
   Result: (value: Response.Result) => T
   Redirect: (value: Response.Redirect) => T
   Stream: (value: Response.Stream) => T
   Callback: (value: Response.Callback) => T
+  Next: () => T
 }) => (res: Response) => {
-  if (typeof res === 'function') {
+  if (res.type === ResponseType.CALLBACK) {
     return cases.Callback(res)
   }
   if (res.type === ResponseType.RESULT) {
@@ -79,15 +101,22 @@ const match = <T>(cases: {
   if (res.type === ResponseType.REDIRECT) {
     return cases.Redirect(res)
   }
-  return cases.Stream(res)
+  if (res.type === ResponseType.STREAM) {
+    return cases.Stream(res)
+  }
+  return cases.Next()
 }
 
 export const Response = {
   isResponse,
+  isResult,
+  isNext,
   status,
   send,
   header,
   redirect,
   stream,
+  callback,
+  next,
   match
 }

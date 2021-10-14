@@ -20,6 +20,9 @@ export const download = (stream: NodeJS.ReadableStream, fileName?: string, fileT
     Res.stream(stream)
   )
 
+export const callback = Res.callback
+export const next = Res.next
+
 export const tryCatch = (fn: () => Res | Promise<Res>): Promise<Http.Response> =>
   pipe(
     Prom.thunk(fn),
@@ -93,6 +96,20 @@ export const Http = {
    * Create a response to download a given readable stream
    */
   download,
+
+  /**
+   * @description
+   * Create a response containing a native callback.
+   * This should only used in edge-cases, where no abstraction exists for what you want to do.
+   */
+  callback,
+
+  /**
+   * @description
+   * Create a response that continues to the next handler.
+   * This response type is mostly useful when creating middlewares.
+   */
+  next,
 
   /**
    * @description
