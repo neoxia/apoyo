@@ -18,7 +18,7 @@ This library exposes generic HTTP response interfaces, usable with any framework
 
 ## Response types
 
-In this library, a `Http.Response` can take 4 forms:
+In this library, a `Http.Response` can take multiple forms:
 
 ### Http Results
 
@@ -43,7 +43,7 @@ const GetTodos = withExpress(async (req: Express.Request) => {
 
 ```ts
 export const withExpress = (fn: (req: Express.Request) => Http.Response | Promise<Http.Response>) => {
-  return async (req: Express.Request, res: Express.Response) => {
+  return async (req: Express.Request, res: Express.Response, next: Express.NextFunction) => {
     const response = await pipe(
       Http.tryCatch(() => fn(req)),
       Prom.catchError((err) =>
@@ -81,7 +81,8 @@ export const withExpress = (fn: (req: Express.Request) => Http.Response | Promis
             }
           })
         },
-        Callback: (cb) => cb(res)
+        Callback: (response) => response.callback(res),
+        Next: () => next()
       })
     )
   }
@@ -123,15 +124,31 @@ const DownloadExample = withExpress(async (req: Express.Request) => {
 })
 ```
 
+### Next
+
+Most frameworks support in one way or another middlewares. If you don't wish to return a definite response in the current handler, you can use `Http.next`, to continue to the next handler:
+
+```ts
+const isAdmin = withExpress(async (req: Express.Request) => {
+  const result = await hasProfile(req.user, UserProfile.ADMIN)
+  if (!result) {
+    throw Http.Forbidden()
+  }
+  return Http.next()
+})
+```
+
 ### Native callbacks
 
-In the case no abstraction exists for what you need, you can use an `Http.Callback`, which is simply a function, taking as a parameter the native `Response` from your library.
+You can also return an `Http.Callback`, which is simply a function, taking as a parameter the native `Response` from your library.
+
+**Note**: This should only be used for edge-cases, in situation in which no abstraction exists for what you need.
 
 ```ts
 const Home = withExpress(async (req: Express.Request) => {
   // Bad, as you can use `return Http.send('Bad')` instead
-  return (res: Express.Response) => {
+  return Http.callback((res: Express.Response) => {
     res.status(200).send('Bad')
-  }
+  })
 })
 ```

@@ -256,6 +256,7 @@ export const generateHttpDocs = async (rootPath: string, docsPath: string) => {
         getType(files.response, 'Response.Result'),
         getType(files.response, 'Response.Redirect'),
         getType(files.response, 'Response.Stream'),
+        getType(files.response, 'Response.Next'),
         getType(files.response, 'Response.Callback')
       ])
     }
