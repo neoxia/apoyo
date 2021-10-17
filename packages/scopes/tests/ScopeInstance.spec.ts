@@ -20,7 +20,6 @@ describe('ScopeInstance.get', () => {
     expect(a).toBe(1)
     expect(b).toBe(1)
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const internal = SCOPES_INTERNAL.get(scope)!
 
     expect(internal.unmount.length).toEqual(0)
@@ -49,7 +48,6 @@ describe('ScopeInstance.get', () => {
     expect(a).toBe(10)
     expect(b).toBe(10)
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const internal = SCOPES_INTERNAL.get(scope)!
 
     expect(internal.unmount.length).toEqual(0)
@@ -78,7 +76,6 @@ describe('ScopeInstance.get', () => {
     expect(a).toBe(1)
     expect(b).toBe(1)
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const internal = SCOPES_INTERNAL.get(scope)!
 
     expect(internal.unmount.length).toEqual(0)
@@ -111,7 +108,6 @@ describe('ScopeInstance.get', () => {
       Var.map(async ([_env, spawnChild]) => {
         const scope = pipe(spawnChild(), Scope.bind(Req, 1), Scope.get)
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const internal = SCOPES_INTERNAL.get(scope)!
 
         expect(internal.bindings.has(Req)).toBe(true)
@@ -130,7 +126,6 @@ describe('ScopeInstance.get', () => {
 
     const scope = pipe(Scope.create(), Scope.get)
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const internal = SCOPES_INTERNAL.get(scope)!
 
     const value = await scope.get(Api)

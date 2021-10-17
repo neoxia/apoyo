@@ -65,11 +65,7 @@ export const get = (builder: ScopeBuilder): Scope => {
     if (!internal.created.has(resolved.symbol)) {
       internal.created.set(resolved.symbol, resolved.create(ctx))
     }
-    const pCreated = internal.created.get(resolved.symbol)
-    if (!pCreated) {
-      throw new Error('could not get created element')
-    }
-    return await pCreated
+    return await internal.created.get(resolved.symbol)!
   }
 
   const scope: Scope = {
@@ -106,7 +102,7 @@ export const get = (builder: ScopeBuilder): Scope => {
           })
         )
       }
-      return targetScope.mounted.get(resolved.symbol)
+      return targetScope.mounted.get(resolved.symbol)!
     },
     close: async () => {
       open = false

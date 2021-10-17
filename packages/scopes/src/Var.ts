@@ -97,7 +97,7 @@ export const chain = <A, B>(fn: (value: A) => Promise<Var<B>> | Var<B>) => (vari
     return {
       scope: getLowestScope(ctx.scope, [createdVar.scope, created.scope]),
       dependencies: [variable, chainedVar],
-      mount: created.mount
+      mount: () => ctx.scope.get(chainedVar).then((value) => ({ value }))
     }
   }
 })
