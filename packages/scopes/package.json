@@ -1,8 +1,7 @@
 {
   "name": "@apoyo/scopes",
-  "private": "true",
   "version": "0.0.1",
-  "description": "Dependency injection with scopes",
+  "description": "Functional dependency injection",
   "main": "lib/index.js",
   "module": "es6/index.js",
   "typings": "lib/index.d.ts",
@@ -32,10 +31,8 @@
     "prebuild": "npm run clean",
     "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
   },
-  "dependencies": {
-  },
   "devDependencies": {
-    "@apoyo/std": "^0.0.9",
+    "@apoyo/std": "^0.0.10",
     "@types/jest": "^26.0.23",
     "@types/node": "^12.6.8",
     "jest": "^26.4.2",

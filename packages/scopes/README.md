@@ -1,72 +1,54 @@
-# Apoyo - Csv
+# Apoyo - Scopes
 
-[![npm version](https://badgen.net/npm/v/@apoyo/csv)](https://www.npmjs.com/package/@apoyo/csv)
-[![build size](https://badgen.net/bundlephobia/min/@apoyo/csv)](https://bundlephobia.com/result?p=@apoyo/csv)
-[![three shaking](https://badgen.net/bundlephobia/tree-shaking/@apoyo/csv)](https://bundlephobia.com/result?p=@apoyo/csv)
-
-**Warning**: This package is still in development and features may still change, be renamed or removed.
-
-However, we would appreciate any feedback you have on how to improve this library:
-
-- Which features are missing?
-- Which features are hard to understand or unnecessary?
-- Which features need to be improved?
+[![npm version](https://badgen.net/npm/v/@apoyo/scopes)](https://www.npmjs.com/package/@apoyo/scopes)
+[![build size](https://badgen.net/bundlephobia/min/@apoyo/scopes)](https://bundlephobia.com/result?p=@apoyo/scopes)
+[![three shaking](https://badgen.net/bundlephobia/tree-shaking/@apoyo/scopes)](https://bundlephobia.com/result?p=@apoyo/scopes)
 
 ## Installation
 
-**Warning**: This package has not been deployed to NPM yet and may still be renamed.
+Install peer dependencies:
+`npm install @apoyo/std`
 
-`npm install @apoyo/csv`
+Install package:
+`npm install @apoyo/decoders`
 
-## Description
+## Motivation
 
-This package is based on [papaparse](https://www.papaparse.com/docs), but contains additional utilities or wrappers to simplify the usage and offer better typings.
+Today, a lot of solutions exists for dependency injection in JS/TS, the most popular solutions being:
 
-**Additional features:**
+- Typedi
+- Inversify
+- Nestjs
+- etc...
 
-- Async iterator support
-- Useful default configurations are enabled
-- All headers and fields are automatically trimmed
-- Both \n and \r\n are supported at the same time
-- UTF-8 BOM character is automatically skipped
+Here however a few issues:
 
-## Example
+- They are mostly used with classes and decorators
 
-```ts
-const inputStream = fs.createReadStream(...)
-const csvSeq = Csv.streamAsync(inputStream, 1000, {
-  header: true,
-  delimiter: ','
-})
+- They don't support custom scopes creation: Most only have a singleton scope, transient scope and maybe request scope
 
-let header = null
-const stats = {
-  total: 0,
-  ok: 0,
-  ko: 0
-}
-for (const rows of csvSeq) {
-  if (!header) {
-    header = rows[0].meta.fields
-    // check header
-    const errors = checkHeader(header)
-    if (errors.length > 0) {
-      // Abort parsing by throwing or returning
-      throw new Error('Invalid header')
-    }
-  }
+- Most of them don't have a clear shutdown mechanism, to gracefully shutdown the services
 
-  const [ok, ko] = pipe(
-    rows,
-    Arr.partition((row) => row.errors.length === 0)
-  )
+## Goal
 
-  // etc...
+This package is a more functional based dependency injection solution, with the following characteristics:
 
-  stats.total += rows.length
-  stats.ok += ok.length
-  stats.ko += ko.length
-}
+- Without classes / decorators: This encourages better code splitting, and makes it a lot easier to expose primitives, async values, functions, etc... instead of mostly class instances only.
 
-console.log(`File has ${stats.total} lines in total`, stats)
-```
+- Typescript friendly
+
+- Custom scopes: You will have complete control over how many scopes and child scopes you create. This makes it very easy to create, for example, a separate scope for each "Job", containing the data of the job that is being currently processed.
+
+- Lazy loading of dependencies: If your application contains hundreds of services... why should we startup them all up if only a handful are needed on program startup.
+
+- Powerful scope shutdown mechanism
+
+- Easier testability
+
+## Documentation
+
+Please visit the [documentation](https://nx-apoyo.netlify.app/guide/decoders/getting-started.html) for more information.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
