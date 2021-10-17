@@ -109,18 +109,20 @@ describe('ScopeInstance.get', () => {
     const Api = pipe(
       Var.inject(Env, Var.spawner()),
       Var.map(async ([_env, spawnChild]) => {
-        const req = 1
-        const scope = pipe(spawnChild(), Scope.bind(Req, Var.of(req)), Scope.get)
+        const scope = pipe(spawnChild(), Scope.bind(Req, 1), Scope.get)
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const internal = SCOPES_INTERNAL.get(scope)!
+
+        expect(internal.bindings.has(Req)).toBe(true)
 
         const value = await scope.get(Handler)
 
         expect(value).toEqual([1])
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const internal = SCOPES_INTERNAL.get(scope)!
-
-        expect(internal.mounted.has(Handler)).toBe(true)
-        expect(internal.mounted.has(Req)).toBe(true)
+        expect(internal.mounted.has(Handler.symbol)).toBe(true)
+        expect(internal.mounted.has(Req.symbol)).toBe(true)
+        expect(internal.mounted.has(Db.symbol)).toBe(false)
 
         return value
       })
@@ -128,8 +130,16 @@ describe('ScopeInstance.get', () => {
 
     const scope = pipe(Scope.create(), Scope.get)
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const internal = SCOPES_INTERNAL.get(scope)!
+
     const value = await scope.get(Api)
     expect(value).toEqual([1])
+
+    expect(internal.mounted.has(Api.symbol)).toBe(true)
+    expect(internal.mounted.has(Db.symbol)).toBe(true)
+    expect(internal.mounted.has(Handler.symbol)).toBe(false)
+    expect(internal.mounted.has(Req.symbol)).toBe(false)
   })
 })
 
@@ -216,8 +226,7 @@ describe('ScopeInstance.close', () => {
     const Api = pipe(
       Var.inject(Env, Var.spawner()),
       Var.map(([_env, spawnChild]) => {
-        const req = 1
-        return pipe(spawnChild(), Scope.bind(Req, Var.of(req)), Scope.run(Handler))
+        return pipe(spawnChild(), Scope.bind(Req, 1), Scope.run(Handler))
       }),
       Var.closeWith(() => {
         calls.push('api')

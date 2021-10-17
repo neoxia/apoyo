@@ -2,15 +2,6 @@ import { Arr, NonEmptyArray, Option, Ord, pipe } from '@apoyo/std'
 
 import { Scope } from './Scope'
 import { Context } from './types'
-import { Var } from './Var'
-
-export const resolveVariable = (variable: Var, bindings: Map<Var, Var>): Var => {
-  const bound = bindings.get(variable)
-  if (bound) {
-    return resolveVariable(bound, bindings)
-  }
-  return variable
-}
 
 export const searchChildOf = (scope: Scope, parent: Scope): Context | undefined => {
   let tmp = scope

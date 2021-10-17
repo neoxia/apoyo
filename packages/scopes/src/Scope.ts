@@ -1,18 +1,17 @@
-import { Arr, pipe, Task } from '@apoyo/std'
+import { Arr, pipe, Prom, Task } from '@apoyo/std'
 
-import { Context, ScopeInternal, SCOPES_INTERNAL, UnmountContext } from './types'
-import { resolveVariable, searchChildOf } from './utils'
+import { BindingContext, Context, ScopeInternal, SCOPES_INTERNAL, UnmountContext } from './types'
+import { searchChildOf } from './utils'
 import { Var } from './Var'
 
 export interface ScopeBuilder {
   parent?: Context
-  bindings: Map<Var, Var>
+  bindings: Map<Var, any>
 }
 
 export type Scope = {
   tag: 'scope'
   readonly parent?: Context
-  resolve<T>(variable: Var<T>): Var<T>
   load<T>(variable: Var<T>): Promise<Var.Created<T>>
   get<T>(variable: Var<T>): Promise<T>
   close(): Promise<void>
@@ -26,7 +25,7 @@ export const childOf = (ctx: Context): ScopeBuilder => ({
   bindings: new Map()
 })
 
-export const bind = <T, U extends T>(from: Var<T>, to: Var<U>) => (builder: ScopeBuilder) => {
+export const bind = <T, U extends T>(from: Var<T>, to: U) => (builder: ScopeBuilder) => {
   builder.bindings.set(from, to)
   return builder
 }
@@ -34,9 +33,24 @@ export const bind = <T, U extends T>(from: Var<T>, to: Var<U>) => (builder: Scop
 export const get = (builder: ScopeBuilder): Scope => {
   let open = true
 
-  const parent = builder.parent ? SCOPES_INTERNAL.get(builder.parent.scope) : undefined
+  const resolve = <T>(variable: Var<T>): Var<T> => {
+    const bindingCtx = bindings.get(variable)
+    if (bindingCtx) {
+      return {
+        tag: 'var',
+        symbol: variable.symbol,
+        create: async () => {
+          return {
+            scope: bindingCtx.scope,
+            dependencies: [],
+            mount: () => Prom.resolve(bindingCtx.to).then((value) => ({ value }))
+          }
+        }
+      }
+    }
+    return variable
+  }
 
-  const resolve = <T>(variable: Var<T>) => resolveVariable(variable, internal.bindings.all)
   const load = async <T>(variable: Var<T>): Promise<Var.Created<T>> => {
     if (!open) {
       throw new Error('Scope has been closed and cannot be re-used')
@@ -48,17 +62,19 @@ export const get = (builder: ScopeBuilder): Scope => {
       scope,
       variable: resolved
     }
-    if (!internal.created.has(resolved)) {
-      internal.created.set(resolved, resolved.create(ctx))
+    if (!internal.created.has(resolved.symbol)) {
+      internal.created.set(resolved.symbol, resolved.create(ctx))
     }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return await internal.created.get(resolved)!
+    const pCreated = internal.created.get(resolved.symbol)
+    if (!pCreated) {
+      throw new Error('could not get created element')
+    }
+    return await pCreated
   }
 
   const scope: Scope = {
     tag: 'scope',
     parent: builder.parent,
-    resolve,
     load,
     get: async (variable: Var) => {
       if (!open) {
@@ -68,9 +84,9 @@ export const get = (builder: ScopeBuilder): Scope => {
       const resolved = resolve(variable)
       const created = await load(resolved)
       const targetScope = SCOPES_INTERNAL.get(created.scope) as ScopeInternal
-      if (!targetScope.mounted.has(resolved)) {
+      if (!targetScope.mounted.has(resolved.symbol)) {
         targetScope.mounted.set(
-          resolved,
+          resolved.symbol,
           created.mount().then((data) => {
             const unmountFn = data.unmount
             if (unmountFn) {
@@ -90,7 +106,7 @@ export const get = (builder: ScopeBuilder): Scope => {
           })
         )
       }
-      return targetScope.mounted.get(resolved)
+      return targetScope.mounted.get(resolved.symbol)
     },
     close: async () => {
       open = false
@@ -103,13 +119,23 @@ export const get = (builder: ScopeBuilder): Scope => {
     }
   }
 
-  const bindings = builder.bindings
+  const parent = builder.parent ? SCOPES_INTERNAL.get(builder.parent.scope) : undefined
+  const scopeBindings = pipe(
+    Arr.from(builder.bindings.entries()),
+    Arr.map(([from, to]): [Var, BindingContext] => [
+      from,
+      {
+        from,
+        to,
+        scope
+      }
+    ])
+  )
+  const bindings = parent ? new Map([...parent.bindings.entries(), ...scopeBindings]) : new Map(scopeBindings)
+
   const internal: ScopeInternal = {
     parent: builder.parent,
-    bindings: {
-      scope: bindings,
-      all: parent ? new Map([...parent.bindings.all.entries(), ...bindings.entries()]) : bindings
-    },
+    bindings,
     created: new Map(),
     mounted: new Map(),
     unmount: []

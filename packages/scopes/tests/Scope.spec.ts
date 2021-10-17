@@ -96,60 +96,77 @@ describe('Scope.run', () => {
 })
 
 describe('Scope.bind', () => {
-  it('should bind a Var to another Var', async () => {
-    const VarA = Var.of(1)
-    const VarB = Var.of(2)
+  it('should bind a Var to a constant value', async () => {
+    const calls: string[] = []
+    const VarA = Var.thunk(() => {
+      calls.push('a')
+      return 1
+    })
 
-    const builder = pipe(Scope.create(), Scope.bind(VarA, VarB))
+    const builder = pipe(Scope.create(), Scope.bind(VarA, 2))
 
     expect(builder.bindings.size).toBe(1)
-
     const scope = Scope.get(builder)
 
-    const resolved = scope.resolve(VarB)
-
-    expect(resolved).toBe(VarB)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const internal = SCOPES_INTERNAL.get(scope)!
+    expect(internal.bindings.size).toBe(1)
 
     const a = await scope.get(VarA)
-    const b = await scope.get(VarA)
 
+    expect(calls).toEqual([])
     expect(a).toBe(2)
-    expect(b).toBe(2)
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const internal = SCOPES_INTERNAL.get(scope)!
-
-    expect(internal.unmount.length).toEqual(0)
-    expect(internal.created.size).toEqual(1)
-    expect(internal.mounted.size).toEqual(1)
   })
 
-  it('should resolve deeply', async () => {
-    const VarA = Var.of(1)
-    const VarB = Var.of(2)
-    const VarC = Var.of(3)
-
-    const builder = pipe(Scope.create(), Scope.bind(VarB, VarC), Scope.bind(VarA, VarB))
-
-    expect(builder.bindings.size).toBe(2)
-
-    const scope = Scope.get(builder)
-
-    const resolved = scope.resolve(VarA)
-
-    expect(resolved).toBe(VarC)
-
-    const a = await scope.get(VarA)
-    const b = await scope.get(VarA)
-
-    expect(a).toBe(3)
-    expect(b).toBe(3)
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const internal = SCOPES_INTERNAL.get(scope)!
-
-    expect(internal.unmount.length).toEqual(0)
-    expect(internal.created.size).toEqual(1)
-    expect(internal.mounted.size).toEqual(1)
-  })
+  // TODO: disabled for now, support in another version
+  // it('should bind a Var to another Var', async () => {
+  //   const calls: string[] = []
+  //   const VarA = Var.thunk(() => {
+  //     calls.push('a')
+  //     return 1
+  //   })
+  //   const VarB = Var.thunk(() => {
+  //     calls.push('b')
+  //     return 2
+  //   })
+  //   const builder = pipe(Scope.create(), Scope.bind(VarA, VarB))
+  //   expect(builder.bindings.size).toBe(1)
+  //   const scope = Scope.get(builder)
+  //   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  //   const internal = SCOPES_INTERNAL.get(scope)!
+  //   expect(internal.bindings.size).toBe(1)
+  //   const a = await scope.get(VarA)
+  //   const b = await scope.get(VarB)
+  //   expect(calls).toEqual(['b'])
+  //   expect(a).toBe(2)
+  //   expect(b).toBe(2)
+  // })
+  // it('should resolve deeply', async () => {
+  //   const calls: string[] = []
+  //   const VarA = Var.thunk(() => {
+  //     calls.push('a')
+  //     return 1
+  //   })
+  //   const VarB = Var.thunk(() => {
+  //     calls.push('b')
+  //     return 2
+  //   })
+  //   const VarC = Var.thunk(() => {
+  //     calls.push('c')
+  //     return 3
+  //   })
+  //   const builder = pipe(Scope.create(), Scope.bind(VarB, VarC), Scope.bind(VarA, VarB))
+  //   expect(builder.bindings.size).toBe(2)
+  //   const scope = Scope.get(builder)
+  //   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  //   const internal = SCOPES_INTERNAL.get(scope)!
+  //   expect(internal.bindings.size).toBe(2)
+  //   const a = await scope.get(VarA)
+  //   const b = await scope.get(VarB)
+  //   const c = await scope.get(VarC)
+  //   expect(calls).toEqual(['c'])
+  //   expect(a).toBe(3)
+  //   expect(b).toBe(3)
+  //   expect(c).toBe(3)
+  // })
 })

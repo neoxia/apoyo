@@ -5,6 +5,7 @@ import { Context } from './types'
 import { getLowestScope, getRoot } from './utils'
 
 export type Var<T = any> = {
+  symbol: symbol
   tag: 'var'
   create: (ctx: Context) => Promise<Var.Created<T>>
 }
@@ -23,6 +24,7 @@ export namespace Var {
 
 export const thunk = <T>(thunk: () => T | Promise<T>): Var<T> => ({
   tag: 'var',
+  symbol: Symbol('<anonymous>'),
   create: async (ctx) => ({
     scope: getRoot(ctx.scope),
     dependencies: [],
@@ -38,6 +40,7 @@ export const of = <T>(value: T): Var<T> => thunk(() => value)
 
 export const lazy = <A>(fn: () => Promise<Var<A>> | Var<A>): Var<A> => ({
   tag: 'var',
+  symbol: Symbol('<anonymous>'),
   create: async (ctx) => {
     const variable = await fn()
     return ctx.scope.load(variable)
@@ -46,6 +49,7 @@ export const lazy = <A>(fn: () => Promise<Var<A>> | Var<A>): Var<A> => ({
 
 export const closeWith = <A>(fn: (value: A) => Promise<void> | void) => (variable: Var<A>): Var<A> => ({
   tag: 'var',
+  symbol: Symbol('<anonymous>'),
   create: async (ctx) => {
     const created = await ctx.scope.load(variable)
 
@@ -63,6 +67,7 @@ export const closeWith = <A>(fn: (value: A) => Promise<void> | void) => (variabl
 
 export const map = <A, B>(fn: (value: A) => B | Promise<B>) => (variable: Var<A>): Var<B> => ({
   tag: 'var',
+  symbol: Symbol('<anonymous>'),
   create: async (ctx): Promise<Var.Created> => {
     const created = await ctx.scope.load(variable)
 
@@ -82,6 +87,7 @@ export const map = <A, B>(fn: (value: A) => B | Promise<B>) => (variable: Var<A>
 
 export const chain = <A, B>(fn: (value: A) => Promise<Var<B>> | Var<B>) => (variable: Var<A>): Var<B> => ({
   tag: 'var',
+  symbol: Symbol('<anonymous>'),
   create: async (ctx): Promise<Var.Created> => {
     const chainedVar = await ctx.scope.get(variable).then(fn)
 
@@ -98,6 +104,7 @@ export const chain = <A, B>(fn: (value: A) => Promise<Var<B>> | Var<B>) => (vari
 
 export const spawner = (): Var<() => ScopeBuilder> => ({
   tag: 'var',
+  symbol: Symbol('<anonymous>'),
   create: async (ctx) => {
     return {
       scope: ctx.scope,
@@ -112,6 +119,7 @@ export const spawner = (): Var<() => ScopeBuilder> => ({
 
 export const all = <A>(variables: Var<A>[]): Var<A[]> => ({
   tag: 'var',
+  symbol: Symbol('<anonymous>'),
   create: async (ctx) => {
     const created = await pipe(
       variables,
@@ -147,9 +155,17 @@ export function inject(...vars: Var[]): Var<any[]> {
 }
 
 export const abstract = <T>(description: string) =>
-  thunk<T>(() => {
-    throw new Error(description)
-  })
+  pipe(
+    thunk<T>(() => {
+      throw new Error(`cannot mount abstract variable ${description}`)
+    }),
+    named(description)
+  )
+
+export const named = (description: string) => <T>(variable: Var<T>) => ({
+  ...variable,
+  symbol: Symbol(description)
+})
 
 export const Var = {
   thunk,
@@ -161,5 +177,6 @@ export const Var = {
   chain,
   closeWith,
   spawner,
-  abstract
+  abstract,
+  named
 }

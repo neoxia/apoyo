@@ -13,13 +13,16 @@ export interface UnmountContext {
   variable: Var
 }
 
+export interface BindingContext<T = any> {
+  from: Var
+  to: T
+  scope: Scope
+}
+
 export type ScopeInternal = {
   readonly parent?: Context
-  readonly bindings: {
-    scope: Map<Var, Var>
-    all: Map<Var, Var>
-  }
-  created: Map<Var, Promise<Var.Created>>
-  mounted: Map<Var, Promise<any>>
+  readonly bindings: Map<Var, BindingContext>
+  created: Map<symbol, Promise<Var.Created>>
+  mounted: Map<symbol, Promise<any>>
   unmount: UnmountContext[]
 }
