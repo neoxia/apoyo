@@ -170,3 +170,17 @@ describe('Var.chain', () => {
     expect(c).toEqual('aws_storage')
   })
 })
+
+describe('Var.mapWith', () => {
+  it('should spread all arguments', async () => {
+    const VarA = Var.of(1)
+    const VarB = Var.of(2)
+    const VarC = pipe(
+      Var.inject(VarA, VarB),
+      Var.mapWith((a, b) => a + b)
+    )
+
+    const value = await pipe(Scope.create(), Scope.run(VarC))
+    expect(value).toBe(3)
+  })
+})

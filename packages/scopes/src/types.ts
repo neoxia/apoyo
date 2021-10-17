@@ -22,7 +22,7 @@ export interface BindingContext<T = any> {
 export type ScopeInternal = {
   readonly parent?: Context
   readonly bindings: Map<Var, BindingContext>
-  created: Map<symbol, Promise<Var.Created>>
-  mounted: Map<symbol, Promise<any>>
+  created: Map<symbol, PromiseLike<Var.Created>>
+  mounted: Map<symbol, PromiseLike<any>>
   unmount: UnmountContext[]
 }

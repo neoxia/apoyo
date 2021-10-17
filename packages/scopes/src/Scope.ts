@@ -17,6 +17,12 @@ export type Scope = {
   close(): Promise<void>
 }
 
+export namespace Scope {
+  export interface Spawner {
+    spawn: () => ScopeBuilder
+  }
+}
+
 export const create = (): ScopeBuilder => ({
   bindings: new Map()
 })
@@ -154,10 +160,28 @@ export const run = <T>(variable: Var<T>) => async (builder: ScopeBuilder) => {
   }
 }
 
+export const spawner = (): Var<Scope.Spawner> => ({
+  tag: 'var',
+  symbol: Symbol('<anonymous>'),
+  create: async (ctx) => {
+    return {
+      scope: ctx.scope,
+      dependencies: [],
+      mount: async () => ({
+        value: {
+          spawn: () => Scope.childOf(ctx)
+        },
+        unmount: () => undefined
+      })
+    }
+  }
+})
+
 export const Scope = {
   create,
   childOf,
   bind,
   get,
-  run
+  run,
+  spawner
 }

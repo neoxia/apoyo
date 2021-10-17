@@ -104,9 +104,9 @@ describe('ScopeInstance.get', () => {
     )
 
     const Api = pipe(
-      Var.inject(Env, Var.spawner()),
-      Var.map(async ([_env, spawnChild]) => {
-        const scope = pipe(spawnChild(), Scope.bind(Req, 1), Scope.get)
+      Var.inject(Env, Scope.spawner()),
+      Var.map(async ([_env, spawner]) => {
+        const scope = pipe(spawner.spawn(), Scope.bind(Req, 1), Scope.get)
 
         const internal = SCOPES_INTERNAL.get(scope)!
 
@@ -219,9 +219,9 @@ describe('ScopeInstance.close', () => {
     )
 
     const Api = pipe(
-      Var.inject(Env, Var.spawner()),
-      Var.map(([_env, spawnChild]) => {
-        return pipe(spawnChild(), Scope.bind(Req, 1), Scope.run(Handler))
+      Var.inject(Env, Scope.spawner()),
+      Var.map(([_env, spawner]) => {
+        return pipe(spawner.spawn(), Scope.bind(Req, 1), Scope.run(Handler))
       }),
       Var.closeWith(() => {
         calls.push('api')

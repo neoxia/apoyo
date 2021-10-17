@@ -1,28 +1,28 @@
-import { Arr, pipe, Prom } from '@apoyo/std'
+import { Arr, pipe, Task } from '@apoyo/std'
 
-import { Scope, ScopeBuilder } from './Scope'
+import { Scope } from './Scope'
 import { Context } from './types'
 import { getLowestScope, getRoot } from './utils'
 
 export type Var<T = any> = {
   symbol: symbol
   tag: 'var'
-  create: (ctx: Context) => Promise<Var.Created<T>>
+  create: (ctx: Context) => PromiseLike<Var.Created<T>>
 }
 export namespace Var {
-  export type Unmount = () => Promise<void> | void
+  export type Unmount = () => PromiseLike<void> | void
 
   export interface Created<T = any> {
     scope: Scope
     dependencies: Var[]
-    mount: () => Promise<{
+    mount: () => PromiseLike<{
       value: T
       unmount?: Unmount
     }>
   }
 }
 
-export const thunk = <T>(thunk: () => T | Promise<T>): Var<T> => ({
+export const thunk = <T>(thunk: () => T | PromiseLike<T>): Var<T> => ({
   tag: 'var',
   symbol: Symbol('<anonymous>'),
   create: async (ctx) => ({
@@ -30,15 +30,15 @@ export const thunk = <T>(thunk: () => T | Promise<T>): Var<T> => ({
     dependencies: [],
     mount: () =>
       pipe(
-        Prom.thunk(thunk),
-        Prom.map((value) => ({ value }))
+        Task.thunk(thunk),
+        Task.map((value) => ({ value }))
       )
   })
 })
 
 export const of = <T>(value: T): Var<T> => thunk(() => value)
 
-export const lazy = <A>(fn: () => Promise<Var<A>> | Var<A>): Var<A> => ({
+export const lazy = <A>(fn: () => PromiseLike<Var<A>> | Var<A>): Var<A> => ({
   tag: 'var',
   symbol: Symbol('<anonymous>'),
   create: async (ctx) => {
@@ -47,7 +47,7 @@ export const lazy = <A>(fn: () => Promise<Var<A>> | Var<A>): Var<A> => ({
   }
 })
 
-export const closeWith = <A>(fn: (value: A) => Promise<void> | void) => (variable: Var<A>): Var<A> => ({
+export const closeWith = <A>(fn: (value: A) => PromiseLike<void> | void) => (variable: Var<A>): Var<A> => ({
   tag: 'var',
   symbol: Symbol('<anonymous>'),
   create: async (ctx) => {
@@ -65,7 +65,7 @@ export const closeWith = <A>(fn: (value: A) => Promise<void> | void) => (variabl
   }
 })
 
-export const map = <A, B>(fn: (value: A) => B | Promise<B>) => (variable: Var<A>): Var<B> => ({
+export const map = <A, B>(fn: (value: A) => B | PromiseLike<B>) => (variable: Var<A>): Var<B> => ({
   tag: 'var',
   symbol: Symbol('<anonymous>'),
   create: async (ctx): Promise<Var.Created> => {
@@ -85,7 +85,9 @@ export const map = <A, B>(fn: (value: A) => B | Promise<B>) => (variable: Var<A>
   }
 })
 
-export const chain = <A, B>(fn: (value: A) => Promise<Var<B>> | Var<B>) => (variable: Var<A>): Var<B> => ({
+export const mapWith = <A extends any[], B>(fn: (...args: A) => B | PromiseLike<B>) => map<A, B>((args) => fn(...args))
+
+export const chain = <A, B>(fn: (value: A) => PromiseLike<Var<B>> | Var<B>) => (variable: Var<A>): Var<B> => ({
   tag: 'var',
   symbol: Symbol('<anonymous>'),
   create: async (ctx): Promise<Var.Created> => {
@@ -102,30 +104,14 @@ export const chain = <A, B>(fn: (value: A) => Promise<Var<B>> | Var<B>) => (vari
   }
 })
 
-export const spawner = (): Var<() => ScopeBuilder> => ({
-  tag: 'var',
-  symbol: Symbol('<anonymous>'),
-  create: async (ctx) => {
-    return {
-      scope: ctx.scope,
-      dependencies: [],
-      mount: async () => ({
-        value: () => Scope.childOf(ctx),
-        unmount: () => undefined
-      })
-    }
-  }
-})
+export const chainWith = <A extends any[], B>(fn: (...args: A) => Var<B> | PromiseLike<Var<B>>) =>
+  chain<A, B>((args) => fn(...args))
 
-export const all = <A>(variables: Var<A>[]): Var<A[]> => ({
+export const array = <A>(variables: Var<A>[], strategy: Task.Strategy): Var<A[]> => ({
   tag: 'var',
   symbol: Symbol('<anonymous>'),
   create: async (ctx) => {
-    const created = await pipe(
-      variables,
-      Arr.map((v) => ctx.scope.load(v)),
-      Prom.all
-    )
+    const created = await pipe(variables, Arr.map(Task.taskify(ctx.scope.load)), strategy)
 
     return {
       scope: getLowestScope(
@@ -139,17 +125,32 @@ export const all = <A>(variables: Var<A>[]): Var<A[]> => ({
       mount: () =>
         pipe(
           variables,
-          Arr.map((v) => ctx.scope.get(v)),
-          Prom.all,
-          Prom.map((value) => ({ value }))
+          Arr.map(Task.taskify(ctx.scope.get)),
+          strategy,
+          Task.map((value) => ({ value }))
         )
     }
   }
 })
 
+export const all = <A>(variables: Var<A>[]): Var<A[]> => array(variables, Task.all)
+export const sequence = <A>(variables: Var<A>[]): Var<A[]> => array(variables, Task.sequence)
+export const concurrent = (nb: number) => <A>(variables: Var<A>[]): Var<A[]> => array(variables, Task.concurrent(nb))
+
+export function inject(): Var<[]>
 export function inject<A>(a: Var<A>): Var<[A]>
 export function inject<A, B>(a: Var<A>, b: Var<B>): Var<[A, B]>
 export function inject<A, B, C>(a: Var<A>, b: Var<B>, c: Var<C>): Var<[A, B, C]>
+export function inject<A, B, C, D>(a: Var<A>, b: Var<B>, c: Var<C>, d: Var<D>): Var<[A, B, C, D]>
+export function inject<A, B, C, D, E>(a: Var<A>, b: Var<B>, c: Var<C>, d: Var<D>, e: Var<E>): Var<[A, B, C, D, E]>
+export function inject<A, B, C, D, E, F>(
+  a: Var<A>,
+  b: Var<B>,
+  c: Var<C>,
+  d: Var<D>,
+  e: Var<E>,
+  f: Var<F>
+): Var<[A, B, C, D, E, F]>
 export function inject(...vars: Var[]): Var<any[]> {
   return all(vars)
 }
@@ -172,11 +173,14 @@ export const Var = {
   of,
   lazy,
   all,
+  sequence,
+  concurrent,
   inject,
   map,
+  mapWith,
   chain,
+  chainWith,
   closeWith,
-  spawner,
   abstract,
   named
 }
