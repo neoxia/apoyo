@@ -184,3 +184,20 @@ describe('Var.mapWith', () => {
     expect(value).toBe(3)
   })
 })
+
+describe('Var.struct', () => {
+  it('should combine a struct of vars into a single var', async () => {
+    const VarA = Var.of(1)
+    const VarB = Var.of(2)
+    const VarC = pipe(
+      Var.struct({
+        a: VarA,
+        b: VarB
+      }),
+      Var.map(({ a, b }) => a + b)
+    )
+
+    const value = await pipe(Scope.create(), Scope.run(VarC))
+    expect(value).toBe(3)
+  })
+})

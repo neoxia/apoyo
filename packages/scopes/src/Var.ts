@@ -1,4 +1,4 @@
-import { Arr, pipe, Task } from '@apoyo/std'
+import { Arr, Dict, pipe, Task } from '@apoyo/std'
 
 import { Scope } from './Scope'
 import { Context } from './types'
@@ -11,6 +11,12 @@ export type Var<T = any> = {
 }
 export namespace Var {
   export type Unmount = () => PromiseLike<void> | void
+
+  export type Struct<A extends Dict<Var>> = Var<
+    {
+      [P in keyof A]: A[P] extends Var<infer I> ? I : never
+    }
+  >
 
   export interface Created<T = any> {
     scope: Scope
@@ -137,6 +143,36 @@ export const all = <A>(variables: Var<A>[]): Var<A[]> => array(variables, Task.a
 export const sequence = <A>(variables: Var<A>[]): Var<A[]> => array(variables, Task.sequence)
 export const concurrent = (nb: number) => <A>(variables: Var<A>[]): Var<A[]> => array(variables, Task.concurrent(nb))
 
+export function struct<A extends Dict<Var>>(obj: A): Var.Struct<A>
+export function struct(obj: Dict<Var>): Var<Dict>
+export function struct(obj: Dict<Var>): Var<Dict> {
+  return {
+    tag: 'var',
+    symbol: Symbol('<anonymous>'),
+    create: async (ctx: Context) => {
+      const created = await pipe(obj, Dict.map(Task.taskify(ctx.scope.load)), Task.struct(Task.all))
+
+      return {
+        scope: getLowestScope(
+          ctx.scope,
+          pipe(
+            created,
+            Dict.collect((c) => c.scope)
+          )
+        ),
+        dependencies: pipe(obj, Dict.values),
+        mount: () =>
+          pipe(
+            obj,
+            Dict.map(Task.taskify(ctx.scope.get)),
+            Task.struct(Task.all),
+            Task.map((value) => ({ value }))
+          )
+      }
+    }
+  }
+}
+
 export function inject(): Var<[]>
 export function inject<A>(a: Var<A>): Var<[A]>
 export function inject<A, B>(a: Var<A>, b: Var<B>): Var<[A, B]>
@@ -172,9 +208,11 @@ export const Var = {
   thunk,
   of,
   lazy,
+  array,
   all,
   sequence,
   concurrent,
+  struct,
   inject,
   map,
   mapWith,
