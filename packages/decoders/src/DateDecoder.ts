@@ -1,28 +1,27 @@
-import { pipe } from '@apoyo/std'
+import { pipe, Result } from '@apoyo/std'
+
+import { DecodeError } from './DecodeError'
 import { Decoder } from './Decoder'
 import { ErrorCode } from './Errors'
 import { TextDecoder } from './TextDecoder'
-import { ISO } from './types'
 
-const REGEXP_DATE = /^([0-9]{4}[-](0?[1-9]|1[0-2])[-](0?[1-9]|[12][0-9]|3[01]))$/
-const REGEXP_DATETIME = /^([0-9]{4}[-](0?[1-9]|1[0-2])[-](0?[1-9]|[12][0-9]|3[01]))[T ]((0?[1-9]|[1][0-9]|2[0-3]):([0-5][0-9])(:([0-5][0-9])(\.\d+)?)?)Z?$/
-
-export const isDateFormat = (str: string): str is ISO.Date => REGEXP_DATE.test(str)
-export const isDatetimeFormat = (str: string): str is ISO.Datetime => REGEXP_DATETIME.test(str)
-
-export type DateDecoder<I, O extends ISO.Date | ISO.Datetime> = Decoder<I, O>
+export type DateDecoder<I, O extends Date> = Decoder<I, O>
 
 export const date = pipe(
-  TextDecoder.string,
-  Decoder.filter(isDateFormat, `string is not a date string`, {
-    code: ErrorCode.STRING_DATE
-  })
+  TextDecoder.date,
+  Decoder.map((str) => new Date(str))
 )
 export const datetime = pipe(
-  TextDecoder.string,
-  Decoder.filter(isDatetimeFormat, `string is not a datetime string`, {
-    code: ErrorCode.STRING_DATETIME
-  })
+  TextDecoder.datetime,
+  Decoder.map((str) => new Date(str))
+)
+
+export const strict = Decoder.fromGuard(
+  (input: unknown): input is Date => input instanceof Date,
+  `input is not a Date object`,
+  {
+    code: ErrorCode.DATE_STRICT
+  }
 )
 
 export const native: Decoder<unknown, Date> = pipe(
@@ -32,6 +31,32 @@ export const native: Decoder<unknown, Date> = pipe(
     code: ErrorCode.DATE
   })
 )
+
+export const min = (minDate: Date | (() => Date)) =>
+  Decoder.parse((input: Date) => {
+    const min = typeof minDate === 'function' ? minDate() : minDate
+    return input.getTime() >= min.getTime()
+      ? Result.ok(input)
+      : Result.ko(
+          DecodeError.value(input, `date should be above ${min.toISOString()}`, {
+            code: ErrorCode.DATE_MIN,
+            min
+          })
+        )
+  })
+
+export const max = (maxDate: Date | (() => Date)) =>
+  Decoder.parse((input: Date) => {
+    const max = typeof maxDate === 'function' ? maxDate() : maxDate
+    return input.getTime() <= max.getTime()
+      ? Result.ok(input)
+      : Result.ko(
+          DecodeError.value(input, `date should be below ${max.toISOString()}`, {
+            code: ErrorCode.DATE_MAX,
+            max
+          })
+        )
+  })
 
 /**
  * @namespace DateDecoder
@@ -43,18 +68,82 @@ export const DateDecoder = {
   /**
    * @description
    * Check if the input is a date.
+   *
+   * @example
+   * ```ts
+   * expect(pipe('2021-01-01', Decoder.validate(DateDecoder.date), Result.isOk)).toBe(true)
+   * expect(pipe('2021-01-01 12:00:00', Decoder.validate(DateDecoder.date), Result.isKo)).toBe(true)
+   * ```
    */
   date,
 
   /**
    * @description
    * Check if the input is a datetime.
+   * @example
+   * ```ts
+   * expect(pipe('2021-01-01', Decoder.validate(DateDecoder.datetime), Result.isOk)).toBe(true)
+   * expect(pipe('2021-01-01 12:00:00', Decoder.validate(DateDecoder.datetime), Result.isOk)).toBe(true)
+   * expect(pipe('2021-01-01 12:00:00Z', Decoder.validate(DateDecoder.datetime), Result.isOk)).toBe(true)
+   * ```
    */
   datetime,
 
   /**
    * @description
    * Check if the input is a valid `Date` object.
+   *
+   * @example
+   * ```ts
+   * expect(pipe(new Date('2021-01-01'), Decoder.validate(DateDecoder.strict), Result.isOk)).toBe(true)
+   * expect(pipe('2021-01-01', Decoder.validate(DateDecoder.strict), Result.isKo)).toBe(true)
+   * ```
    */
-  native
+  strict,
+
+  /**
+   * @description
+   * Check if the input can be cast to a valid `Date` object.
+   *
+   * expect(pipe(new Date('2021-01-01'), Decoder.validate(DateDecoder.native), Result.isOk)).toBe(true)
+   * expect(pipe('2021-01-01', Decoder.validate(DateDecoder.native), Result.isOk)).toBe(true)
+   * expect(pipe('2021-01-01 12:00:00Z', Decoder.validate(DateDecoder.native), Result.isOk)).toBe(true)
+   */
+  native,
+
+  /**
+   * @description
+   * Check if the date is above a specific date
+   *
+   * @example
+   * ```ts
+   * // The date needs to be above the current date
+   * const futureDate = pipe(
+   *   Decoder.date,
+   *   Decoder.min(() => {
+   *     const today = new Date().toISOString().split('T')[0]
+   *     return new Date(today)
+   *   })
+   * )
+   * ```
+   */
+  min,
+
+  /**
+   * @description
+   * Check if the date is above a specific date
+   *
+   * @example
+   * ```ts
+   * // The date cannot be above "now"
+   * const futureDate = pipe(
+   *   Decoder.datetime,
+   *   Decoder.max(() => {
+   *     const now = new Date()
+   *     return now
+   *   })
+   * )
+   * ```
+   */
+  max
 }

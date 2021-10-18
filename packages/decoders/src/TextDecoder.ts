@@ -1,10 +1,14 @@
+import type { Dict } from '@apoyo/std'
 import { flow, pipe, Str } from '@apoyo/std'
+
 import { Decoder } from './Decoder'
 import { ErrorCode } from './Errors'
-import { Email, UUID } from './types'
+import { Email, ISO, UUID } from './types'
 
 const REGEXP_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const REGEXP_EMAIL = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/
+const REGEXP_DATE = /^([0-9]{4}[-](0?[1-9]|1[0-2])[-](0?[1-9]|[12][0-9]|3[01]))$/
+const REGEXP_DATETIME = /^([0-9]{4}[-](0?[1-9]|1[0-2])[-](0?[1-9]|[12][0-9]|3[01]))[T ]((0?[1-9]|[1][0-9]|2[0-3]):([0-5][0-9])(:([0-5][0-9])(\.\d+)?)?)Z?$/
 
 export type TextDecoder<I> = Decoder<I, string>
 
@@ -59,16 +63,40 @@ export const optional = flow(
 export const trim = Decoder.map(Str.trim)
 export const htmlEscape = Decoder.map(Str.htmlEscape)
 
+export const pattern = <T extends string = string>(
+  regexp: RegExp,
+  message = 'string does not match the given pattern',
+  meta: Dict = {}
+) =>
+  Decoder.filter((value: string): value is T => regexp.test(value), message, {
+    code: ErrorCode.STRING_PATTERN,
+    ...meta
+  })
+
+export const date = pipe(
+  string,
+  pattern<ISO.Date>(REGEXP_DATE, `string is not a date string`, {
+    code: ErrorCode.STRING_DATE
+  })
+)
+
+export const datetime = pipe(
+  string,
+  pattern<ISO.Datetime>(REGEXP_DATETIME, `string is not a datetime string`, {
+    code: ErrorCode.STRING_DATETIME
+  })
+)
+
 export const email = pipe(
   string,
-  Decoder.filter((str): str is Email => REGEXP_EMAIL.test(str), `string is not an email`, {
+  pattern<Email>(REGEXP_EMAIL, `string is not an email`, {
     code: ErrorCode.STRING_EMAIL
   })
 )
 
 export const uuid = pipe(
   string,
-  Decoder.filter((str): str is UUID => REGEXP_UUID.test(str), `string is not an uuid`, {
+  pattern<UUID>(REGEXP_UUID, `string is not an uuid`, {
     code: ErrorCode.STRING_UUID
   })
 )
@@ -179,6 +207,46 @@ export const TextDecoder = {
    * ```
    */
   trim,
+
+  /**
+   * @description
+   * Check if the string matches a given pattern / regexp
+   *
+   * @example
+   * ```ts
+   * const decoder = pipe(
+   *   TextDecoder.string,
+   *   TextDecoder.pattern(/^Hello [a-zA-Z]+$/)
+   * )
+   *
+   * expect(pipe('Hello world', Decoder.validate(decoder), Result.isOk)).toBe(true)
+   * ```
+   */
+  pattern,
+
+  /**
+   * @description
+   * Check if the string is a date in the ISO format (YYYY-MM-DD)
+   *
+   * @example
+   * ```ts
+   * expect(pipe("2020-06-13", Decoder.validate(TextDecoder.date), Result.isOk)).toBe(true)
+   * expect(pipe("Hello", Decoder.validate(TextDecoder.date), Result.isKo)).toBe(true)
+   * ```
+   */
+  date,
+
+  /**
+   * @description
+   * Check if the string is a datetime in the ISO format (YYYY-MM-DD HH:mm:ss)
+   *
+   * @example
+   * ```ts
+   * expect(pipe("2020-06-13", Decoder.validate(TextDecoder.datetime), Result.isOk)).toBe(true)
+   * expect(pipe("2020-06-13 13:53:23Z", Decoder.validate(TextDecoder.datetime), Result.isOk)).toBe(true)
+   * ```
+   */
+  datetime,
 
   /**
    * @description
