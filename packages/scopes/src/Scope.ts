@@ -1,8 +1,9 @@
-import { Arr, pipe, Prom, Task } from '@apoyo/std'
+import { Arr, Ord, pipe, Task } from '@apoyo/std'
+import { Ref } from './Ref'
 
 import { BindingContext, Context, ScopeInternal, SCOPES_INTERNAL, UnmountContext } from './types'
-import { searchChildOf } from './utils'
-import { Var } from './Var'
+import { getHierarchy, getRoot, searchChildOf } from './utils'
+import { Var, VarTags } from './Var'
 
 export interface ScopeBuilder {
   parent?: Context
@@ -43,13 +44,14 @@ export const get = (builder: ScopeBuilder): Scope => {
     const bindingCtx = bindings.get(variable)
     if (bindingCtx) {
       return {
-        tag: 'var',
+        tag: VarTags.VAR,
         symbol: variable.symbol,
         create: async () => {
           return {
             scope: bindingCtx.scope,
-            dependencies: [],
-            mount: () => Prom.resolve(bindingCtx.to).then((value) => ({ value }))
+            mount: async () => ({
+              value: bindingCtx.to
+            })
           }
         }
       }
@@ -111,6 +113,9 @@ export const get = (builder: ScopeBuilder): Scope => {
       return targetScope.mounted.get(resolved.symbol)!
     },
     close: async () => {
+      if (!open) {
+        throw new Error('Scope already closed')
+      }
       open = false
       await pipe(
         internal.unmount,
@@ -135,11 +140,23 @@ export const get = (builder: ScopeBuilder): Scope => {
   )
   const bindings = parent ? new Map([...parent.bindings.entries(), ...scopeBindings]) : new Map(scopeBindings)
 
+  const root = getRoot(scope)
+  const hierarchy = getHierarchy(scope)
+  const hierarchyPrio = new Map(hierarchy.map((h, idx) => [h, idx]))
+  const ordScope = pipe(
+    Ord.number,
+    Ord.optional,
+    Ord.contramap((scope: Scope) => hierarchyPrio.get(scope))
+  )
+
   const internal: ScopeInternal = {
     parent: builder.parent,
     bindings,
-    created: new Map(),
-    mounted: new Map(),
+    hierarchy,
+    root,
+    ord: ordScope,
+    created: new WeakMap(),
+    mounted: new WeakMap(),
     unmount: []
   }
 
@@ -161,12 +178,11 @@ export const run = <T>(variable: Var<T>) => async (builder: ScopeBuilder) => {
 }
 
 export const spawner = (): Var<Scope.Spawner> => ({
-  tag: 'var',
-  symbol: Symbol('<anonymous>'),
+  tag: VarTags.VAR,
+  symbol: Ref.create('<anonymous>'),
   create: async (ctx) => {
     return {
       scope: ctx.scope,
-      dependencies: [],
       mount: async () => ({
         value: {
           spawn: () => Scope.childOf(ctx)

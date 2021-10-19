@@ -23,8 +23,6 @@ describe('ScopeInstance.get', () => {
     const internal = SCOPES_INTERNAL.get(scope)!
 
     expect(internal.unmount.length).toEqual(0)
-    expect(internal.created.size).toEqual(1)
-    expect(internal.mounted.size).toEqual(1)
   })
 
   it('should work with vars having dependencies', async () => {
@@ -51,8 +49,10 @@ describe('ScopeInstance.get', () => {
     const internal = SCOPES_INTERNAL.get(scope)!
 
     expect(internal.unmount.length).toEqual(0)
-    expect(internal.created.size).toEqual(2)
-    expect(internal.mounted.size).toEqual(2)
+    expect(internal.created.has(VarA.symbol)).toEqual(true)
+    expect(internal.created.has(VarB.symbol)).toEqual(true)
+    expect(internal.mounted.has(VarA.symbol)).toEqual(true)
+    expect(internal.mounted.has(VarB.symbol)).toEqual(true)
   })
 
   it('should not mount more than once when loaded in concurrency', async () => {
@@ -79,8 +79,6 @@ describe('ScopeInstance.get', () => {
     const internal = SCOPES_INTERNAL.get(scope)!
 
     expect(internal.unmount.length).toEqual(0)
-    expect(internal.created.size).toEqual(1)
-    expect(internal.mounted.size).toEqual(1)
   })
 
   it('should mount vars in correct scope', async () => {

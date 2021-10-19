@@ -44,8 +44,6 @@ describe('Scope.get', () => {
     const internal = SCOPES_INTERNAL.get(scope)!
 
     expect(internal.unmount.length).toEqual(0)
-    expect(internal.created.size).toEqual(0)
-    expect(internal.mounted.size).toEqual(0)
   })
 })
 
