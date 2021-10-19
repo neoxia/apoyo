@@ -104,7 +104,7 @@ describe('Var.abstract', () => {
 })
 
 describe('Var.chain', () => {
-  it('should allow lazy import', async () => {
+  it('should allow dynamically switching on Vars', async () => {
     const calls: string[] = []
 
     const Env = Var.thunk(async () => {
@@ -168,6 +168,33 @@ describe('Var.chain', () => {
     expect(a).toEqual('aws_storage')
     expect(b).toEqual('aws_storage')
     expect(c).toEqual('aws_storage')
+  })
+
+  it('should work on dynamically created Vars', async () => {
+    const calls: string[] = []
+
+    const root = pipe(Scope.create(), Scope.get)
+
+    const DoSomething = (name: string) =>
+      Var.thunk(() => {
+        calls.push('do ' + name)
+        return name
+      })
+
+    const VarA = pipe(
+      Var.inject(),
+      Var.chain(() => DoSomething('a')),
+      Var.chain(() => DoSomething('b')),
+      Var.map(async (name) => {
+        await Prom.sleep(200)
+        return name
+      })
+    )
+
+    const a = await root.get(VarA)
+
+    expect(calls).toEqual(['do a', 'do b'])
+    expect(a).toEqual('b')
   })
 })
 

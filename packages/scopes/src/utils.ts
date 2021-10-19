@@ -1,7 +1,7 @@
-import { Arr, NonEmptyArray, Option, Ord, pipe } from '@apoyo/std'
+import { Arr, NonEmptyArray, Option, pipe } from '@apoyo/std'
 
 import { Scope } from './Scope'
-import { Context } from './types'
+import { Context, SCOPES_INTERNAL } from './types'
 
 export const searchChildOf = (scope: Scope, parent: Scope): Context | undefined => {
   let tmp = scope
@@ -30,16 +30,6 @@ export const getRoot = (scope: Scope) => {
 }
 
 export const getLowestScope = (scope: Scope, scopes: Scope[]) => {
-  const hierarchy = getHierarchy(scope)
-  const hierarchyPrio = new Map(hierarchy.map((h, idx) => [h, idx]))
-  const ordScope = pipe(
-    Ord.number,
-    Ord.optional,
-    Ord.contramap((scope: Scope) => hierarchyPrio.get(scope))
-  )
-  return pipe(
-    scopes,
-    Arr.min(ordScope),
-    Option.get(() => getRoot(scope))
-  )
+  const internal = SCOPES_INTERNAL.get(scope)!
+  return pipe(scopes, Arr.min(internal.ord), Option.get(internal.root))
 }

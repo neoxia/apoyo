@@ -47,6 +47,8 @@ This package is a more functional based dependency injection solution, with the 
 
 ## Getting started
 
+**Note**: The entire source code of the examples will be available under the *examples/scopes* folder.
+
 Before starting, there are a few very essential things you need to know:
 
 - `Var`s are like injectables, and you can inject any other `Var` that you have declared.
@@ -115,12 +117,15 @@ const TodoRoutes = pipe(
   })
 )
 
-const Routes = pipe(
-  Var.inject(HealthRoutes, TodoRoutes),
-  Var.map(([healthRoutes, todoRoutes]) => {
+export const Routes = pipe(
+  Var.struct({
+    health: HealthRoutes,
+    todos: TodoRoutes
+  }),
+  Var.map((routes) => {
     const route = Router()
-    route.use('/health', healthRoute)
-    route.use('/todos', todoRoutes)
+    route.use('/health', routes.health)
+    route.use('/todos', routes.todos)
     return route
   })
 )
@@ -150,7 +155,7 @@ const API = pipe(
 const Main = pipe(
   API,
   Var.map(async () => {
-    await exitSignals()
+    await Process.end() // Not implemented here, to keep the examples shorter, look up the examples folder for the full implementation
   })
 )
 ```

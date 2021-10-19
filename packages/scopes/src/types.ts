@@ -1,3 +1,6 @@
+import { NonEmptyArray, Ord } from '@apoyo/std'
+import { Ref } from './Ref'
+
 import { Scope } from './Scope'
 import { Var } from './Var'
 
@@ -22,7 +25,10 @@ export interface BindingContext<T = any> {
 export type ScopeInternal = {
   readonly parent?: Context
   readonly bindings: Map<Var, BindingContext>
-  created: Map<symbol, PromiseLike<Var.Created>>
-  mounted: Map<symbol, PromiseLike<any>>
+  hierarchy: NonEmptyArray<Scope>
+  root: Scope
+  ord: Ord<Scope>
+  created: WeakMap<Ref, PromiseLike<Var.Created>>
+  mounted: WeakMap<Ref, PromiseLike<any>>
   unmount: UnmountContext[]
 }
