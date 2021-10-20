@@ -126,14 +126,19 @@ describe('Scope.bind', () => {
       calls.push('b')
       return 2
     })
+
     const builder = pipe(Scope.create(), Scope.bind(VarA, VarB))
+
     expect(builder.bindings.size).toBe(1)
+
     const scope = Scope.get(builder)
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const internal = SCOPES_INTERNAL.get(scope)!
+
     expect(internal.bindings.size).toBe(1)
+
     const a = await scope.get(VarA)
     const b = await scope.get(VarB)
+
     expect(calls).toEqual(['b'])
     expect(a).toBe(2)
     expect(b).toBe(2)
@@ -153,15 +158,20 @@ describe('Scope.bind', () => {
       calls.push('c')
       return 3
     })
+
     const builder = pipe(Scope.create(), Scope.bind(VarB, VarC), Scope.bind(VarA, VarB))
+
     expect(builder.bindings.size).toBe(2)
+
     const scope = Scope.get(builder)
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const internal = SCOPES_INTERNAL.get(scope)!
+
     expect(internal.bindings.size).toBe(2)
+
     const a = await scope.get(VarA)
     const b = await scope.get(VarB)
     const c = await scope.get(VarC)
+
     expect(calls).toEqual(['c'])
     expect(a).toBe(3)
     expect(b).toBe(3)
