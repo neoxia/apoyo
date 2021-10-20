@@ -32,7 +32,7 @@ export const childOf = (ctx: Context): ScopeBuilder => ({
   bindings: new Map()
 })
 
-export const bind = <T, U extends T>(from: Var<T>, to: U) => (builder: ScopeBuilder) => {
+export const bind = <T, U extends T>(from: Var<T>, to: U | Var<U>) => (builder: ScopeBuilder) => {
   builder.bindings.set(from, to)
   return builder
 }
@@ -43,6 +43,18 @@ export const get = (builder: ScopeBuilder): Scope => {
   const resolve = <T>(variable: Var<T>): Var<T> => {
     const bindingCtx = bindings.get(variable)
     if (bindingCtx) {
+      if (bindingCtx.to && bindingCtx.to.tag === VarTags.VAR) {
+        return {
+          tag: VarTags.VAR,
+          symbol: variable.symbol,
+          create: async (ctx) => {
+            return {
+              scope: bindingCtx.scope,
+              mount: () => ctx.scope.get<T>(bindingCtx.to).then((value) => ({ value }))
+            }
+          }
+        }
+      }
       return {
         tag: VarTags.VAR,
         symbol: variable.symbol,

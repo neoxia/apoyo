@@ -116,55 +116,83 @@ describe('Scope.bind', () => {
     expect(a).toBe(2)
   })
 
-  // TODO: disabled for now, support in another version
-  // it('should bind a Var to another Var', async () => {
-  //   const calls: string[] = []
-  //   const VarA = Var.thunk(() => {
-  //     calls.push('a')
-  //     return 1
-  //   })
-  //   const VarB = Var.thunk(() => {
-  //     calls.push('b')
-  //     return 2
-  //   })
-  //   const builder = pipe(Scope.create(), Scope.bind(VarA, VarB))
-  //   expect(builder.bindings.size).toBe(1)
-  //   const scope = Scope.get(builder)
-  //   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  //   const internal = SCOPES_INTERNAL.get(scope)!
-  //   expect(internal.bindings.size).toBe(1)
-  //   const a = await scope.get(VarA)
-  //   const b = await scope.get(VarB)
-  //   expect(calls).toEqual(['b'])
-  //   expect(a).toBe(2)
-  //   expect(b).toBe(2)
-  // })
-  // it('should resolve deeply', async () => {
-  //   const calls: string[] = []
-  //   const VarA = Var.thunk(() => {
-  //     calls.push('a')
-  //     return 1
-  //   })
-  //   const VarB = Var.thunk(() => {
-  //     calls.push('b')
-  //     return 2
-  //   })
-  //   const VarC = Var.thunk(() => {
-  //     calls.push('c')
-  //     return 3
-  //   })
-  //   const builder = pipe(Scope.create(), Scope.bind(VarB, VarC), Scope.bind(VarA, VarB))
-  //   expect(builder.bindings.size).toBe(2)
-  //   const scope = Scope.get(builder)
-  //   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  //   const internal = SCOPES_INTERNAL.get(scope)!
-  //   expect(internal.bindings.size).toBe(2)
-  //   const a = await scope.get(VarA)
-  //   const b = await scope.get(VarB)
-  //   const c = await scope.get(VarC)
-  //   expect(calls).toEqual(['c'])
-  //   expect(a).toBe(3)
-  //   expect(b).toBe(3)
-  //   expect(c).toBe(3)
-  // })
+  it('should bind a Var to another Var', async () => {
+    const calls: string[] = []
+    const VarA = Var.thunk(() => {
+      calls.push('a')
+      return 1
+    })
+    const VarB = Var.thunk(() => {
+      calls.push('b')
+      return 2
+    })
+    const builder = pipe(Scope.create(), Scope.bind(VarA, VarB))
+    expect(builder.bindings.size).toBe(1)
+    const scope = Scope.get(builder)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const internal = SCOPES_INTERNAL.get(scope)!
+    expect(internal.bindings.size).toBe(1)
+    const a = await scope.get(VarA)
+    const b = await scope.get(VarB)
+    expect(calls).toEqual(['b'])
+    expect(a).toBe(2)
+    expect(b).toBe(2)
+  })
+
+  it('should resolve deeply', async () => {
+    const calls: string[] = []
+    const VarA = Var.thunk(() => {
+      calls.push('a')
+      return 1
+    })
+    const VarB = Var.thunk(() => {
+      calls.push('b')
+      return 2
+    })
+    const VarC = Var.thunk(() => {
+      calls.push('c')
+      return 3
+    })
+    const builder = pipe(Scope.create(), Scope.bind(VarB, VarC), Scope.bind(VarA, VarB))
+    expect(builder.bindings.size).toBe(2)
+    const scope = Scope.get(builder)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const internal = SCOPES_INTERNAL.get(scope)!
+    expect(internal.bindings.size).toBe(2)
+    const a = await scope.get(VarA)
+    const b = await scope.get(VarB)
+    const c = await scope.get(VarC)
+    expect(calls).toEqual(['c'])
+    expect(a).toBe(3)
+    expect(b).toBe(3)
+    expect(c).toBe(3)
+  })
+
+  it('should resolve correctly with Vars and constants', async () => {
+    const calls: string[] = []
+    const VarA = Var.thunk(() => {
+      calls.push('a')
+      return 1
+    })
+    const VarB = Var.thunk(() => {
+      calls.push('b')
+      return 2
+    })
+
+    const builder = pipe(Scope.create(), Scope.bind(VarB, 10), Scope.bind(VarA, VarB))
+
+    expect(builder.bindings.size).toBe(2)
+
+    const scope = Scope.get(builder)
+    const internal = SCOPES_INTERNAL.get(scope)!
+
+    expect(internal.bindings.size).toBe(2)
+
+    const a = await scope.get(VarA)
+    const b = await scope.get(VarB)
+
+    expect(calls).toEqual([])
+    expect(a).toBe(10)
+    expect(b).toBe(10)
+  })
 })
