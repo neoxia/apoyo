@@ -1,4 +1,4 @@
-import { Arr, NonEmptyArray, Option, pipe } from '@apoyo/std'
+import { NonEmptyArray, Option, pipe } from '@apoyo/std'
 
 import { Scope } from './Scope'
 import { Context, SCOPES_INTERNAL } from './types'
@@ -29,7 +29,8 @@ export const getRoot = (scope: Scope) => {
   return tmp
 }
 
-export const getLowestScope = (scope: Scope, scopes: Scope[]) => {
-  const internal = SCOPES_INTERNAL.get(scope)!
-  return pipe(scopes, Arr.min(internal.ord), Option.get(internal.root))
-}
+export const getInternalScope = (scope: Scope) =>
+  pipe(
+    SCOPES_INTERNAL.get(scope),
+    Option.throwError(() => new Error('could not find internal scope data'))
+  )

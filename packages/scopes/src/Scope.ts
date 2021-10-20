@@ -1,4 +1,4 @@
-import { Arr, Ord, pipe, Task } from '@apoyo/std'
+import { Arr, Ord, pipe, Prom, Task } from '@apoyo/std'
 import { Ref } from './Ref'
 
 import { BindingContext, Context, ScopeInternal, SCOPES_INTERNAL, UnmountContext } from './types'
@@ -13,9 +13,9 @@ export interface ScopeBuilder {
 export type Scope = {
   tag: 'scope'
   readonly parent?: Context
-  load<T>(variable: Var<T>): Promise<Var.Created<T>>
-  get<T>(variable: Var<T>): Promise<T>
-  close(): Promise<void>
+  load<T>(variable: Var<T>): PromiseLike<Var.Created<T>>
+  get<T>(variable: Var<T>): PromiseLike<T>
+  close(): PromiseLike<void>
 }
 
 export namespace Scope {
@@ -47,95 +47,99 @@ export const get = (builder: ScopeBuilder): Scope => {
         return {
           tag: VarTags.VAR,
           symbol: variable.symbol,
-          create: async (ctx) => {
-            return {
+          create: (ctx) =>
+            Prom.of({
               scope: bindingCtx.scope,
               mount: () => ctx.scope.get<T>(bindingCtx.to).then((value) => ({ value }))
-            }
-          }
+            })
         }
       }
       return {
         tag: VarTags.VAR,
         symbol: variable.symbol,
-        create: async () => {
-          return {
+        create: () =>
+          Prom.of({
             scope: bindingCtx.scope,
-            mount: async () => ({
-              value: bindingCtx.to
-            })
-          }
-        }
+            mount: () =>
+              Prom.of({
+                value: bindingCtx.to
+              })
+          })
       }
     }
     return variable
   }
 
-  const load = async <T>(variable: Var<T>): Promise<Var.Created<T>> => {
+  const load = <T>(variable: Var<T>): PromiseLike<Var.Created<T>> => {
     if (!open) {
-      throw new Error('Scope has been closed and cannot be re-used')
+      return Prom.reject(new Error('Scope has been closed and cannot be re-used'))
     }
+    if (!internal.created.has(variable.symbol)) {
+      const resolved = resolve(variable)
+      const ctx: Context = {
+        scope,
+        variable: resolved
+      }
+      internal.created.set(variable.symbol, resolved.create(ctx))
+    }
+    return internal.created.get(variable.symbol)!
+  }
 
-    const resolved = resolve(variable)
+  const get = (variable: Var) => {
+    if (!open) {
+      return Prom.reject(new Error('Scope has been closed and cannot be re-used'))
+    }
+    return pipe(
+      load(variable),
+      Prom.chain((created) => {
+        const targetScope = SCOPES_INTERNAL.get(created.scope)!
+        if (!targetScope.mounted.has(variable.symbol)) {
+          targetScope.mounted.set(
+            variable.symbol,
+            created.mount().then((data) => {
+              const unmountFn = data.unmount
+              if (unmountFn) {
+                const ctx = searchChildOf(scope, created.scope)
+                const unmountCtx: UnmountContext = {
+                  variable: variable.symbol,
+                  unmount: unmountFn
+                }
+                const idx = ctx ? targetScope.unmount.findIndex((v) => v.variable === ctx.variable.symbol) : -1
+                if (idx === -1) {
+                  targetScope.unmount.push(unmountCtx)
+                } else {
+                  targetScope.unmount.splice(idx, 0, unmountCtx)
+                }
+              }
+              return data.value
+            })
+          )
+        }
+        return targetScope.mounted.get(variable.symbol)!
+      })
+    )
+  }
 
-    const ctx: Context = {
-      scope,
-      variable: resolved
+  const close = () => {
+    if (!open) {
+      return Prom.reject(new Error('Scope already closed'))
     }
-    if (!internal.created.has(resolved.symbol)) {
-      internal.created.set(resolved.symbol, resolved.create(ctx))
-    }
-    return await internal.created.get(resolved.symbol)!
+    open = false
+    return pipe(
+      internal.unmount,
+      Arr.reverse,
+      Arr.map((ctx) => Task.thunk(ctx.unmount)),
+      Task.sequence,
+      Task.map(() => undefined)
+    )
   }
 
   const scope: Scope = {
     tag: 'scope',
     parent: builder.parent,
     load,
-    get: async (variable: Var) => {
-      if (!open) {
-        throw new Error('Scope has been closed and cannot be re-used')
-      }
-
-      const resolved = resolve(variable)
-      const created = await load(resolved)
-      const targetScope = SCOPES_INTERNAL.get(created.scope) as ScopeInternal
-      if (!targetScope.mounted.has(resolved.symbol)) {
-        targetScope.mounted.set(
-          resolved.symbol,
-          created.mount().then((data) => {
-            const unmountFn = data.unmount
-            if (unmountFn) {
-              const ctx = searchChildOf(scope, created.scope)
-              const unmountCtx: UnmountContext = {
-                variable: resolved,
-                unmount: unmountFn
-              }
-              const idx = ctx ? targetScope.unmount.findIndex((v) => v.variable === ctx.variable) : -1
-              if (idx === -1) {
-                targetScope.unmount.push(unmountCtx)
-              } else {
-                targetScope.unmount.splice(idx, 0, unmountCtx)
-              }
-            }
-            return data.value
-          })
-        )
-      }
-      return targetScope.mounted.get(resolved.symbol)!
-    },
-    close: async () => {
-      if (!open) {
-        throw new Error('Scope already closed')
-      }
-      open = false
-      await pipe(
-        internal.unmount,
-        Arr.reverse,
-        Arr.map((ctx) => Task.thunk(ctx.unmount)),
-        Task.sequence
-      )
-    }
+    get,
+    close
   }
 
   const parent = builder.parent ? SCOPES_INTERNAL.get(builder.parent.scope) : undefined
@@ -191,18 +195,18 @@ export const run = <T>(variable: Var<T>) => async (builder: ScopeBuilder) => {
 
 export const spawner = (): Var<Scope.Spawner> => ({
   tag: VarTags.VAR,
-  symbol: Ref.create('<anonymous>'),
-  create: async (ctx) => {
-    return {
+  symbol: Ref.create(),
+  create: (ctx) =>
+    Prom.of({
       scope: ctx.scope,
-      mount: async () => ({
-        value: {
-          spawn: () => Scope.childOf(ctx)
-        },
-        unmount: () => undefined
-      })
-    }
-  }
+      mount: () =>
+        Prom.of({
+          value: {
+            spawn: () => Scope.childOf(ctx)
+          },
+          unmount: () => undefined
+        })
+    })
 })
 
 export const Scope = {
