@@ -7,9 +7,9 @@
     "build": "npx tsc -p ./tsconfig.json"
   },
   "dependencies": {
-    "@apoyo/decoders": "^0.0.10",
-    "@apoyo/scopes": "^0.0.3",
-    "@apoyo/std": "^0.0.10",
+    "@apoyo/decoders": "^0.0.11",
+    "@apoyo/scopes": "^0.0.4",
+    "@apoyo/std": "^0.0.11",
     "dotenv-expand": "^5.1.0",
     "dotenv-flow": "^3.2.0",
     "express": "^4.17.1"
