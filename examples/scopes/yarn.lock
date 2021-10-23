@@ -2,20 +2,20 @@
 # yarn lockfile v1
 
 
-"@apoyo/decoders@^0.0.10":
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/@apoyo/decoders/-/decoders-0.0.10.tgz#1d410063914450b9b2f426da2fdca421919a61a1"
-  integrity sha512-8bTgt/BWISquPkE/zxXSZnPVeztgI3AHfpqqW9c3xDLNg029Ey4unxzvqkN8OFPRdCP3Fb6fe5zsKgH6eYyNvA==
+"@apoyo/decoders@^0.0.11":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@apoyo/decoders/-/decoders-0.0.11.tgz#cd8e8a0d7a6e8a296094a12087f44a0c9008b26a"
+  integrity sha512-aH2lBQljbKV/8tbQvnWS/7Sphy4ubDXgkfK54PNP2KO4XQTUDUaW62pkjcxQvR92Pun+MKIBIPrANqJdf4t1Fw==
 
-"@apoyo/scopes@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@apoyo/scopes/-/scopes-0.0.3.tgz#0bfd0dad8d2a3b7f8f29fde77dabc96b169a28ce"
-  integrity sha512-RnEKUs2yb0T8JKgA3Q8MjaeHS0gp41nW65YVguJV4AJ3RJm+/Bp9NCouGIkfFCRQUHYqoQwZOXnVubmuQbeofw==
+"@apoyo/scopes@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@apoyo/scopes/-/scopes-0.0.4.tgz#3b8334df6466d76095c43ec0bdbfcf3514318972"
+  integrity sha512-+NmGwVYHj0BqxqJ58z/fHpOePXw7YB5Rj8PXs4p+aD4KKbtctRE3gOU6BnrT7bFbJad4JW1OpYqQVz6kJBFP+w==
 
-"@apoyo/std@^0.0.10":
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/@apoyo/std/-/std-0.0.10.tgz#a88fc3ba093cee6fc1a9fda870b451626f686168"
-  integrity sha512-v5D/BD+3SYz/3toE46L8OyHjSJ3HlpPXwQbkGBiudXrv/Cd+JhZ9OwEe3leTPv94nndgN40/B9V1YOAT7DSGqQ==
+"@apoyo/std@^0.0.11":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@apoyo/std/-/std-0.0.11.tgz#677cef9ce287418218e2c7857ef764fb2998d4ab"
+  integrity sha512-A24+QV4cbL/q3KtabHc0K3Tw9ZRsFZGqEn/CV2IC0MbbPYOdt49r6+ZqEsJDwuzSqaVm80oi1HXPGOrQh0ocYQ==
 
 "@types/body-parser@*":
   version "1.19.1"

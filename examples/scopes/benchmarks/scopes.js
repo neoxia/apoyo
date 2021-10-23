@@ -25,26 +25,20 @@ const benchmark = async (name, fn) => {
 
 const main = async () => {
   await benchmark('Primitive', async () => {
-    const res = []
     for (let item of range) {
-      res.push(pipe(item, double, double, double, double))
+      pipe(item, double, double, double, double)
     }
-    console.log('res', res.length)
   })
 
   await benchmark('Promise', async () => {
-    const res = []
     for (let item of range) {
-      res.push(
-        await Promise.resolve(item)
+      await Promise.resolve(item)
           // .then((i) => (i % 10000 === 0 ? Prom.sleep(100).then(() => i) : i))
           .then(double)
           .then(double)
           .then(double)
           .then(double)
-      )
     }
-    console.log('res', res.length)
   })
 
   await benchmark('Var cached', async () => {

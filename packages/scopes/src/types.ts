@@ -13,7 +13,7 @@ export interface Context {
 
 export interface UnmountContext {
   unmount: Var.Unmount
-  variable: Ref
+  variable: Var
 }
 
 export interface BindingContext<T = any> {

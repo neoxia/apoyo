@@ -1,9 +1,8 @@
 import { Arr, Dict, Option, pipe, Prom, Task } from '@apoyo/std'
-
 import { Ref } from './Ref'
 import { Scope } from './Scope'
 import { Context } from './types'
-import { getInternalScope } from './utils'
+import { getInternalScope, getRoot } from './utils'
 
 export const enum VarTags {
   VAR = 'var'
@@ -47,54 +46,51 @@ export const create = <T>(fn: (ctx: Context) => PromiseLike<Var.Created<T>>) => 
 })
 
 export const thunk = <T>(thunk: () => T | PromiseLike<T>): Var<T> =>
-  create((ctx) =>
-    Prom.of({
-      scope: getRootScope(ctx.scope),
-      mount: () =>
-        pipe(
-          Prom.thunk(thunk),
-          Prom.map((value) => ({ value }))
-        )
-    })
-  )
+  create(async (ctx) => ({
+    scope: getRoot(ctx.scope),
+    mount: () =>
+      pipe(
+        Prom.thunk(thunk),
+        Prom.map((value) => ({ value }))
+      )
+  }))
 
 export const of = <T>(value: T): Var<T> => thunk(() => value)
 
 export const lazy = <A>(fn: () => PromiseLike<Var<A>> | Var<A>): Var<A> =>
-  create((ctx) => pipe(Prom.thunk(fn), Prom.chain(ctx.scope.load)))
+  create(async (ctx) => Promise.resolve().then(fn).then(ctx.scope.load))
 
 export const closeWith = <A>(fn: (value: A) => PromiseLike<void> | void) => (variable: Var<A>): Var<A> =>
-  create((ctx) =>
-    pipe(
-      ctx.scope.load(variable),
-      Prom.map((created) => ({
-        scope: created.scope,
-        mount: () =>
-          ctx.scope.get(variable).then((value) => ({
-            value,
-            unmount: () => fn(value)
-          }))
-      }))
-    )
-  )
+  create(async (ctx) => {
+    const created = await ctx.scope.load(variable)
+
+    return {
+      scope: created.scope,
+      mount: () =>
+        ctx.scope.get(variable).then((value) => ({
+          value,
+          unmount: () => fn(value)
+        }))
+    }
+  })
 
 export const map = <A, B>(fn: (value: A) => B | PromiseLike<B>) => (variable: Var<A>): Var<B> => ({
   tag: VarTags.VAR,
   symbol: Ref.create(),
-  create: (ctx): Promise<Var.Created> =>
-    pipe(
-      ctx.scope.load(variable),
-      Prom.map((created) => ({
-        scope: created.scope,
-        mount: () =>
-          ctx.scope
-            .get(variable)
-            .then(fn)
-            .then((value) => ({
-              value
-            }))
-      }))
-    )
+  create: async (ctx): Promise<Var.Created> => {
+    const created = await ctx.scope.load(variable)
+
+    return {
+      scope: created.scope,
+      mount: () =>
+        ctx.scope
+          .get(variable)
+          .then(fn)
+          .then((value) => ({
+            value
+          }))
+    }
+  }
 })
 
 export const mapWith = <A extends any[], B>(fn: (...args: A) => B | PromiseLike<B>) => map<A, B>((args) => fn(...args))
