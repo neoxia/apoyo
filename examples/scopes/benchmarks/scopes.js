@@ -52,6 +52,16 @@ const main = async () => {
       await scope.get(Var.of(item))
     }
   })
+
+  await benchmark('Scope creation', async () => {
+    for (const item of range) {
+      pipe(
+        Scope.create(),
+        Scope.bind(cached, item),
+        Scope.get
+      )
+    }
+  })
 }
 
 main()
