@@ -17,7 +17,11 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "plugins": [
+      { "transform": "typescript-transform-paths" }
+    ]
   },
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
