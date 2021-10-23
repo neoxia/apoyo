@@ -1,6 +1,11 @@
 import Papa from 'papaparse'
 
-export type CsvError = Papa.ParseError
+export type CsvError = {
+  type: string
+  code: string
+  message: string
+  row: number
+}
 
 export namespace CsvError {
   export type WriteOptions = {
@@ -21,7 +26,9 @@ export const leaf = (type: string, code: string, message: string): CsvError.Leaf
   message
 })
 
-export const fromLeaf = (row: number) => (leaf: CsvError.Leaf): CsvError => ({ ...leaf, row })
+export function fromLeaf(row: number) {
+  return (leaf: CsvError.Leaf): CsvError => ({ ...leaf, row })
+}
 
 export const writeHeader = (options: CsvError.WriteOptions) => {
   return Papa.unparse([ErrorRows], { delimiter: options.delimiter }) + NewLine

@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2017",
     "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "lib": ["es6", "dom"],
+    "lib": ["es2017", "dom"],
     "sourceMap": false,
     "declaration": true,
     "strict": true,
@@ -13,7 +13,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-    "downlevelIteration": true,
+    "downlevelIteration": false,
     "stripInternal": true,
     "baseUrl": ".",
     "paths": {
