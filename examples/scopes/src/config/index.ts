@@ -1,6 +1,6 @@
+import { Env } from '@/env'
 import { Var } from '@apoyo/scopes'
 import { pipe } from '@apoyo/std'
-import { Env } from '../env'
 
 const API = pipe(
   Env,
@@ -9,6 +9,14 @@ const API = pipe(
   }))
 )
 
+const JsonPlaceholderAPI = pipe(
+  Env,
+  Var.map((env) => ({
+    baseURL: env.JSON_PLACEHOLDER_URL
+  }))
+)
+
 export const Config = {
-  API
+  API,
+  JsonPlaceholderAPI
 }

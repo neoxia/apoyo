@@ -1,9 +1,10 @@
+import { Router } from 'express'
+
 import { Var } from '@apoyo/scopes'
 import { pipe } from '@apoyo/std'
+
 import { HealthRoutes } from './health'
 import { TodoRoutes } from './todos'
-
-import { Router } from 'express'
 
 export const Routes = pipe(
   Var.struct({

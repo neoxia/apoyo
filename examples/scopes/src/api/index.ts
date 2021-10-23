@@ -1,11 +1,11 @@
+import express from 'express'
+import { Server } from 'http'
+
+import { Config } from '@/config'
 import { Var } from '@apoyo/scopes'
 import { pipe } from '@apoyo/std'
 
-import { Config } from '../config'
 import { Routes } from './routes'
-
-import express from 'express'
-import { Server } from 'http'
 
 export const API = pipe(
   Var.inject(Config.API, Routes),

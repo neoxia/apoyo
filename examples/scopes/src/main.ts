@@ -1,8 +1,8 @@
 import { Scope, Var } from '@apoyo/scopes'
 import { pipe } from '@apoyo/std'
 
-import { Process } from './process'
 import { API } from './api'
+import { Process } from './process'
 
 const Main = pipe(
   Var.inject(API),
