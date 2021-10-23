@@ -62,42 +62,49 @@ export function concat(...ords: [Ord<any>, ...Ord<any>[]]): Ord<any> {
   }
 }
 
-export const eq = <A>(ord: Ord<A>) =>
-  fcurry2((x: A, y: A) => ord(x, y) === Ordering.EQ) as {
+export function eq<A>(ord: Ord<A>) {
+  return fcurry2((x: A, y: A) => ord(x, y) === Ordering.EQ) as {
     <X extends A, Y extends A>(x: X, y: Y): boolean
     <Y extends A>(y: Y): <X extends A>(x: X) => boolean
   }
-export const lt = <A>(ord: Ord<A>) =>
-  fcurry2((x: A, y: A) => ord(x, y) < Ordering.EQ) as {
+}
+export function lt<A>(ord: Ord<A>) {
+  return fcurry2((x: A, y: A) => ord(x, y) < Ordering.EQ) as {
     <X extends A, Y extends A>(x: X, y: Y): boolean
     <Y extends A>(y: Y): <X extends A>(x: X) => boolean
   }
-export const lte = <A>(ord: Ord<A>) =>
-  fcurry2((x: A, y: A) => ord(x, y) <= Ordering.EQ) as {
+}
+export function lte<A>(ord: Ord<A>) {
+  return fcurry2((x: A, y: A) => ord(x, y) <= Ordering.EQ) as {
     <X extends A, Y extends A>(x: X, y: Y): boolean
     <Y extends A>(y: Y): <X extends A>(x: X) => boolean
   }
-export const gt = <A>(ord: Ord<A>) =>
-  fcurry2((x: A, y: A) => ord(x, y) > Ordering.EQ) as {
+}
+export function gt<A>(ord: Ord<A>) {
+  return fcurry2((x: A, y: A) => ord(x, y) > Ordering.EQ) as {
     <X extends A, Y extends A>(x: X, y: Y): boolean
     <Y extends A>(y: Y): <X extends A>(x: X) => boolean
   }
-export const gte = <A>(ord: Ord<A>) =>
-  fcurry2((x: A, y: A) => ord(x, y) >= Ordering.EQ) as {
+}
+export function gte<A>(ord: Ord<A>) {
+  return fcurry2((x: A, y: A) => ord(x, y) >= Ordering.EQ) as {
     <X extends A, Y extends A>(x: X, y: Y): boolean
     <Y extends A>(y: Y): <X extends A>(x: X) => boolean
   }
+}
 
-export const min = <A>(ord: Ord<A>) =>
-  fcurry2((x: A, y: A) => (ord(x, y) <= Ordering.EQ ? x : y)) as {
+export function min<A>(ord: Ord<A>) {
+  return fcurry2((x: A, y: A) => (ord(x, y) <= Ordering.EQ ? x : y)) as {
     <X extends A, Y extends A>(x: X, y: Y): X | Y
     <Y extends A>(y: Y): <X extends A>(x: X) => X | Y
   }
-export const max = <A>(ord: Ord<A>) =>
-  min(inverse(ord)) as {
+}
+export function max<A>(ord: Ord<A>) {
+  return min(inverse(ord)) as {
     <X extends A, Y extends A>(x: X, y: Y): X | Y
     <Y extends A>(y: Y): <X extends A>(x: X) => X | Y
   }
+}
 
 /**
  * @namespace Ord
