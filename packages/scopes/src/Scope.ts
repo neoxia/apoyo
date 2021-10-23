@@ -76,16 +76,15 @@ export const get = (builder: ScopeBuilder): Scope => {
       throw new Error('Scope has been closed and cannot be re-used')
     }
 
-    const resolved = resolve(variable)
-
-    const ctx: Context = {
-      scope,
-      variable: resolved
+    if (!internal.created.has(variable.symbol)) {
+      const resolved = resolve(variable)
+      const ctx: Context = {
+        scope,
+        variable: resolved
+      }
+      internal.created.set(variable.symbol, resolved.create(ctx))
     }
-    if (!internal.created.has(resolved.symbol)) {
-      internal.created.set(resolved.symbol, resolved.create(ctx))
-    }
-    return await internal.created.get(resolved.symbol)!
+    return await internal.created.get(variable.symbol)!
   }
 
   const scope: Scope = {
@@ -97,18 +96,17 @@ export const get = (builder: ScopeBuilder): Scope => {
         throw new Error('Scope has been closed and cannot be re-used')
       }
 
-      const resolved = resolve(variable)
-      const created = await load(resolved)
+      const created = await load(variable)
       const targetScope = SCOPES_INTERNAL.get(created.scope) as ScopeInternal
-      if (!targetScope.mounted.has(resolved.symbol)) {
+      if (!targetScope.mounted.has(variable.symbol)) {
         targetScope.mounted.set(
-          resolved.symbol,
+          variable.symbol,
           created.mount().then((data) => {
             const unmountFn = data.unmount
             if (unmountFn) {
               const ctx = searchChildOf(scope, created.scope)
               const unmountCtx: UnmountContext = {
-                variable: resolved,
+                variable,
                 unmount: unmountFn
               }
               const idx = ctx ? targetScope.unmount.findIndex((v) => v.variable === ctx.variable) : -1
@@ -122,7 +120,7 @@ export const get = (builder: ScopeBuilder): Scope => {
           })
         )
       }
-      return targetScope.mounted.get(resolved.symbol)!
+      return targetScope.mounted.get(variable.symbol)!
     },
     close: async () => {
       if (!open) {
@@ -191,7 +189,7 @@ export const run = <T>(variable: Var<T>) => async (builder: ScopeBuilder) => {
 
 export const spawner = (): Var<Scope.Spawner> => ({
   tag: VarTags.VAR,
-  symbol: Ref.create('<anonymous>'),
+  symbol: Ref.create(),
   create: async (ctx) => {
     return {
       scope: ctx.scope,

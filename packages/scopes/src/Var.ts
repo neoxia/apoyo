@@ -1,9 +1,8 @@
-import { Arr, Dict, pipe, Task } from '@apoyo/std'
+import { Arr, Dict, Option, pipe, Prom, Task } from '@apoyo/std'
 import { Ref } from './Ref'
-
 import { Scope } from './Scope'
 import { Context } from './types'
-import { getLowestScope, getRoot } from './utils'
+import { getInternalScope, getRoot } from './utils'
 
 export const enum VarTags {
   VAR = 'var'
@@ -33,9 +32,16 @@ export namespace Var {
   }
 }
 
+export const getRootScope = (scope: Scope) => getInternalScope(scope).root
+
+export const getLowestScope = (scope: Scope, scopes: Scope[]) => {
+  const internal = getInternalScope(scope)
+  return pipe(scopes, Arr.min(internal.ord), Option.get(internal.root))
+}
+
 export const create = <T>(fn: (ctx: Context) => PromiseLike<Var.Created<T>>) => ({
   tag: VarTags.VAR,
-  symbol: Ref.create('<anonymous>'),
+  symbol: Ref.create(),
   create: fn
 })
 
@@ -44,15 +50,15 @@ export const thunk = <T>(thunk: () => T | PromiseLike<T>): Var<T> =>
     scope: getRoot(ctx.scope),
     mount: () =>
       pipe(
-        Task.thunk(thunk),
-        Task.map((value) => ({ value }))
+        Prom.thunk(thunk),
+        Prom.map((value) => ({ value }))
       )
   }))
 
 export const of = <T>(value: T): Var<T> => thunk(() => value)
 
 export const lazy = <A>(fn: () => PromiseLike<Var<A>> | Var<A>): Var<A> =>
-  create(async (ctx) => pipe(Task.thunk(fn), Task.chain(ctx.scope.load)))
+  create(async (ctx) => Promise.resolve().then(fn).then(ctx.scope.load))
 
 export const closeWith = <A>(fn: (value: A) => PromiseLike<void> | void) => (variable: Var<A>): Var<A> =>
   create(async (ctx) => {
@@ -70,7 +76,7 @@ export const closeWith = <A>(fn: (value: A) => PromiseLike<void> | void) => (var
 
 export const map = <A, B>(fn: (value: A) => B | PromiseLike<B>) => (variable: Var<A>): Var<B> => ({
   tag: VarTags.VAR,
-  symbol: Ref.create('<anonymous>'),
+  symbol: Ref.create(),
   create: async (ctx): Promise<Var.Created> => {
     const created = await ctx.scope.load(variable)
 
@@ -91,15 +97,14 @@ export const mapWith = <A extends any[], B>(fn: (...args: A) => B | PromiseLike<
 
 export const chain = <A, B>(fn: (value: A) => PromiseLike<Var<B>> | Var<B>) => (variable: Var<A>): Var<B> => ({
   tag: VarTags.VAR,
-  symbol: Ref.create('<anonymous>'),
+  symbol: Ref.create(),
   create: async (ctx): Promise<Var.Created> => {
     const chainedVar = await ctx.scope.get(variable).then(fn)
-
-    const createdVar = await ctx.scope.load(variable)
-    const created = await ctx.scope.load(chainedVar)
+    const createdVar = await ctx.scope.load(chainedVar)
+    const created = await ctx.scope.load(variable)
 
     return {
-      scope: getLowestScope(ctx.scope, [createdVar.scope, created.scope]),
+      scope: getLowestScope(ctx.scope, [created.scope, createdVar.scope]),
       mount: () => ctx.scope.get(chainedVar).then((value) => ({ value }))
     }
   }
@@ -186,17 +191,9 @@ export function inject(...vars: Var[]): Var<any[]> {
 }
 
 export const abstract = <T>(description: string) =>
-  pipe(
-    thunk<T>(() => {
-      throw new Error(`cannot mount abstract variable ${description}`)
-    }),
-    named(description)
-  )
-
-export const named = (description: string) => <T>(variable: Var<T>) => ({
-  ...variable,
-  symbol: Ref.create(description)
-})
+  thunk<T>(() => {
+    throw new Error(`cannot mount abstract variable ${description}`)
+  })
 
 export const Var = {
   thunk,
@@ -213,6 +210,5 @@ export const Var = {
   chain,
   chainWith,
   closeWith,
-  abstract,
-  named
+  abstract
 }

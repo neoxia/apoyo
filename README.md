@@ -9,5 +9,9 @@ Apoyo tries to improve Developer Experience, by giving the developer a wide rang
 ## Packages
 
 - [Std](packages/std) (`@apoyo/std`): Contains general, framework agnostic utilities.
+
 - [Decoders](packages/decoders) (`@apoyo/decoders`): Contains type decoders and validators.
+
 - [Http](packages/http) (`@apoyo/http`): Contains a generic HTTP interfaces, that can easily be used with `express` or any other HTTP framework.
+
+- [Scopes](packages/scopes) (`@apoyo/scopes`): An original, functional based, dependency injector. Contains auto-resolving of dependency tree, custom scope creation and more!
