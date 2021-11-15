@@ -17,7 +17,7 @@
     "build": "lerna run build",
     "docs:generate": "npx ts-node -r tsconfig-paths/register scripts/generate-docs",
     "docs:dev": "vuepress dev docs",
-    "docs:build": "npm run build && npm run docs:generate && vuepress build docs",
+    "docs:build": "npm run docs:generate && vuepress build docs",
     "postinstall": "husky install",
     "pub": "lerna publish from-package --contents dist",
     "pub:ci": "lerna publish from-package --contents dist --no-verify-access --yes"
