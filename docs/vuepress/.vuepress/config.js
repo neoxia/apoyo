@@ -78,7 +78,9 @@ module.exports = {
         title: 'Scopes',
         collapsable: true,
         children: [
-          '/guide/scopes/getting-started.md'
+          '/guide/scopes/getting-started.md',
+          '/guide/scopes/injectables.md',
+          '/guide/scopes/scopes.md'
         ]
       },
       {
