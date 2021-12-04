@@ -20,7 +20,7 @@ module.exports = {
       },
       {
         title: 'Std',
-        collapsable: false,
+        collapsable: true,
         children: [
           '/guide/std/getting-started.md',
           '/guide/std/pipe.md',
@@ -75,6 +75,15 @@ module.exports = {
         ]
       },
       {
+        title: 'Scopes',
+        collapsable: true,
+        children: [
+          '/guide/scopes/getting-started.md',
+          '/guide/scopes/injectables.md',
+          '/guide/scopes/scopes.md'
+        ]
+      },
+      {
         title: 'Http',
         collapsable: true,
         children: [
@@ -90,7 +99,7 @@ module.exports = {
             ]
           }
         ]
-      }
+      },
     ],
     sidebarDepth: 1
   }
