@@ -37,54 +37,258 @@ This package is a more functional based dependency injection solution, with the 
 
 - Lazy loading: If your application contains hundreds of services, why should we start them all up if only a handful are needed on program startup?
 
-- Powerful scope shutdown mechanism
+- Powerful scope shutdown mechanism: In production environments, we most probably want to shutdown our application properly before restarting it (example: Wait for current HTTP requests to finish, then close server, then close database connection, etc...)
 
 - Easier testability
 
-## How this library works
+## Usage
 
-As this library is very different from existing DI libraries, you will first need to understand in which way it is different.
+### Injectable variables
 
-### Javascript scopes
+In most IOCs, we mostly use classes to define our services / repositories / etc...
+
+In this library, an injectable is simply a wrapper that can contain **any variable** you need:
+
+- Class instances
+- Functions / Async functions
+- Values / Async values
+- etc...
+
+As such, we will refer to these as "*Injectable variables*".
+All functions for creating and managing these are available in the `Var` namespace.
+
+#### Create an injectable variable
+
+There are multiple ways to create an injectable variable.
+
+1. From a constant:
+
+```ts
+const MockConfig = Var.of<Config>({
+  api: {
+    port: 3000
+  }
+})
+```
+
+These may be used to mock injectables.
+
+2. From a function without any parameters (without any dependencies):
+
+```ts
+const Env = Var.thunk(async () => {
+  // This function may also be asynchroneous
+  // Load env
+  return process.env
+})
+```
+
+These may be used to create injectables **that do not depend** on any other injectable.
+Another advantage compared to `Var.of` is that `Var.thunk` is lazy, and will only execute the function if the injectable is required / loaded.
+
+3. As an abstract value:
+
+```ts
+interface ILogger {
+  log(message: string): void
+}
+
+const ILogger = Var.abstract<ILogger>("ILogger")
+```
+
+There are a lot of use-cases where it is useful to write code for a given interface instead of an implementation. `Var.abstract` can be used to cover for this situation.
+
+**Warning**: You will need to **bind** this abstract injectable to a specific value, or to another implemented injectable when creating a scope, or you will receive a **runtime error** when this abstract injectable is loaded.
+
+It is also possible to specify a default implementation to use for this abstract injectable:
+
+```ts
+interface ILogger {
+  log(message: string): void
+}
+
+const NoopLogger = Var.of<ILogger>({
+  log: (_message: string) => {}
+})
+
+const ILogger = pipe(
+  Var.abstract<ILogger>("ILogger"),
+  Var.default(NoopLogger)
+)
+```
+
+#### Creating injectables based on other injectables
+
+Most of the time, you will need to create injectable variables based on other injectables.
+
+For those situations, you will need to use `Var.map`:
+
+```ts
+const Config = pipe(
+  Env,
+  Var.map(env => {
+    return {
+      api: {
+        port: env.API_PORT
+      }
+    }
+  })
+)
+```
+
+`Var.map` allows us create a new injectable `Var<B>` from an injectable `Var<A>`.
+
+If you require multiple dependencies, you have 2 possibilities:
+
+1. You can use `Var.struct` to combine multiple injectable variables into a single variable. This single variable can then be mapped:
+
+```ts
+const A = Var.of(1)
+const B = Var.of(2)
+
+const C = pipe(
+  Var.struct({
+    a: A,
+    b: B
+  }),
+  Var.map(({ a, b }) => a + b)
+)
+```
+
+2. You can use `Var.tuple` to combine multiple injectable variables into a single tuple. This single variable can then be mapped:
+
+```ts
+const A = Var.of(1)
+const B = Var.of(2)
+
+const add = (a: number, b: number) => a + b
+
+const C = pipe(
+  Var.tuple(A, B),
+  Var.map(([a, b]) => add(a, b))
+)
+```
+
+As it may become cumbersome to "untuple" the parameters of your function, you may also want to use `Var.mapArgs` in conjunction with `Var.tuple`. This allows you to more easily extract logic into a separate function:
+
+```ts
+const C = pipe(
+  Var.tuple(A, B),
+  Var.mapArgs(add)
+)
+```
+
+#### Creating a disposable variable
+
+Sometimes, you may want to create a variable that needs to be closed / disposed when it is not used anymore.
+
+*Example: Database connections, Http servers, etc...*
+
+This type of variable can be created in the following way:
+
+```ts
+const Api = pipe(
+  Var.struct({
+    config: ApiConfig
+  }),
+  Var.resource(({ config }) => {
+
+    const app = express()
+
+    const server = app.listen(config.port)
+
+    const close = async () => {
+      return new Promise((resolve, reject) => {
+        server.close((err) => err ? reject(err) : resolve(err))
+      })
+    }
+
+    return Resource.of(app, close)
+  })
+)
+```
+
+**Note**: The variable will only be disposed when the scope into which the variable has been mounted is closed.
+
+#### Switching between multiple injectables
+
+Sometimes, we may want to dynamically switch between multiple implementations based on another injectable.
+In those cases, you may use `Var.chain`:
+
+```ts
+const FileProvider = pipe(
+  Env,
+  Var.chain(env => {
+    const provider = env.FILE_PROVIDER
+    if (provider === 'aws') return S3FileProvider
+    if (provider === 'azure') return AzureFileProvider 
+    throw new Error(`Unimplemented file provider ${JSON.stringify(provider)}`)
+  })
+)
+```
+
+**Note**: Variables that are not returned are not loaded. As such, this operation is more efficient than loading all injectables and switching on their values.
+
+#### Dynamically create an injectable
+
+Abstracts help you create injectables for a specific interface. This also means that it can only have 1 implementation at a time.
+
+Sometimes, you may need to create multiple injectables per scope depending on a dynamic value.
+In this case, you can simply create a function returning a new injectable:
+
+```ts
+const forParam = (name: string) => pipe(
+  Request,
+  Var.map(req => req.params[name])
+)
+
+const Params = {
+  Id: forParam('id'), // Var<string>
+  Slug: forParam('slug') // Var<string>
+}
+```
+
+**Note**: Each injectable has his own "reference". If you call the same function `forParam` twice with the same parameters, it will return 2 different injectables. This means that those injectable will be re-computed when called.
+
+### Scope / Container
+
+A scope contains all injectable variables that have been loaded until now. As such, a scope is very similar to the "Container" implementation you may know from other libraries.
+
+There are however a few big differences:
+
+- You may only re-bind / mock injectables when creating the scope.
+
+- Once the scope has been created, it is not possible to change it anymore.
+
+- A scope may have sub-scopes.
+
+- ... and a few more that we will cover later.
 
 In fact, this dependency injector has heavily inspired itself from how Javascript scopes work:
 
 [javascript scopes](./images/scopes-js.jpg)
 
-1. The `root` function does not take any parameters.
+#### Creating a scope
 
-2. All variables declared in the `root` scope (like `userRepository`) will be available in the `request` function.
+TODO
 
-3. The `request` function takes a parameter `req`.
+#### Creating a sub-scope
 
-4. The `req` variable is only available to the scope of the `request` function.
+TODO
 
-5. The variable `body` is also only available in the `request` function. We could not declare this variable in the `root` function, because it depends on `req`.
+#### In which scope is a variable mounted?
 
-6. Each time the `request` function is called, Javascript creates a new scope, in which `req` is equal to the given value, and `body` is computed based on this value.
+The library will **automatically deduce** into which scope your injectable variable needs to be **declared** / **mounted**, depending on it's dependencies:
 
-### Apoyo scopes
+- A variable will always try to mount in the highest scope possible:
+  - *Example: If the variable does not have any dependencies, it will always be mounted in the root scope.*
 
-`@apoyo/scopes` work quite a bit like Javascript scopes: You can create scopes and sub-scopes, and you can bind values to variables when creating those scopes.
+- A variable will always be mounted at the scope of the dependency with the lowest scope:
+  - *Example: If the variable has 2 dependencies A and B, with A being in the root scope and B in a sub-scope of root ("request"), the variable will be mounted in the request scope.*
 
-But instead of manually having to declare and write variables, the library will **automatically deduce** into which scope your variable needs to be **declared** / **mounted**, depending on it's dependencies.
+#### Closing a scope
 
-As such, if you create for example a sub-scope for each request, which binds the variable named `Req` to the currently ongoing request, all variables depending on `Req` will be mounted in this sub-scope.
-
-Here a schema to illustrate this in more details:
-
-[apoyo scopes](./images/scopes-apoyo.jpg)
-
-### Summary
-
-- `Var`s are like injectables, and you can inject any other `Var` that you have declared.
-
-- `Var`s are cached in the scope it has been mounted on.
-
-- `Scope`s are like containers, with a few important differences:
-  - Scopes may also have sub-scopes.
-  - Sub-scopes may mount `Var`s into parent scopes, if this `Var` can be mounted at a higher scope.
-  - Scopes track all `Var`s that need to be unmounted / closed.
+TODO
 
 ## Example
 
@@ -95,15 +299,16 @@ Here a schema to illustrate this in more details:
 First, we will need to declare some `Var`s:
 
 ```ts
-const Env = pipe(
-  Var.inject(),
-  Var.mapWith(async () => {
-    // Load env variables from .env files
-    // Validate env variables
-    // etc...
-    return process.env as Dict
-  })
-)
+
+// This injectable does not have any dependencies. As such we simply use `Var.thunk`
+const Env = Var.thunk(async () => {
+  // Load env variables from .env files
+  // Validate env variables
+  // etc...
+  return {
+    PORT: parseInt(process.PORT) || 3000
+  }
+})
 
 const Config = {
   API: pipe(
@@ -115,8 +320,8 @@ const Config = {
 }
 
 const HealthRoutes = pipe(
-  Var.inject(),
-  Var.mapWith(() => {
+  Var.empty,
+  Var.map(() => {
     const route = Router()
 
     route.get('/', (req, res) => {
@@ -130,8 +335,8 @@ const HealthRoutes = pipe(
 )
 
 const TodoRoutes = pipe(
-  Var.inject(),
-  Var.mapWith(() => {
+  Var.empty,
+  Var.map(() => {
     const route = Router()
 
     route.get('/', (req, res) => {
@@ -167,8 +372,11 @@ export const Routes = pipe(
 )
 
 const API = pipe(
-  Var.inject(Config.API, Routes),
-  Var.mapWith(async (config, routes) => {
+  Var.struct({
+    config: Config.API, 
+    routes: Routes
+  }),
+  Var.resource(async ({ config, routes }) => {
 
     const app = express()
     // use middlewares
@@ -181,29 +389,31 @@ const API = pipe(
       const server = app.listen(port, (err) => err ? reject(err) : resolve(server))
     })
 
-    return server
-  }),
-  Var.closeWith(server => {
-    // close http server
+    const close = async () => {
+      return new Promise((resolve, reject) => {
+        server.close((err) => err ? reject(err) : resolve(err))
+      })
+    }
+
+    return Resource.of(server, close)
   })
 )
 ```
 
 Once all the variables you need have been created, you need to create a scope that will host / manage these variables for you.
 
-### Create scope manually
+### Create a scope
 
 ```ts
 const main = async () => {
-  const scope = pipe(
-    Scope.create(),
-    Scope.get
-  )
+  const scope = Scope.create({
+    bindings: []
+  })
   
   try {
     await scope.get(API)
 
-    // Optionally, we cannot also add logic to await the end of the process and close the server gracefully.
+    // It is recommended to add logic to await the end of the process and close the server gracefully.
     // Check out the examples for an example implementation.
   } catch (err) {
     await scope.close()
@@ -214,28 +424,4 @@ const main = async () => {
 main()
 ```
 
-### Create and run scope automatically
-
-```ts
-const Main = pipe(
-  Var.sequence([
-    API
-  ]),
-  Var.map(async () => {
-    // Await the end of the process.
-    // Check out the examples for an example implementation.
-    await Process.end()
-  })
-)
-
-pipe(
-  Scope.create(),
-  Scope.run(Main)
-)
-```
-
-That's it. Now, when you start your application, a scope will be created that will load the given variable and all his dependencies.
-
-### Child scopes
-
-TODO
+That's it. Now, when you start your application, a scope will be created which will load an express server, including all required dependencies.
