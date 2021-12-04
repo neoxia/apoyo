@@ -2,8 +2,8 @@ import path from 'path'
 import { Project, ProjectOptions } from 'ts-morph'
 
 import { Arr, Err, pipe, Result } from '@apoyo/std'
-import { markdownObject } from './docs/markdown'
-import { getObjectOrThrow, getType } from './docs/parse-ts'
+import { markdownObject } from './markdown'
+import { getObjectOrThrow, getType } from './parse-ts'
 import { run } from './run'
 
 export const generateStdDocs = async (rootPath: string, docsPath: string) => {
@@ -278,7 +278,7 @@ export const generateHttpDocs = async (rootPath: string, docsPath: string) => {
 }
 
 export const main = async () => {
-  const rootPath = path.resolve(__dirname, '..')
+  const rootPath = path.resolve(__dirname, '../..')
 
   await generateStdDocs(path.join(rootPath, `packages/std`), path.join(rootPath, `docs/guide/std/api`))
   await generateDecodersDocs(path.join(rootPath, `packages/decoders`), path.join(rootPath, `docs/guide/decoders/api`))
