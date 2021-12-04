@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "engines": {
-    "node": ">=14.0.0",
+    "node": ">=12.0.0",
     "yarn": ">=1.22.5 <2",
     "npm": "Please use yarn instead of NPM to install dependencies"
   },
