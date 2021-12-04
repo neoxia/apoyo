@@ -41,9 +41,7 @@ This package is a more functional based dependency injection solution, with the 
 
 - Easier testability
 
-## Usage
-
-### Injectable variables
+## Injectables
 
 In most IOCs, we mostly use classes to define our services / repositories / etc...
 
@@ -57,7 +55,7 @@ In this library, an injectable is simply a wrapper that can contain **any variab
 As such, we will refer to these as "*Injectable variables*".
 All functions for creating and managing these are available in the `Var` namespace.
 
-#### Create an injectable variable
+### Create an injectable variable
 
 There are multiple ways to create an injectable variable.
 
@@ -117,7 +115,7 @@ const ILogger = pipe(
 )
 ```
 
-#### Creating injectables based on other injectables
+### Creating injectables based on other injectables
 
 Most of the time, you will need to create injectable variables based on other injectables.
 
@@ -178,7 +176,7 @@ const C = pipe(
 )
 ```
 
-#### Creating a disposable variable
+### Creating a disposable variable
 
 Sometimes, you may want to create a variable that needs to be closed / disposed when it is not used anymore.
 
@@ -210,7 +208,7 @@ const Api = pipe(
 
 **Note**: The variable will only be disposed when the scope into which the variable has been mounted is closed.
 
-#### Switching between multiple injectables
+### Switching between multiple injectables
 
 Sometimes, we may want to dynamically switch between multiple implementations based on another injectable.
 In those cases, you may use `Var.chain`:
@@ -229,7 +227,7 @@ const FileProvider = pipe(
 
 **Note**: Variables that are not returned are not loaded. As such, this operation is more efficient than loading all injectables and switching on their values.
 
-#### Dynamically create an injectable
+### Dynamically create an injectable
 
 Abstracts help you create injectables for a specific interface. This also means that it can only have 1 implementation at a time.
 
@@ -250,7 +248,7 @@ const Params = {
 
 **Note**: Each injectable has his own "reference". If you call the same function `forParam` twice with the same parameters, it will return 2 different injectables. This means that those injectable will be re-computed when called.
 
-### Scope / Container
+## Scopes / Containers
 
 A scope contains all injectable variables that have been loaded until now. As such, a scope is very similar to the "Container" implementation you may know from other libraries.
 
@@ -266,17 +264,17 @@ There are however a few big differences:
 
 In fact, this dependency injector has heavily inspired itself from how Javascript scopes work:
 
-[javascript scopes](./images/scopes-js.jpg)
+![javascript scopes](./images/scopes-javascript.png)
 
-#### Creating a scope
-
-TODO
-
-#### Creating a sub-scope
+### Creating a scope
 
 TODO
 
-#### In which scope is a variable mounted?
+### Creating a sub-scope
+
+TODO
+
+### In which scope is a variable mounted?
 
 The library will **automatically deduce** into which scope your injectable variable needs to be **declared** / **mounted**, depending on it's dependencies:
 
@@ -286,7 +284,7 @@ The library will **automatically deduce** into which scope your injectable varia
 - A variable will always be mounted at the scope of the dependency with the lowest scope:
   - *Example: If the variable has 2 dependencies A and B, with A being in the root scope and B in a sub-scope of root ("request"), the variable will be mounted in the request scope.*
 
-#### Closing a scope
+### Closing a scope
 
 TODO
 
@@ -402,7 +400,7 @@ const API = pipe(
 
 Once all the variables you need have been created, you need to create a scope that will host / manage these variables for you.
 
-### Create a scope
+### Create a scope and loading our variables
 
 ```ts
 const main = async () => {
