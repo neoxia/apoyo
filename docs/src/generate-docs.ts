@@ -278,11 +278,12 @@ export const generateHttpDocs = async (rootPath: string, docsPath: string) => {
 }
 
 export const main = async () => {
-  const rootPath = path.resolve(__dirname, '../..')
+  const packagesPath = path.resolve(__dirname, '../../packages')
+  const vuepressPath = path.resolve(__dirname, '../vuepress')
 
-  await generateStdDocs(path.join(rootPath, `packages/std`), path.join(rootPath, `docs/guide/std/api`))
-  await generateDecodersDocs(path.join(rootPath, `packages/decoders`), path.join(rootPath, `docs/guide/decoders/api`))
-  await generateHttpDocs(path.join(rootPath, `packages/http`), path.join(rootPath, `docs/guide/http/api`))
+  await generateStdDocs(path.join(packagesPath, `std`), path.join(vuepressPath, `guide/std/api`))
+  await generateDecodersDocs(path.join(packagesPath, `decoders`), path.join(vuepressPath, `guide/decoders/api`))
+  await generateHttpDocs(path.join(packagesPath, `http`), path.join(vuepressPath, `guide/http/api`))
 }
 
 run(main)
