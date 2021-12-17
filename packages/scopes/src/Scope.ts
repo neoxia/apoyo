@@ -1,13 +1,25 @@
 import { Arr, Ord, pipe, Task } from '@apoyo/std'
 import { Ref } from './Ref'
+import { Resource } from './Resource'
 
 import { BindingContext, Context, ScopeInternal, SCOPES_INTERNAL, UnmountContext } from './types'
 import { getHierarchy, getRoot, searchChildOf } from './utils'
 import { Var, VarTags } from './Var'
 
-export interface ScopeBuilder {
-  parent?: Context
-  bindings: Map<Var, any>
+export interface ScopeBinding<A, B extends A> {
+  from: Var<A>
+  to: Var<B>
+}
+
+export interface ScopeOptions {
+  anchor?: Context
+  bindings?: ScopeBinding<any, any>[]
+}
+
+export interface ScopeFactory {
+  anchor: Var<void>
+  create(options?: ScopeOptions): Scope
+  run<T>(variable: Var<T>, options?: ScopeOptions): Promise<T>
 }
 
 export type Scope = {
@@ -18,26 +30,14 @@ export type Scope = {
   close(): Promise<void>
 }
 
-export namespace Scope {
-  export interface Spawner {
-    spawn: () => ScopeBuilder
-  }
-}
+const isVar = (value: any): value is Var<any> => (value as Var<any>).tag === VarTags.VAR
 
-export const create = (): ScopeBuilder => ({
-  bindings: new Map()
-})
-export const childOf = (ctx: Context): ScopeBuilder => ({
-  parent: ctx,
-  bindings: new Map()
+export const bind = <T, U extends T>(from: Var<T>, to: U | Var<U>): ScopeBinding<T, U> => ({
+  from,
+  to: isVar(to) ? to : Var.of(to)
 })
 
-export const bind = <T, U extends T>(from: Var<T>, to: U | Var<U>) => (builder: ScopeBuilder) => {
-  builder.bindings.set(from, to)
-  return builder
-}
-
-export const get = (builder: ScopeBuilder): Scope => {
+export const create = (options: ScopeOptions = {}): Scope => {
   let open = true
 
   const resolve = <T>(variable: Var<T>): Var<T> => {
@@ -89,7 +89,7 @@ export const get = (builder: ScopeBuilder): Scope => {
 
   const scope: Scope = {
     tag: 'scope',
-    parent: builder.parent,
+    parent: options.anchor,
     load,
     get: async (variable: Var) => {
       if (!open) {
@@ -136,10 +136,10 @@ export const get = (builder: ScopeBuilder): Scope => {
     }
   }
 
-  const parent = builder.parent ? SCOPES_INTERNAL.get(builder.parent.scope) : undefined
+  const parent = options.anchor ? SCOPES_INTERNAL.get(options.anchor.scope) : undefined
   const scopeBindings = pipe(
-    Arr.from(builder.bindings.entries()),
-    Arr.map(([from, to]): [Var, BindingContext] => [
+    options.bindings || [],
+    Arr.map(({ from, to }): [Var, BindingContext] => [
       from,
       {
         from,
@@ -160,7 +160,7 @@ export const get = (builder: ScopeBuilder): Scope => {
   )
 
   const internal: ScopeInternal = {
-    parent: builder.parent,
+    parent: options.anchor,
     bindings,
     hierarchy,
     root,
@@ -175,8 +175,8 @@ export const get = (builder: ScopeBuilder): Scope => {
   return scope
 }
 
-export const run = <T>(variable: Var<T>) => async (builder: ScopeBuilder) => {
-  const scope = get(builder)
+export const run = async <T>(variable: Var<T>, options?: ScopeOptions) => {
+  const scope = create(options)
   try {
     const value = await scope.get(variable)
     await scope.close()
@@ -187,27 +187,38 @@ export const run = <T>(variable: Var<T>) => async (builder: ScopeBuilder) => {
   }
 }
 
-export const spawner = (): Var<Scope.Spawner> => ({
+export const factory = (): Var<ScopeFactory> => ({
   tag: VarTags.VAR,
   symbol: Ref.create(),
   create: async (ctx) => {
+    const anchorVar = pipe(
+      Var.empty,
+      Var.resource(() => Resource.of(undefined, () => undefined))
+    )
+    const anchorCtx: Context = {
+      variable: anchorVar,
+      scope: ctx.scope
+    }
+
+    const factory = {
+      anchor: anchorVar,
+      create: (options: ScopeOptions = {}) => create({ ...options, anchor: anchorCtx }),
+      run: <T>(variable: Var<T>, options: ScopeOptions = {}) => run(variable, { ...options, anchor: anchorCtx })
+    }
+
     return {
       scope: ctx.scope,
-      mount: async () => ({
-        value: {
-          spawn: () => Scope.childOf(ctx)
-        },
-        unmount: () => undefined
-      })
+      mount: async () =>
+        ctx.scope.get(anchorVar).then(() => ({
+          value: factory
+        }))
     }
   }
 })
 
 export const Scope = {
   create,
-  childOf,
   bind,
-  get,
   run,
-  spawner
+  factory
 }

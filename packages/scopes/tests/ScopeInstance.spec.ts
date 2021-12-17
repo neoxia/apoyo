@@ -1,5 +1,5 @@
 import { pipe, Prom, Result } from '@apoyo/std'
-import { Scope, Var } from '../src'
+import { Resource, Scope, Var } from '../src'
 import { SCOPES_INTERNAL } from '../src/types'
 
 describe('ScopeInstance.get', () => {
@@ -11,7 +11,7 @@ describe('ScopeInstance.get', () => {
       return calls
     })
 
-    const scope = pipe(Scope.create(), Scope.get)
+    const scope = Scope.create()
 
     const a = await scope.get(VarA)
     const b = await scope.get(VarA)
@@ -37,7 +37,7 @@ describe('ScopeInstance.get', () => {
       Var.map((nb) => nb * 10)
     )
 
-    const scope = pipe(Scope.create(), Scope.get)
+    const scope = Scope.create()
 
     const a = await scope.get(VarB)
     const b = await scope.get(VarB)
@@ -64,7 +64,7 @@ describe('ScopeInstance.get', () => {
       return calls
     })
 
-    const scope = pipe(Scope.create(), Scope.get)
+    const scope = Scope.create()
 
     const pA = scope.get(VarA)
     const pB = scope.get(VarA)
@@ -95,16 +95,22 @@ describe('ScopeInstance.get', () => {
     const Req = Var.abstract<number>('Req')
 
     const Handler = pipe(
-      Var.inject(Req, Db),
-      Var.map(async ([req, db]) => {
+      Var.tuple(Req, Db),
+      Var.mapArgs(async (req, db) => {
         return await db.query(req)
       })
     )
 
     const Api = pipe(
-      Var.inject(Env, Scope.spawner()),
-      Var.map(async ([_env, spawner]) => {
-        const scope = pipe(spawner.spawn(), Scope.bind(Req, 1), Scope.get)
+      Var.struct({
+        env: Env,
+        factory: Scope.factory()
+      }),
+      Var.map(async ({ factory }) => {
+        const bindings = [Scope.bind(Req, 1)]
+        const scope = factory.create({
+          bindings
+        })
 
         const internal = SCOPES_INTERNAL.get(scope)!
 
@@ -122,7 +128,7 @@ describe('ScopeInstance.get', () => {
       })
     )
 
-    const scope = pipe(Scope.create(), Scope.get)
+    const scope = Scope.create()
 
     const internal = SCOPES_INTERNAL.get(scope)!
 
@@ -142,13 +148,14 @@ describe('ScopeInstance.close', () => {
 
     const VarA = pipe(
       Var.of(1),
-      Var.map((nb) => nb * 10),
-      Var.closeWith(() => {
-        ++calls
+      Var.resource((nb) => {
+        return Resource.of(nb * 10, () => {
+          ++calls
+        })
       })
     )
 
-    const scope = pipe(Scope.create(), Scope.get)
+    const scope = Scope.create()
     const value = await scope.get(VarA)
 
     expect(value).toBe(10)
@@ -164,13 +171,14 @@ describe('ScopeInstance.close', () => {
 
     const VarA = pipe(
       Var.of(1),
-      Var.map((nb) => nb * 10),
-      Var.closeWith(() => {
-        ++calls
+      Var.resource((nb) => {
+        return Resource.of(nb * 10, () => {
+          ++calls
+        })
       })
     )
 
-    const scope = await pipe(Scope.create(), Scope.get)
+    const scope = Scope.create()
 
     await scope.load(VarA)
     await scope.close()
@@ -181,7 +189,7 @@ describe('ScopeInstance.close', () => {
   it('should throw when used after closing', async () => {
     const VarA = Var.of(1)
 
-    const scope = pipe(Scope.create(), Scope.get)
+    const scope = Scope.create()
 
     await scope.close()
 
@@ -196,37 +204,46 @@ describe('ScopeInstance.close', () => {
     const Env = Var.of({})
     const Db = pipe(
       Env,
-      Var.map(() => {
-        return {
+      Var.resource(() => {
+        const db = {
           query: async (nb: number) => [nb],
-          close: () => {
+          close: async () => {
             calls.push('database')
           }
         }
-      }),
-      Var.closeWith((db) => db.close())
+
+        return Resource.of(db, () => db.close())
+      })
     )
 
     const Req = Var.abstract<number>('Req')
 
     const Handler = pipe(
-      Var.inject(Req, Db),
-      Var.map(async ([req, db]) => {
+      Var.struct({
+        req: Req,
+        db: Db
+      }),
+      Var.map(async ({ req, db }) => {
         return await db.query(req)
       })
     )
 
     const Api = pipe(
-      Var.inject(Env, Scope.spawner()),
-      Var.map(([_env, spawner]) => {
-        return pipe(spawner.spawn(), Scope.bind(Req, 1), Scope.run(Handler))
+      Var.struct({
+        env: Env,
+        factory: Scope.factory()
       }),
-      Var.closeWith(() => {
-        calls.push('api')
+      Var.resource(({ factory }) => {
+        const handlerResponse = factory.run(Handler, {
+          bindings: [Scope.bind(Req, 1)]
+        })
+        return Resource.of(handlerResponse, () => {
+          calls.push('api')
+        })
       })
     )
 
-    const value = await pipe(Scope.create(), Scope.run(Api))
+    const value = await Scope.run(Api)
 
     expect(value).toEqual([1])
 

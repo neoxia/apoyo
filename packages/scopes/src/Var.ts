@@ -1,8 +1,11 @@
 import { Arr, Dict, Option, pipe, Prom, Task } from '@apoyo/std'
 import { Ref } from './Ref'
+import { Resource } from './Resource'
 import { Scope } from './Scope'
 import { Context } from './types'
 import { getInternalScope, getRoot } from './utils'
+
+export const ABSTRACT_SYMBOL: unique symbol = Symbol('Var.Abstract')
 
 export const enum VarTags {
   VAR = 'var'
@@ -22,6 +25,14 @@ export namespace Var {
       [P in keyof A]: A[P] extends Var<infer I> ? I : never
     }
   >
+
+  export interface Factory<T, Fun> extends Var<T> {
+    factory: Fun
+  }
+
+  export interface Abstract<T> extends Var<T> {
+    [ABSTRACT_SYMBOL]: boolean
+  }
 
   export interface Created<T = any> {
     scope: Scope
@@ -45,73 +56,80 @@ export const create = <T>(fn: (ctx: Context) => PromiseLike<Var.Created<T>>) => 
   create: fn
 })
 
+export const factory = <T, Fun>(factory: Fun, variable: Var<T>): Var.Factory<T, Fun> => ({
+  ...variable,
+  factory
+})
+
 export const thunk = <T>(thunk: () => T | PromiseLike<T>): Var<T> =>
   create(async (ctx) => ({
     scope: getRoot(ctx.scope),
-    mount: () =>
-      pipe(
-        Prom.thunk(thunk),
-        Prom.map((value) => ({ value }))
-      )
+    mount: () => pipe(Prom.thunk(thunk), Prom.map(Resource.of))
   }))
 
 export const of = <T>(value: T): Var<T> => thunk(() => value)
 
+export const empty = of<void>(undefined)
+
 export const lazy = <A>(fn: () => PromiseLike<Var<A>> | Var<A>): Var<A> =>
   create(async (ctx) => Promise.resolve().then(fn).then(ctx.scope.load))
 
-export const closeWith = <A>(fn: (value: A) => PromiseLike<void> | void) => (variable: Var<A>): Var<A> =>
-  create(async (ctx) => {
-    const created = await ctx.scope.load(variable)
+export const resource = <A, B>(fn: (value: A) => Resource<B> | PromiseLike<Resource<B>>) => (variable: Var<A>) =>
+  factory(
+    fn,
+    create<B>(async (ctx) => {
+      const created = await ctx.scope.load(variable)
 
-    return {
-      scope: created.scope,
-      mount: () =>
-        ctx.scope.get(variable).then((value) => ({
-          value,
-          unmount: () => fn(value)
-        }))
-    }
-  })
+      return {
+        scope: created.scope,
+        mount: () => ctx.scope.get(variable).then(fn)
+      }
+    })
+  )
 
-export const map = <A, B>(fn: (value: A) => B | PromiseLike<B>) => (variable: Var<A>): Var<B> => ({
-  tag: VarTags.VAR,
-  symbol: Ref.create(),
-  create: async (ctx): Promise<Var.Created> => {
-    const created = await ctx.scope.load(variable)
+export const map = <A, B>(fn: (value: A) => B | PromiseLike<B>) => (variable: Var<A>) =>
+  factory(
+    fn,
+    pipe(
+      variable,
+      resource((v) => Promise.resolve(v).then(fn).then(Resource.of))
+    )
+  )
 
-    return {
-      scope: created.scope,
-      mount: () =>
-        ctx.scope
-          .get(variable)
-          .then(fn)
-          .then((value) => ({
-            value
-          }))
-    }
-  }
-})
+export const mapArgs = <A extends any[], B>(fn: (...args: A) => B | PromiseLike<B>) => (variable: Var<A>) =>
+  factory(
+    fn,
+    pipe(
+      variable,
+      map((args) => fn(...args))
+    )
+  )
 
-export const mapWith = <A extends any[], B>(fn: (...args: A) => B | PromiseLike<B>) => map<A, B>((args) => fn(...args))
+export const chain = <A, B>(fn: (value: A) => PromiseLike<Var<B>> | Var<B>) => (variable: Var<A>) =>
+  factory(
+    fn,
+    create<B>(
+      async (ctx): Promise<Var.Created> => {
+        const chainedVar = await ctx.scope.get(variable).then(fn)
+        const createdVar = await ctx.scope.load(chainedVar)
+        const created = await ctx.scope.load(variable)
 
-export const chain = <A, B>(fn: (value: A) => PromiseLike<Var<B>> | Var<B>) => (variable: Var<A>): Var<B> => ({
-  tag: VarTags.VAR,
-  symbol: Ref.create(),
-  create: async (ctx): Promise<Var.Created> => {
-    const chainedVar = await ctx.scope.get(variable).then(fn)
-    const createdVar = await ctx.scope.load(chainedVar)
-    const created = await ctx.scope.load(variable)
+        return {
+          scope: getLowestScope(ctx.scope, [created.scope, createdVar.scope]),
+          mount: () => ctx.scope.get(chainedVar).then(Resource.of)
+        }
+      }
+    )
+  )
 
-    return {
-      scope: getLowestScope(ctx.scope, [created.scope, createdVar.scope]),
-      mount: () => ctx.scope.get(chainedVar).then((value) => ({ value }))
-    }
-  }
-})
-
-export const chainWith = <A extends any[], B>(fn: (...args: A) => Var<B> | PromiseLike<Var<B>>) =>
-  chain<A, B>((args) => fn(...args))
+export const chainArgs = <A extends any[], B>(fn: (...args: A) => Var<B> | PromiseLike<Var<B>>) => (variable: Var<A>) =>
+  factory(
+    fn,
+    pipe(
+      variable,
+      chain((args) => fn(...args))
+    )
+  )
 
 export const array = <A>(variables: Var<A>[], strategy: Task.Strategy): Var<A[]> =>
   create(
@@ -124,13 +142,7 @@ export const array = <A>(variables: Var<A>[], strategy: Task.Strategy): Var<A[]>
           Arr.map((c) => c.scope)
         )
       )
-      const mount = () =>
-        pipe(
-          variables,
-          Arr.map(Task.taskify(ctx.scope.get)),
-          strategy,
-          Task.map((value) => ({ value }))
-        )
+      const mount = () => pipe(variables, Arr.map(Task.taskify(ctx.scope.get)), strategy, Task.map(Resource.of))
 
       return {
         scope,
@@ -156,13 +168,7 @@ export function struct(obj: Dict<Var>): Var<Dict> {
           Dict.collect((c) => c.scope)
         )
       )
-      const mount = () =>
-        pipe(
-          obj,
-          Dict.map(Task.taskify(ctx.scope.get)),
-          Task.struct(Task.all),
-          Task.map((value) => ({ value }))
-        )
+      const mount = () => pipe(obj, Dict.map(Task.taskify(ctx.scope.get)), Task.struct(Task.all), Task.map(Resource.of))
 
       return {
         scope,
@@ -172,13 +178,13 @@ export function struct(obj: Dict<Var>): Var<Dict> {
   )
 }
 
-export function inject(): Var<[]>
-export function inject<A>(a: Var<A>): Var<[A]>
-export function inject<A, B>(a: Var<A>, b: Var<B>): Var<[A, B]>
-export function inject<A, B, C>(a: Var<A>, b: Var<B>, c: Var<C>): Var<[A, B, C]>
-export function inject<A, B, C, D>(a: Var<A>, b: Var<B>, c: Var<C>, d: Var<D>): Var<[A, B, C, D]>
-export function inject<A, B, C, D, E>(a: Var<A>, b: Var<B>, c: Var<C>, d: Var<D>, e: Var<E>): Var<[A, B, C, D, E]>
-export function inject<A, B, C, D, E, F>(
+export function tuple(): Var<[]>
+export function tuple<A>(a: Var<A>): Var<[A]>
+export function tuple<A, B>(a: Var<A>, b: Var<B>): Var<[A, B]>
+export function tuple<A, B, C>(a: Var<A>, b: Var<B>, c: Var<C>): Var<[A, B, C]>
+export function tuple<A, B, C, D>(a: Var<A>, b: Var<B>, c: Var<C>, d: Var<D>): Var<[A, B, C, D]>
+export function tuple<A, B, C, D, E>(a: Var<A>, b: Var<B>, c: Var<C>, d: Var<D>, e: Var<E>): Var<[A, B, C, D, E]>
+export function tuple<A, B, C, D, E, F>(
   a: Var<A>,
   b: Var<B>,
   c: Var<C>,
@@ -186,16 +192,32 @@ export function inject<A, B, C, D, E, F>(
   e: Var<E>,
   f: Var<F>
 ): Var<[A, B, C, D, E, F]>
-export function inject(...vars: Var[]): Var<any[]> {
+export function tuple(...vars: Var[]): Var<any[]> {
   return all(vars)
 }
 
-export const abstract = <T>(description: string) =>
-  thunk<T>(() => {
+export const abstract = <T>(description: string): Var.Abstract<T> => ({
+  ...thunk<T>(() => {
     throw new Error(`cannot mount abstract variable ${description}`)
-  })
+  }),
+  [ABSTRACT_SYMBOL]: true
+})
+
+export const defaultVar = <U, T extends U>(def: Var<T>) => (variable: Var.Abstract<U>): Var.Abstract<U> => ({
+  tag: VarTags.VAR,
+  symbol: variable.symbol,
+  create: async (ctx) => {
+    const loaded = await ctx.scope.load(def)
+    return {
+      scope: loaded.scope,
+      mount: () => ctx.scope.get<T>(def).then(Resource.of)
+    }
+  },
+  [ABSTRACT_SYMBOL]: true
+})
 
 export const Var = {
+  empty,
   thunk,
   of,
   lazy,
@@ -204,11 +226,12 @@ export const Var = {
   sequence,
   concurrent,
   struct,
-  inject,
+  tuple,
+  resource,
   map,
-  mapWith,
+  mapArgs,
   chain,
-  chainWith,
-  closeWith,
-  abstract
+  chainArgs,
+  abstract,
+  default: defaultVar
 }
