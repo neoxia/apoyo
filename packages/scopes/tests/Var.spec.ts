@@ -27,10 +27,7 @@ describe('Var.thunk', () => {
     })
 
     const root = Scope.create()
-
-    const Factory = Scope.factory()
-    const factory = await root.get(Factory)
-
+    const factory = root.factory()
     const child = factory.create()
 
     const a = await child.get(VarA)
@@ -59,10 +56,7 @@ describe('Var.of', () => {
     const VarA = Var.of(1)
 
     const root = Scope.create()
-
-    const Factory = Scope.factory()
-    const factory = await root.get(Factory)
-
+    const factory = root.factory()
     const child = factory.create()
 
     const a = await child.get(VarA)

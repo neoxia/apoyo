@@ -3,25 +3,6 @@ import { Resource, Scope, Var } from '../src'
 import { SCOPES_INTERNAL } from '../src/types'
 
 describe('Scope.create', () => {
-  it('should create scope without parent context', () => {
-    const builder = Scope.create()
-
-    expect(builder.parent).toEqual(undefined)
-  })
-})
-
-describe('Scope.childOf', () => {
-  it('should create scope with parent context', async () => {
-    const root = Scope.create()
-    const factory = await root.get(Scope.factory())
-    const childScope = factory.create()
-
-    expect(childScope.parent?.scope).toEqual(root)
-    expect(childScope.parent?.variable).toEqual(factory.anchor)
-  })
-})
-
-describe('Scope.create', () => {
   it('should build and return scope', () => {
     const scope = Scope.create()
 
@@ -33,6 +14,17 @@ describe('Scope.create', () => {
     const internal = SCOPES_INTERNAL.get(scope)!
 
     expect(internal.unmount.length).toEqual(0)
+  })
+})
+
+describe('Scope.factory', () => {
+  it('should create scope factory to create scope with parent context', async () => {
+    const root = Scope.create()
+    const factory = root.factory()
+    const childScope = factory.create()
+
+    expect(childScope.parent?.scope).toEqual(root)
+    expect(childScope.parent?.variable).toEqual(factory.anchor)
   })
 })
 

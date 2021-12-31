@@ -26,6 +26,7 @@ export type Scope = {
   readonly parent?: Context
   load<T>(variable: Var<T>): Promise<Var.Loader<T>>
   get<T>(variable: Var<T>): Promise<T>
+  factory(): ScopeFactory
   close(): Promise<void>
 }
 
@@ -75,54 +76,84 @@ export const create = (options: ScopeOptions = {}): Scope => {
     return await internal.created.get(ref)!
   }
 
+  const get = async (variable: Var) => {
+    if (!open) {
+      throw new Error('Scope has been closed and cannot be re-used')
+    }
+
+    const ref = Var.getReference(variable)
+    const created = await load(variable)
+    const targetScope = SCOPES_INTERNAL.get(created.scope) as ScopeInternal
+    if (!targetScope.mounted.has(ref)) {
+      targetScope.mounted.set(
+        ref,
+        created.mount().then((data) => {
+          const unmountFn = data.unmount
+          if (unmountFn) {
+            const ctx = searchChildOf(scope, created.scope)
+            const unmountCtx: UnmountContext = {
+              variable,
+              unmount: unmountFn
+            }
+            const idx = ctx ? targetScope.unmount.findIndex((v) => v.variable === ctx.variable) : -1
+            if (idx === -1) {
+              targetScope.unmount.push(unmountCtx)
+            } else {
+              targetScope.unmount.splice(idx, 0, unmountCtx)
+            }
+          }
+          return data.value
+        })
+      )
+    }
+    return targetScope.mounted.get(ref)!
+  }
+
+  const factory = (): ScopeFactory => {
+    if (!open) {
+      throw new Error('Scope has been closed and cannot be re-used')
+    }
+
+    const anchor = Var.of<void>(undefined)
+    const internalScope = SCOPES_INTERNAL.get(scope) as ScopeInternal
+
+    internalScope.unmount.push({
+      variable: anchor,
+      unmount: () => undefined as void
+    })
+
+    const anchorCtx: Context = {
+      variable: anchor,
+      scope: scope
+    }
+
+    return {
+      anchor,
+      create: (options: ScopeOptions = {}) => create({ ...options, anchor: anchorCtx }),
+      run: <T>(variable: Var<T>, options: ScopeOptions = {}) => run(variable, { ...options, anchor: anchorCtx })
+    }
+  }
+
+  const close = async () => {
+    if (!open) {
+      throw new Error('Scope already closed')
+    }
+    open = false
+    await pipe(
+      internal.unmount,
+      Arr.reverse,
+      Arr.map((ctx) => Task.thunk(ctx.unmount)),
+      Task.sequence
+    )
+  }
+
   const scope: Scope = {
     tag: 'scope',
     parent: options.anchor,
     load,
-    get: async (variable: Var) => {
-      if (!open) {
-        throw new Error('Scope has been closed and cannot be re-used')
-      }
-
-      const ref = Var.getReference(variable)
-      const created = await load(variable)
-      const targetScope = SCOPES_INTERNAL.get(created.scope) as ScopeInternal
-      if (!targetScope.mounted.has(ref)) {
-        targetScope.mounted.set(
-          ref,
-          created.mount().then((data) => {
-            const unmountFn = data.unmount
-            if (unmountFn) {
-              const ctx = searchChildOf(scope, created.scope)
-              const unmountCtx: UnmountContext = {
-                variable,
-                unmount: unmountFn
-              }
-              const idx = ctx ? targetScope.unmount.findIndex((v) => v.variable === ctx.variable) : -1
-              if (idx === -1) {
-                targetScope.unmount.push(unmountCtx)
-              } else {
-                targetScope.unmount.splice(idx, 0, unmountCtx)
-              }
-            }
-            return data.value
-          })
-        )
-      }
-      return targetScope.mounted.get(ref)!
-    },
-    close: async () => {
-      if (!open) {
-        throw new Error('Scope already closed')
-      }
-      open = false
-      await pipe(
-        internal.unmount,
-        Arr.reverse,
-        Arr.map((ctx) => Task.thunk(ctx.unmount)),
-        Task.sequence
-      )
-    }
+    get,
+    factory,
+    close
   }
 
   const parent = options.anchor ? SCOPES_INTERNAL.get(options.anchor.scope) : undefined
@@ -178,27 +209,9 @@ export const run = async <T>(variable: Var<T>, options?: ScopeOptions) => {
 
 export const factory = (): Var<ScopeFactory> =>
   Var.create(async (ctx) => {
-    const anchorVar = pipe(
-      Var.empty,
-      Var.resource(() => Resource.of(undefined, () => undefined))
-    )
-    const anchorCtx: Context = {
-      variable: anchorVar,
-      scope: ctx.scope
-    }
-
-    const factory = {
-      anchor: anchorVar,
-      create: (options: ScopeOptions = {}) => create({ ...options, anchor: anchorCtx }),
-      run: <T>(variable: Var<T>, options: ScopeOptions = {}) => run(variable, { ...options, anchor: anchorCtx })
-    }
-
     return {
       scope: ctx.scope,
-      mount: async () =>
-        ctx.scope.get(anchorVar).then(() => ({
-          value: factory
-        }))
+      mount: async () => Resource.of(ctx.scope.factory())
     }
   })
 
