@@ -1,8 +1,9 @@
 import { NonEmptyArray, Ord } from '@apoyo/std'
 import { Ref } from './Ref'
+import { Resource } from './Resource'
 
 import { Scope } from './Scope'
-import { Var } from './Var'
+import { Var } from './variables'
 
 export const SCOPES_INTERNAL = new WeakMap<Scope, ScopeInternal>()
 
@@ -12,7 +13,7 @@ export interface Context {
 }
 
 export interface UnmountContext {
-  unmount: Var.Unmount
+  unmount: Resource.Unmount
   variable: Var
 }
 
@@ -28,7 +29,7 @@ export type ScopeInternal = {
   hierarchy: NonEmptyArray<Scope>
   root: Scope
   ord: Ord<Scope>
-  created: WeakMap<Ref, PromiseLike<Var.Created>>
+  created: WeakMap<Ref, PromiseLike<Var.Loader>>
   mounted: WeakMap<Ref, PromiseLike<any>>
   unmount: UnmountContext[]
 }

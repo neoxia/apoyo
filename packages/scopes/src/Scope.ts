@@ -1,10 +1,9 @@
 import { Arr, Ord, pipe, Task } from '@apoyo/std'
-import { Ref } from './Ref'
 import { Resource } from './Resource'
 
 import { BindingContext, Context, ScopeInternal, SCOPES_INTERNAL, UnmountContext } from './types'
 import { getHierarchy, getRoot, searchChildOf } from './utils'
-import { Var, VarTags } from './Var'
+import { Var } from './variables'
 
 export interface ScopeBinding<A, B extends A> {
   from: Var<A>
@@ -25,16 +24,14 @@ export interface ScopeFactory {
 export type Scope = {
   tag: 'scope'
   readonly parent?: Context
-  load<T>(variable: Var<T>): Promise<Var.Created<T>>
+  load<T>(variable: Var<T>): Promise<Var.Loader<T>>
   get<T>(variable: Var<T>): Promise<T>
   close(): Promise<void>
 }
 
-const isVar = (value: any): value is Var<any> => (value as Var<any>).tag === VarTags.VAR
-
 export const bind = <T, U extends T>(from: Var<T>, to: U | Var<U>): ScopeBinding<T, U> => ({
   from,
-  to: isVar(to) ? to : Var.of(to)
+  to: Var.isVar(to) ? to : Var.of(to)
 })
 
 export const create = (options: ScopeOptions = {}): Scope => {
@@ -43,48 +40,39 @@ export const create = (options: ScopeOptions = {}): Scope => {
   const resolve = <T>(variable: Var<T>): Var<T> => {
     const bindingCtx = bindings.get(variable)
     if (bindingCtx) {
-      if (bindingCtx.to && bindingCtx.to.tag === VarTags.VAR) {
-        return {
-          tag: VarTags.VAR,
-          symbol: variable.symbol,
-          create: async (ctx) => {
-            return {
-              scope: bindingCtx.scope,
-              mount: () => ctx.scope.get<T>(bindingCtx.to).then((value) => ({ value }))
-            }
-          }
-        }
-      }
-      return {
-        tag: VarTags.VAR,
-        symbol: variable.symbol,
-        create: async () => {
+      if (bindingCtx.to && Var.isVar(bindingCtx.to)) {
+        return Var.override(variable, async (ctx) => {
           return {
             scope: bindingCtx.scope,
-            mount: async () => ({
-              value: bindingCtx.to
-            })
+            mount: () => ctx.scope.get<T>(bindingCtx.to).then(Resource.of)
           }
-        }
+        })
       }
+      return Var.override(variable, async () => {
+        return {
+          scope: bindingCtx.scope,
+          mount: async () => Resource.of(bindingCtx.to)
+        }
+      })
     }
     return variable
   }
 
-  const load = async <T>(variable: Var<T>): Promise<Var.Created<T>> => {
+  const load = async <T>(variable: Var<T>): Promise<Var.Loader<T>> => {
     if (!open) {
       throw new Error('Scope has been closed and cannot be re-used')
     }
 
-    if (!internal.created.has(variable.symbol)) {
+    const ref = Var.getReference(variable)
+    if (!internal.created.has(ref)) {
       const resolved = resolve(variable)
       const ctx: Context = {
         scope,
         variable: resolved
       }
-      internal.created.set(variable.symbol, resolved.create(ctx))
+      internal.created.set(ref, resolved.create(ctx))
     }
-    return await internal.created.get(variable.symbol)!
+    return await internal.created.get(ref)!
   }
 
   const scope: Scope = {
@@ -96,11 +84,12 @@ export const create = (options: ScopeOptions = {}): Scope => {
         throw new Error('Scope has been closed and cannot be re-used')
       }
 
+      const ref = Var.getReference(variable)
       const created = await load(variable)
       const targetScope = SCOPES_INTERNAL.get(created.scope) as ScopeInternal
-      if (!targetScope.mounted.has(variable.symbol)) {
+      if (!targetScope.mounted.has(ref)) {
         targetScope.mounted.set(
-          variable.symbol,
+          ref,
           created.mount().then((data) => {
             const unmountFn = data.unmount
             if (unmountFn) {
@@ -120,7 +109,7 @@ export const create = (options: ScopeOptions = {}): Scope => {
           })
         )
       }
-      return targetScope.mounted.get(variable.symbol)!
+      return targetScope.mounted.get(ref)!
     },
     close: async () => {
       if (!open) {
@@ -187,10 +176,8 @@ export const run = async <T>(variable: Var<T>, options?: ScopeOptions) => {
   }
 }
 
-export const factory = (): Var<ScopeFactory> => ({
-  tag: VarTags.VAR,
-  symbol: Ref.create(),
-  create: async (ctx) => {
+export const factory = (): Var<ScopeFactory> =>
+  Var.create(async (ctx) => {
     const anchorVar = pipe(
       Var.empty,
       Var.resource(() => Resource.of(undefined, () => undefined))
@@ -213,8 +200,7 @@ export const factory = (): Var<ScopeFactory> => ({
           value: factory
         }))
     }
-  }
-})
+  })
 
 export const Scope = {
   create,

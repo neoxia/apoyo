@@ -49,10 +49,10 @@ describe('ScopeInstance.get', () => {
     const internal = SCOPES_INTERNAL.get(scope)!
 
     expect(internal.unmount.length).toEqual(0)
-    expect(internal.created.has(VarA.symbol)).toEqual(true)
-    expect(internal.created.has(VarB.symbol)).toEqual(true)
-    expect(internal.mounted.has(VarA.symbol)).toEqual(true)
-    expect(internal.mounted.has(VarB.symbol)).toEqual(true)
+    expect(internal.created.has(Var.getReference(VarA))).toEqual(true)
+    expect(internal.created.has(Var.getReference(VarB))).toEqual(true)
+    expect(internal.mounted.has(Var.getReference(VarA))).toEqual(true)
+    expect(internal.mounted.has(Var.getReference(VarB))).toEqual(true)
   })
 
   it('should not mount more than once when loaded in concurrency', async () => {
@@ -120,9 +120,9 @@ describe('ScopeInstance.get', () => {
 
         expect(value).toEqual([1])
 
-        expect(internal.mounted.has(Handler.symbol)).toBe(true)
-        expect(internal.mounted.has(Req.symbol)).toBe(true)
-        expect(internal.mounted.has(Db.symbol)).toBe(false)
+        expect(internal.mounted.has(Var.getReference(Handler))).toBe(true)
+        expect(internal.mounted.has(Var.getReference(Req))).toBe(true)
+        expect(internal.mounted.has(Var.getReference(Db))).toBe(false)
 
         return value
       })
@@ -135,10 +135,10 @@ describe('ScopeInstance.get', () => {
     const value = await scope.get(Api)
     expect(value).toEqual([1])
 
-    expect(internal.mounted.has(Api.symbol)).toBe(true)
-    expect(internal.mounted.has(Db.symbol)).toBe(true)
-    expect(internal.mounted.has(Handler.symbol)).toBe(false)
-    expect(internal.mounted.has(Req.symbol)).toBe(false)
+    expect(internal.mounted.has(Var.getReference(Api))).toBe(true)
+    expect(internal.mounted.has(Var.getReference(Db))).toBe(true)
+    expect(internal.mounted.has(Var.getReference(Handler))).toBe(false)
+    expect(internal.mounted.has(Var.getReference(Req))).toBe(false)
   })
 })
 
