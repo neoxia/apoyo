@@ -1,6 +1,6 @@
 import { pipe, Prom, Result } from '@apoyo/std'
 import { Resource, Scope, Var } from '../src'
-import { SCOPES_INTERNAL } from '../src/types'
+import { SCOPE_INTERNAL } from '../src/scopes/symbols'
 
 describe('ScopeInstance.get', () => {
   it('should load and get the variable once', async () => {
@@ -20,7 +20,7 @@ describe('ScopeInstance.get', () => {
     expect(a).toBe(1)
     expect(b).toBe(1)
 
-    const internal = SCOPES_INTERNAL.get(scope)!
+    const internal = scope[SCOPE_INTERNAL]
 
     expect(internal.unmount.length).toEqual(0)
   })
@@ -46,7 +46,7 @@ describe('ScopeInstance.get', () => {
     expect(a).toBe(10)
     expect(b).toBe(10)
 
-    const internal = SCOPES_INTERNAL.get(scope)!
+    const internal = scope[SCOPE_INTERNAL]
 
     expect(internal.unmount.length).toEqual(0)
     expect(internal.created.has(Var.getReference(VarA))).toEqual(true)
@@ -76,7 +76,7 @@ describe('ScopeInstance.get', () => {
     expect(a).toBe(1)
     expect(b).toBe(1)
 
-    const internal = SCOPES_INTERNAL.get(scope)!
+    const internal = scope[SCOPE_INTERNAL]
 
     expect(internal.unmount.length).toEqual(0)
   })
@@ -104,7 +104,7 @@ describe('ScopeInstance.get', () => {
     const Api = pipe(
       Var.struct({
         env: Env,
-        factory: Scope.factory()
+        factory: Scope.Factory()
       }),
       Var.map(async ({ factory }) => {
         const bindings = [Scope.bind(Req, 1)]
@@ -112,7 +112,7 @@ describe('ScopeInstance.get', () => {
           bindings
         })
 
-        const internal = SCOPES_INTERNAL.get(scope)!
+        const internal = scope[SCOPE_INTERNAL]
 
         expect(internal.bindings.has(Req)).toBe(true)
 
@@ -130,7 +130,7 @@ describe('ScopeInstance.get', () => {
 
     const scope = Scope.create()
 
-    const internal = SCOPES_INTERNAL.get(scope)!
+    const internal = scope[SCOPE_INTERNAL]
 
     const value = await scope.get(Api)
     expect(value).toEqual([1])
@@ -231,7 +231,7 @@ describe('ScopeInstance.close', () => {
     const Api = pipe(
       Var.struct({
         env: Env,
-        factory: Scope.factory()
+        factory: Scope.Factory()
       }),
       Var.resource(({ factory }) => {
         const handlerResponse = factory.run(Handler, {

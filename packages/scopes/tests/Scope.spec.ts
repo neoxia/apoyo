@@ -1,17 +1,17 @@
 import { pipe, Prom, Result } from '@apoyo/std'
 import { Resource, Scope, Var } from '../src'
-import { SCOPES_INTERNAL } from '../src/types'
+import { SCOPE_INTERNAL, SCOPE_SYMBOL } from '../src/scopes/symbols'
 
 describe('Scope.create', () => {
   it('should build and return scope', () => {
     const scope = Scope.create()
 
-    expect(scope.tag).toEqual('scope')
+    expect(scope[SCOPE_SYMBOL]).toEqual(true)
     expect(scope.parent).toEqual(undefined)
     expect(typeof scope.get).toEqual('function')
     expect(typeof scope.close).toEqual('function')
 
-    const internal = SCOPES_INTERNAL.get(scope)!
+    const internal = scope[SCOPE_INTERNAL]
 
     expect(internal.unmount.length).toEqual(0)
   })
@@ -24,7 +24,6 @@ describe('Scope.factory', () => {
     const childScope = factory.create()
 
     expect(childScope.parent?.scope).toEqual(root)
-    expect(childScope.parent?.variable).toEqual(factory.anchor)
   })
 })
 
@@ -90,7 +89,7 @@ describe('Scope.bind', () => {
       bindings
     })
 
-    const internal = SCOPES_INTERNAL.get(scope)!
+    const internal = scope[SCOPE_INTERNAL]
     expect(internal.bindings.size).toBe(1)
 
     const a = await scope.get(VarA)
@@ -115,7 +114,7 @@ describe('Scope.bind', () => {
       bindings
     })
 
-    const internal = SCOPES_INTERNAL.get(scope)!
+    const internal = scope[SCOPE_INTERNAL]
 
     expect(internal.bindings.size).toBe(1)
 
@@ -147,7 +146,7 @@ describe('Scope.bind', () => {
       bindings
     })
 
-    const internal = SCOPES_INTERNAL.get(scope)!
+    const internal = scope[SCOPE_INTERNAL]
 
     expect(internal.bindings.size).toBe(2)
 
@@ -178,7 +177,7 @@ describe('Scope.bind', () => {
       bindings
     })
 
-    const internal = SCOPES_INTERNAL.get(scope)!
+    const internal = scope[SCOPE_INTERNAL]
 
     expect(internal.bindings.size).toBe(2)
 

@@ -1,23 +1,13 @@
-import {
-  Var as Variable,
-  create,
-  override,
-  empty,
-  thunk,
-  of,
-  lazy,
-  resource,
-  map,
-  chain,
-  isVar,
-  getReference
-} from './core'
-import { array, all, concurrent, sequence } from './array'
+import type { Dict } from '@apoyo/std'
+
+import { Var as Variable, create, override, lazy, resource, isVar, getReference } from './core'
+import { empty, thunk, of } from './constants'
+import { array, all, concurrent, sequence, tuple } from './array'
 import { struct } from './struct'
-import { tuple, chainArgs, mapArgs } from './tuples'
+import { map, mapArgs } from './map'
+import { chain, chainArgs } from './chain'
 import { call, callArgs } from './call'
 import { abstract, defaultVar, isAbstract } from './abstract'
-import { Dict } from '@apoyo/std'
 
 export type Var<A = any> = Variable<A>
 

@@ -1,7 +1,8 @@
-import { Resource } from '../Resource'
-import { ABSTRACT_SYMBOL } from './constants'
-import { override, thunk } from './core'
+import { Resource } from '../resources'
+import { ABSTRACT_SYMBOL } from './symbols'
+import { override } from './core'
 import { Var } from './core'
+import { thunk } from './constants'
 
 export const isAbstract = <T>(variable: Var<T>): variable is Var.Abstract<T> =>
   (variable as Var.Abstract<T>)[ABSTRACT_SYMBOL] === true

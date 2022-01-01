@@ -1,6 +1,7 @@
 import { pipe } from '@apoyo/std'
 import { Var } from './core'
-import { mapArgs, tuple } from './tuples'
+import { tuple } from './array'
+import { mapArgs } from './map'
 
 export const call = <A, B>(variableFn: Var<(value: A) => B | PromiseLike<B>>) => (variable: Var<A>) =>
   pipe(

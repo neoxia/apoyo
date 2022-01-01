@@ -1,4 +1,5 @@
+export { Resource } from './resources'
+export { Ref } from './refs'
 export { Context } from './types'
-export { Scope } from './Scope'
+export { Scope } from './scopes'
 export { Var } from './variables'
-export { Resource } from './Resource'
