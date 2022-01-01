@@ -1,15 +1,14 @@
 import { Arr, pipe } from '@apoyo/std'
 
-import { Context } from '../types'
-import { Var } from '../variables'
-import { Binding, Bound } from './bindings'
+import type { Scope } from './types'
+import type { Context } from '../types'
+import type { Var } from '../variables'
 import { SCOPE_INTERNAL } from './symbols'
-import { Scope } from './types'
 
-export const mergeBindings = (scope: Scope, parent: Context | undefined, bindings: Binding[]) => {
+export const mergeBindings = (scope: Scope, parent: Context | undefined, bindings: Scope.Binding[]) => {
   const localBindings = pipe(
     bindings || [],
-    Arr.map(({ from, to }): [Var, Bound] => [
+    Arr.map(({ from, to }): [Var, Scope.Bound] => [
       from,
       {
         from,

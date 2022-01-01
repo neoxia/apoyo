@@ -5,46 +5,58 @@ import type { Var } from '../variables'
 import type { Resource } from '../resources'
 import type { Ref } from '../refs'
 import type { SCOPE_HIERARCHY, SCOPE_INTERNAL, SCOPE_SYMBOL } from './symbols'
-import type { Binding, Bound } from './bindings'
-
-export interface ScopeOptions {
-  anchor?: Context
-  bindings?: Binding<any, any>[]
-}
-
-export interface ScopeFactory {
-  create(options?: ScopeOptions): Scope
-  run<T>(variable: Var<T>, options?: ScopeOptions): Promise<T>
-}
-
-export type ScopeHierarchy = {
-  scopes: NonEmptyArray<Scope>
-  ord: Ord<Scope>
-}
 
 export type Scope = {
   [SCOPE_SYMBOL]: boolean
-  [SCOPE_INTERNAL]: ScopeInternal
-  [SCOPE_HIERARCHY]?: ScopeHierarchy
+  [SCOPE_INTERNAL]: Scope.Internal
+  [SCOPE_HIERARCHY]?: Scope.Hierarchy
 
   readonly parent?: Context
   readonly root: Scope
 
   load<T>(variable: Var<T>): Promise<Var.Loader<T>>
   get<T>(variable: Var<T>): Promise<T>
-  factory(): ScopeFactory
+  factory(): Scope.Factory
   close(): Promise<void>
 }
 
-export interface UnmountContext {
-  unmount: Resource.Unmount
-  variable: Var
-}
+export namespace Scope {
+  export interface Options {
+    parent?: Context
+    bindings?: Binding<any, any>[]
+  }
 
-export interface ScopeInternal {
-  bindings: Map<Var, Bound>
-  created: WeakMap<Ref, PromiseLike<Var.Loader>>
-  mounted: WeakMap<Ref, PromiseLike<any>>
-  unmount: UnmountContext[]
-  open: boolean
+  export interface Factory {
+    create(options?: Scope.Options): Scope
+    run<T>(variable: Var<T>, options?: Scope.Options): Promise<T>
+  }
+
+  export interface Hierarchy {
+    readonly scopes: NonEmptyArray<Scope>
+    readonly ord: Ord<Scope>
+  }
+
+  export interface Internal {
+    bindings: Map<Var, Bound>
+    created: WeakMap<Ref, PromiseLike<Var.Loader>>
+    mounted: WeakMap<Ref, PromiseLike<any>>
+    unmount: Scope.UnmountContext[]
+    open: boolean
+  }
+
+  export interface UnmountContext {
+    unmount: Resource.Unmount
+    variable: Var
+  }
+
+  export interface Binding<A = any, B extends A = any> {
+    from: Var<A>
+    to: Var<B>
+  }
+
+  export interface Bound<T = any> {
+    from: Var
+    to: T
+    scope: Scope
+  }
 }

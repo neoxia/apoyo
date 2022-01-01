@@ -1,18 +1,18 @@
-import { Var } from '../variables'
+import type { Scope } from './types'
+import type { Var } from '../variables'
 import { SCOPE_HIERARCHY, SCOPE_INTERNAL, SCOPE_SYMBOL } from './symbols'
 import * as Core from './core'
-import { Scope, ScopeFactory, ScopeInternal, ScopeOptions } from './types'
 import { mergeBindings } from './utils'
 
-export const create = (options: ScopeOptions = {}): Scope => {
+export const create = (options: Scope.Options = {}): Scope => {
   const load = async <T>(variable: Var<T>): Promise<Var.Loader<T>> => Core.load(scope, variable)
   const get = async (variable: Var) => Core.get(scope, variable)
-  const factory = (): ScopeFactory => Core.factory(scope)
+  const factory = (): Scope.Factory => Core.factory(scope)
   const close = async () => Core.close(scope)
 
-  const parent = options.anchor
+  const parent = options.parent
 
-  const internal: ScopeInternal = {
+  const internal: Scope.Internal = {
     bindings: new Map(),
     created: new WeakMap(),
     mounted: new WeakMap(),
@@ -38,12 +38,12 @@ export const create = (options: ScopeOptions = {}): Scope => {
     close
   }
 
-  internal.bindings = mergeBindings(scope, options.anchor, options.bindings ?? [])
+  internal.bindings = mergeBindings(scope, options.parent, options.bindings ?? [])
 
   return scope
 }
 
-export const run = async <T>(variable: Var<T>, options?: ScopeOptions) => {
+export const run = async <T>(variable: Var<T>, options?: Scope.Options) => {
   const scope = create(options)
   try {
     const value = await scope.get(variable)

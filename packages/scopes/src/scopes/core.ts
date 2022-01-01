@@ -5,7 +5,7 @@ import { Var } from '../variables'
 import { override } from './bindings'
 import { SCOPE_INTERNAL } from './symbols'
 import { create, run } from './factory'
-import { Scope, ScopeFactory, ScopeOptions, UnmountContext } from './types'
+import type { Scope } from './types'
 import { isOpen, searchChildOf } from './utils'
 
 export const resolve = <T>(scope: Scope, variable: Var<T>): Var<T> => {
@@ -46,7 +46,7 @@ export const get = async <T>(scope: Scope, variable: Var<T>) => {
         const unmountFn = data.unmount
         if (unmountFn) {
           const ctx = searchChildOf(scope, created.scope)
-          const unmountCtx: UnmountContext = {
+          const unmountCtx: Scope.UnmountContext = {
             variable,
             unmount: unmountFn
           }
@@ -64,7 +64,7 @@ export const get = async <T>(scope: Scope, variable: Var<T>) => {
   return targetScope.mounted.get(ref)!
 }
 
-export const factory = (scope: Scope): ScopeFactory => {
+export const factory = (scope: Scope): Scope.Factory => {
   if (!isOpen(scope)) {
     throw new Error('Scope has been closed and cannot be re-used')
   }
@@ -77,14 +77,14 @@ export const factory = (scope: Scope): ScopeFactory => {
     unmount: () => undefined as void
   })
 
-  const anchorCtx: Context = {
+  const parentCtx: Context = {
     variable: anchor,
     scope: scope
   }
 
   return {
-    create: (options: ScopeOptions = {}) => create({ ...options, anchor: anchorCtx }),
-    run: <T>(variable: Var<T>, options: ScopeOptions = {}) => run(variable, { ...options, anchor: anchorCtx })
+    create: (options: Scope.Options = {}) => create({ ...options, parent: parentCtx }),
+    run: <T>(variable: Var<T>, options: Scope.Options = {}) => run(variable, { ...options, parent: parentCtx })
   }
 }
 

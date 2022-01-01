@@ -1,6 +1,6 @@
 import { Ord, Option, NonEmptyArray, pipe, Arr } from '@apoyo/std'
 
-import { Scope, ScopeHierarchy } from './types'
+import type { Scope } from './types'
 import { SCOPE_HIERARCHY } from './symbols'
 
 const computeHierarchy = (scope: Scope) => {
@@ -13,7 +13,7 @@ const computeHierarchy = (scope: Scope) => {
   return hierarchy
 }
 
-export const createHierarchy = (scope: Scope): ScopeHierarchy => {
+export const createHierarchy = (scope: Scope): Scope.Hierarchy => {
   const scopes = computeHierarchy(scope)
   const scopesPrio = new Map(scopes.map((h, idx) => [h, idx]))
   const ord = pipe(
@@ -28,7 +28,7 @@ export const createHierarchy = (scope: Scope): ScopeHierarchy => {
   }
 }
 
-export const getHierarchy = (scope: Scope): ScopeHierarchy => {
+export const getHierarchy = (scope: Scope): Scope.Hierarchy => {
   if (!scope[SCOPE_HIERARCHY]) {
     scope[SCOPE_HIERARCHY] = createHierarchy(scope)
   }
