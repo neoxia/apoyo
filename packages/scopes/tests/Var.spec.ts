@@ -9,7 +9,7 @@ describe('Var.thunk', () => {
       return 1
     })
 
-    const root = pipe(Scope.create(), Scope.get)
+    const root = Scope.create()
 
     const a = await root.get(VarA)
     const b = await root.get(VarA)
@@ -26,14 +26,9 @@ describe('Var.thunk', () => {
       return 1
     })
 
-    const root = pipe(Scope.create(), Scope.get)
-    const child = pipe(
-      Scope.childOf({
-        scope: root,
-        variable: Var.of(0)
-      }),
-      Scope.get
-    )
+    const root = Scope.create()
+    const factory = root.factory()
+    const child = factory.create()
 
     const a = await child.get(VarA)
     const b = await root.get(VarA)
@@ -48,7 +43,7 @@ describe('Var.of', () => {
   it('should create a constant', async () => {
     const VarA = Var.of(1)
 
-    const root = pipe(Scope.create(), Scope.get)
+    const root = Scope.create()
 
     const a = await root.get(VarA)
     const b = await root.get(VarA)
@@ -60,14 +55,9 @@ describe('Var.of', () => {
   it('should always create a constant on root level', async () => {
     const VarA = Var.of(1)
 
-    const root = pipe(Scope.create(), Scope.get)
-    const child = pipe(
-      Scope.childOf({
-        scope: root,
-        variable: Var.of(0)
-      }),
-      Scope.get
-    )
+    const root = Scope.create()
+    const factory = root.factory()
+    const child = factory.create()
 
     const a = await child.get(VarA)
     const b = await root.get(VarA)
@@ -81,7 +71,7 @@ describe('Var.lazy', () => {
   it('should allow lazy import', async () => {
     const VarA = Var.lazy(() => import('./utils/mocks').then((i) => i.LazyVar))
 
-    const root = pipe(Scope.create(), Scope.get)
+    const root = Scope.create()
 
     const a = await root.get(VarA)
     const b = await root.get(VarA)
@@ -95,11 +85,31 @@ describe('Var.abstract', () => {
   it('should throw by default', async () => {
     const CurrentStorage = Var.abstract<{ type: 'aws' | 'azure' }>('CurrentStorage')
 
-    const root = pipe(Scope.create(), Scope.get)
+    const root = Scope.create()
 
     const err = await pipe(root.get(CurrentStorage), Prom.tryCatch)
 
     expect(pipe(err, Result.isKo)).toBe(true)
+  })
+})
+
+describe('Var.map', () => {
+  const VarA = Var.of(1)
+  const VarB = pipe(
+    VarA,
+    Var.map((a) => a * 2)
+  )
+
+  it('should map the variable correctly', async () => {
+    const root = Scope.create()
+    const value = await root.get(VarB)
+    expect(value).toEqual(2)
+  })
+
+  it('should contain the correct factory function', async () => {
+    const factory = VarB.factory
+    const value = await factory(1)
+    expect(value).toEqual(2)
   })
 })
 
@@ -127,13 +137,13 @@ describe('Var.chain', () => {
       })
     )
 
-    const CurrentStorage = Var.abstract<{ type: 'aws' | 'azure' }>('CurrentStorage')
+    const StorageConfig = Var.abstract<{ type: 'aws' | 'azure' }>('CurrentStorage')
 
     const StorageType = pipe(
-      CurrentStorage,
-      Var.map((lake) => {
+      StorageConfig,
+      Var.map((config) => {
         calls.push('storage_type')
-        return lake.type
+        return config.type
       })
     )
 
@@ -147,33 +157,37 @@ describe('Var.chain', () => {
       })
     )
 
-    const root = pipe(Scope.create(), Scope.get)
+    const root = Scope.create({
+      bindings: [
+        Scope.bind(StorageConfig, {
+          type: 'aws'
+        })
+      ]
+    })
 
-    const child = pipe(
-      Scope.childOf({
-        scope: root,
-        variable: Var.of(0)
-      }),
-      Scope.bind(CurrentStorage, {
-        type: 'aws'
-      }),
-      Scope.get
-    )
-
-    const a = await child.get(StorageByType)
-    const b = await child.get(StorageByType)
-    const c = await root.get(AWSStorage)
+    const a: string = await root.get(StorageByType)
+    const b: string = await root.get(StorageByType)
 
     expect(calls).toEqual(['storage_type', 'storage_by_type', 'env', 'aws_storage'])
+
+    const c: string = await root.get(AWSStorage)
+
+    expect(calls).toEqual(['storage_type', 'storage_by_type', 'env', 'aws_storage'])
+
+    const d: string = await root.get(AzureStorage)
+
+    expect(calls).toEqual(['storage_type', 'storage_by_type', 'env', 'aws_storage', 'azure_storage'])
+
     expect(a).toEqual('aws_storage')
     expect(b).toEqual('aws_storage')
     expect(c).toEqual('aws_storage')
+    expect(d).toEqual('azure_storage')
   })
 
   it('should work on dynamically created Vars', async () => {
     const calls: string[] = []
 
-    const root = pipe(Scope.create(), Scope.get)
+    const root = Scope.create()
 
     const DoSomething = (name: string) =>
       Var.thunk(() => {
@@ -182,7 +196,7 @@ describe('Var.chain', () => {
       })
 
     const VarA = pipe(
-      Var.inject(),
+      Var.empty,
       Var.chain(() => DoSomething('a')),
       Var.chain(() => DoSomething('b')),
       Var.map(async (name) => {
@@ -191,24 +205,44 @@ describe('Var.chain', () => {
       })
     )
 
-    const a = await root.get(VarA)
+    const a: string = await root.get(VarA)
 
     expect(calls).toEqual(['do a', 'do b'])
     expect(a).toEqual('b')
   })
-})
 
-describe('Var.mapWith', () => {
-  it('should spread all arguments', async () => {
+  it('should contain the correct factory function', async () => {
     const VarA = Var.of(1)
-    const VarB = Var.of(2)
-    const VarC = pipe(
-      Var.inject(VarA, VarB),
-      Var.mapWith((a, b) => a + b)
+
+    const VarB = pipe(
+      Var.empty,
+      Var.chain(() => VarA)
     )
 
-    const value = await pipe(Scope.create(), Scope.run(VarC))
+    const factory = VarB.factory
+    const value = factory()
+
+    expect(value).toBe(VarA)
+  })
+})
+
+describe('Var.mapArgs', () => {
+  const VarA = Var.of(1)
+  const VarB = Var.of(2)
+  const VarC = pipe(
+    Var.tuple(VarA, VarB),
+    Var.mapArgs((a, b) => a + b)
+  )
+
+  it('should spread all arguments', async () => {
+    const value: number = await Scope.run(VarC)
     expect(value).toBe(3)
+  })
+
+  it('should contain the correct factory function', async () => {
+    const factory = VarC.factory
+    const value = await factory(1, 2)
+    expect(value).toEqual(3)
   })
 })
 
@@ -224,7 +258,7 @@ describe('Var.struct', () => {
       Var.map(({ a, b }) => a + b)
     )
 
-    const value = await pipe(Scope.create(), Scope.run(VarC))
+    const value = await Scope.run(VarC)
     expect(value).toBe(3)
   })
 })

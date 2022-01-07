@@ -1,3 +1,5 @@
+export { Resource } from './resources'
+export { Ref } from './refs'
 export { Context } from './types'
-export { Scope, ScopeBuilder } from './Scope'
-export { Var } from './Var'
+export { Scope } from './scopes'
+export { Var } from './variables'

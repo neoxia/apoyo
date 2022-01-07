@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/scopes",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Functional dependency injection",
   "main": "lib/index.js",
   "module": "es6/index.js",
