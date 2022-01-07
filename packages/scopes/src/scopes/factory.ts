@@ -5,10 +5,10 @@ import * as Core from './core'
 import { mergeBindings } from './utils'
 
 export const create = (options: Scope.Options = {}): Scope => {
-  const load = async <T>(variable: Var<T>): Promise<Var.Loader<T>> => Core.load(scope, variable)
-  const get = async (variable: Var) => Core.get(scope, variable)
+  const load = <T>(variable: Var<T>): Promise<Var.Loader<T>> => Core.load(scope, variable)
+  const get = <T>(variable: Var<T>): Promise<T> => Core.get(scope, variable)
   const factory = (): Scope.Factory => Core.factory(scope)
-  const close = async () => Core.close(scope)
+  const close = (): Promise<void> => Core.close(scope)
 
   const parent = options.parent
 
