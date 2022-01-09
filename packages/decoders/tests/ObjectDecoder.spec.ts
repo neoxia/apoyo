@@ -37,6 +37,24 @@ const TodoDto = ObjectDecoder.struct({
 interface TodoDto extends Decoder.TypeOf<typeof TodoDto> {}
 
 describe('ObjectDecoder.struct', () => {
+  it('should enforce type correctly', () => {
+    interface TodoDto {
+      id: number
+      title: string
+      done: boolean
+      description?: string | null
+    }
+
+    const TodoDto = ObjectDecoder.struct<TodoDto>({
+      id: NumberDecoder.number,
+      title: TextDecoder.varchar(1, 100),
+      done: BooleanDecoder.boolean,
+      description: pipe(TextDecoder.varchar(0, 1000), TextDecoder.nullable, Decoder.optional)
+    })
+
+    expect(true).toBe(true)
+  })
+
   it('should succeed', () => {
     const todos: TodoDto[] = [
       {
