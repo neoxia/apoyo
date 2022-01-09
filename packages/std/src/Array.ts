@@ -140,9 +140,7 @@ export const chunksOf = (size: number) => <A>(arr: A[]) => {
   return chunks
 }
 
-export function uniq(arr: string[]): string[]
-export function uniq(arr: number[]): number[]
-export function uniq(arr: any[]) {
+export function uniq<T extends string | number>(arr: T[] | readonly T[]): T[] {
   return from(new Set(arr))
 }
 

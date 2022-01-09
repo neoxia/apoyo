@@ -360,6 +360,19 @@ describe('Array.uniq', () => {
     const expected = [1, 2, 3, 5, 4]
     expect(b).toEqual(expected)
   })
+
+  it('should work correctly with both strings and numbers', () => {
+    expect(pipe([1, 2, 3], Arr.uniq)).toEqual([1, 2, 3])
+    expect(pipe(['1', '2', '3'], Arr.uniq)).toEqual(['1', '2', '3'])
+  })
+
+  it('should work with constants', () => {
+    const a: (1 | 2 | 3)[] = pipe([1, 2, 3, 3] as const, Arr.uniq)
+    const b: ('1' | '2' | '3')[] = pipe(['1', '2', '3', '3'] as const, Arr.uniq)
+
+    expect(a).toEqual([1, 2, 3])
+    expect(b).toEqual(['1', '2', '3'])
+  })
 })
 
 describe('Array.uniqBy', () => {

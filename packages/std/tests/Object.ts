@@ -73,7 +73,9 @@ describe('Object.property', () => {
 describe('Object.omit', () => {
   it('should omit props', () => {
     const source = { firstName: 'John', lastName: 'Doe' }
-    const res = pipe(source, Obj.omit(['lastName']))
+    const res: {
+      firstName: string
+    } = pipe(source, Obj.omit(['lastName']))
     expect(res !== source).toBe(true)
     expect(res).toEqual({
       firstName: 'John'
@@ -84,10 +86,33 @@ describe('Object.omit', () => {
 describe('Object.pick', () => {
   it('should omit props', () => {
     const source = { firstName: 'John', lastName: 'Doe' }
-    const res = pipe(source, Obj.pick(['lastName']))
+    const res: {
+      lastName: string
+    } = pipe(source, Obj.pick(['lastName']))
     expect(res !== source).toBe(true)
     expect(res).toEqual({
       lastName: 'Doe'
     })
+  })
+})
+
+describe('Object.compact', () => {
+  it('should remove enumerable keys with undefined values', () => {
+    const input: Partial<{ firstName: string; lastName: string }> = { firstName: 'John', lastName: undefined }
+    const res = Obj.compact({ firstName: 'John' })
+
+    expect(input).toEqual(res)
+  })
+
+  it('should keep symbols', () => {
+    const sym = Symbol('test')
+    const input: Partial<{ [sym]: boolean; firstName: string; lastName: string }> = {
+      [sym]: true,
+      firstName: 'John',
+      lastName: undefined
+    }
+    const res = Obj.compact({ [sym]: true, firstName: 'John' })
+
+    expect(input).toEqual(res)
   })
 })
