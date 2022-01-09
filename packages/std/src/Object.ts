@@ -24,16 +24,12 @@ export const property = (path: string) => (obj: Dict.Dict<any>) =>
     reduce((obj, prop) => (obj ? obj[prop] : undefined), obj)
   )
 
-export function omit<A extends Obj, B extends keyof A>(props: B[]): (obj: A) => Omit<A, B>
-export function omit(props: string[]) {
-  const propsSet = new Set(props)
-  return Dict.reject((_, key) => propsSet.has(key))
+export const omit = Dict.omit as {
+  <A extends Obj, B extends keyof A>(props: B[]): (obj: A) => Omit<A, B>
 }
 
-export function pick<A extends Obj, B extends keyof A>(props: B[]): (obj: A) => Pick<A, B>
-export function pick(props: string[]) {
-  const propsSet = new Set(props)
-  return Dict.filter((_, key) => propsSet.has(key))
+export const pick = Dict.pick as {
+  <A extends Obj, B extends keyof A>(props: B[]): (obj: A) => Pick<A, B>
 }
 
 export const compact = <A extends Obj>(obj: A): A => {

@@ -73,7 +73,9 @@ describe('Object.property', () => {
 describe('Object.omit', () => {
   it('should omit props', () => {
     const source = { firstName: 'John', lastName: 'Doe' }
-    const res = pipe(source, Obj.omit(['lastName']))
+    const res: {
+      firstName: string
+    } = pipe(source, Obj.omit(['lastName']))
     expect(res !== source).toBe(true)
     expect(res).toEqual({
       firstName: 'John'
@@ -84,7 +86,9 @@ describe('Object.omit', () => {
 describe('Object.pick', () => {
   it('should omit props', () => {
     const source = { firstName: 'John', lastName: 'Doe' }
-    const res = pipe(source, Obj.pick(['lastName']))
+    const res: {
+      lastName: string
+    } = pipe(source, Obj.pick(['lastName']))
     expect(res !== source).toBe(true)
     expect(res).toEqual({
       lastName: 'Doe'

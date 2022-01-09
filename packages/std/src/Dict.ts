@@ -2,7 +2,6 @@ import type { Option } from './Option'
 
 import * as A from './Array'
 import { identity, InverseRefinement, not, pipe } from './function'
-import * as Obj from './Object'
 import { isSome } from './Option'
 
 export type Dict<A = any> = Record<string, A>
@@ -22,6 +21,7 @@ export const isEmpty = (dict: Dict<unknown>): boolean => pipe(dict, keys, A.isEm
 export const set = <A>(key: string | number, value: A) => (dict: Dict<A>): Dict<A> => ((dict[key] = value), dict)
 
 export const lookup = (key: string | number) => <A>(dict: Dict<A>): Option<A> => dict[key]
+export const get = lookup
 
 export const reduce = <A, B>(fn: (acc: B, value: A, key: string) => B, initial: B) => (dict: Dict<A>): B => {
   let result: B = initial
@@ -76,11 +76,23 @@ export const collect = <A, B>(fn: (value: A, key: string) => B) => (dict: Dict<A
     reduce<A, B[]>((acc, value, key) => (acc.push(fn(value, key)), acc), [])
   )
 
+export function omit(props: string[]): <A>(obj: Dict<A>) => Dict<A>
+export function omit(props: string[]) {
+  const propsSet = new Set(props)
+  return Dict.reject((_, key) => propsSet.has(key))
+}
+
+export function pick(props: string[]): <A>(obj: Dict<A>) => Dict<A>
+export function pick(props: string[]) {
+  const propsSet = new Set(props)
+  return Dict.filter((_, key) => propsSet.has(key))
+}
+
 export const values = <A>(dict: Dict<A>): Array<A> => pipe(dict, collect(identity))
 
 export const keys = <A>(dict: Dict<A>): Array<string> => Object.keys(dict)
 
-export const fromPairs = <A>(pairs: [string, A][]): Dict<A> => {
+export const fromPairs = <A>(pairs: [string | number, A][] | (readonly [string | number, A])[]): Dict<A> => {
   const dict: Dict<A> = {}
   for (let i = 0; i < pairs.length; ++i) {
     const [key, value] = pairs[i]
@@ -95,7 +107,10 @@ export const toPairs = <A>(dict: Dict<A>) =>
     collect<A, [string, A]>((value, key) => [key, value])
   )
 
-export const union = <A>(member: Dict<A>) => (dict: Dict<A>): Dict<A> => Obj.merge(member, dict)
+export const concat = <A>(member: Dict<A>) => (dict: Dict<A>): Dict<A> => Object.assign({}, dict, member)
+
+export const union = <A>(member: Dict<A>) => (dict: Dict<A>): Dict<A> => Object.assign({}, member, dict)
+
 export const intersect = <A>(member: Dict<A>) => (dict: Dict<A>): Dict<A> =>
   pipe(
     dict,
@@ -122,7 +137,9 @@ export const Dict = {
 
   /**
    * @description
-   * Lookup a specific key from the dict
+   * Get the value of a specific key from the dict
+   *
+   * @see `Dict.get`
    *
    * @example
    * ```ts
@@ -138,6 +155,27 @@ export const Dict = {
    * ```
    */
   lookup,
+
+  /**
+   * @description
+   * Get the value of a specific key from the dict
+   *
+   * @see `Dict.lookup`
+   *
+   * @example
+   * ```ts
+   * const value = pipe(
+   *   {
+   *     firstName: 'John',
+   *     lastName: 'Doe'
+   *   },
+   *   Dict.get('lastName')
+   * )
+   *
+   * expect(value).toBe('Doe')
+   * ```
+   */
+  get,
 
   /**
    * @description
@@ -453,6 +491,43 @@ export const Dict = {
   /**
    * @description
    * Merge both `Dict`s.
+   * The values of the member `Dict` have higher priority than the original `Dict`.
+   *
+   * As such, this method corresponds to:
+   * ```ts
+   * {
+   *   ...original,
+   *   ...member
+   * }
+   * ```
+   *
+   * @param member - The `Dict` with which the original `Dict` should be combined
+   *
+   * @example
+   * ```ts
+   * const merged = pipe(
+   *   {
+   *     firstName: 'John',
+   *     lastName: 'Doe'
+   *   },
+   *   Dict.concat({
+   *     lastName: 'Smith',
+   *     gender: 'M'
+   *   })
+   * )
+   *
+   * expect(merged).toEqual({
+   *   firstName: 'John',
+   *   lastName: 'Smith',
+   *   gender: 'M'
+   * })
+   * ```
+   */
+  concat,
+
+  /**
+   * @description
+   * Merge both `Dict`s.
    * The values of the original `Dict` have higher priority than the member `Dict`.
    *
    * As such, this method corresponds to:
@@ -478,7 +553,7 @@ export const Dict = {
    *   })
    * )
    *
-   * expect(merge).toEqual({
+   * expect(merged).toEqual({
    *   firstName: 'John',
    *   lastName: 'Doe',
    *   gender: 'M'
@@ -539,5 +614,17 @@ export const Dict = {
    * })
    * ```
    */
-  difference
+  difference,
+
+  /**
+   * @description
+   * Returns a new dict without the specified keys
+   */
+  omit,
+
+  /**
+   * @description
+   * Returns a new dict containing only the specified keys
+   */
+  pick
 }
