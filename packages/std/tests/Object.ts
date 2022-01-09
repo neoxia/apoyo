@@ -91,3 +91,24 @@ describe('Object.pick', () => {
     })
   })
 })
+
+describe('Object.compact', () => {
+  it('should remove enumerable keys with undefined values', () => {
+    const input: Partial<{ firstName: string; lastName: string }> = { firstName: 'John', lastName: undefined }
+    const res = Obj.compact({ firstName: 'John' })
+
+    expect(input).toEqual(res)
+  })
+
+  it('should keep symbols', () => {
+    const sym = Symbol('test')
+    const input: Partial<{ [sym]: boolean; firstName: string; lastName: string }> = {
+      [sym]: true,
+      firstName: 'John',
+      lastName: undefined
+    }
+    const res = Obj.compact({ [sym]: true, firstName: 'John' })
+
+    expect(input).toEqual(res)
+  })
+})

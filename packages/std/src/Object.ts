@@ -36,10 +36,21 @@ export function pick(props: string[]) {
   return Dict.filter((_, key) => propsSet.has(key))
 }
 
+export const compact = <A extends Obj>(obj: A): A => {
+  const out: A = { ...obj }
+  for (const key in out) {
+    if (key === undefined) {
+      delete out[key]
+    }
+  }
+  return out
+}
+
 export const Obj = {
   copy,
   merge,
   property,
   omit,
-  pick
+  pick,
+  compact
 }
