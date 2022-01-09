@@ -45,6 +45,15 @@ describe('ObjectDecoder.struct', () => {
       description?: string | null
     }
 
+    // Should fail
+    // @ts-expect-error Missing decoder for "description" property
+    ObjectDecoder.struct<TodoDto>({
+      id: NumberDecoder.number,
+      title: TextDecoder.varchar(1, 100),
+      done: BooleanDecoder.boolean
+    })
+
+    // Should be valid
     const TodoDto = ObjectDecoder.struct<TodoDto>({
       id: NumberDecoder.number,
       title: TextDecoder.varchar(1, 100),
