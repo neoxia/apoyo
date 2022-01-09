@@ -52,8 +52,20 @@ describe('ObjectDecoder.struct', () => {
       }
     ]
 
-    expect(pipe(todos[0], Decoder.validate(TodoDto), Result.isOk)).toBe(true)
-    expect(pipe(todos[1], Decoder.validate(TodoDto), Result.isOk)).toBe(true)
+    const out1 = pipe(todos[0], Decoder.validate(TodoDto), Result.get)
+    const out2 = pipe(todos[1], Decoder.validate(TodoDto), Result.get)
+
+    expect(out1).toEqual({
+      id: 2,
+      title: 'Eat breakfast',
+      done: false,
+      description: 'A delicious bread with Nutella'
+    })
+    expect(out2).toEqual({
+      id: 1,
+      title: 'Wake up',
+      done: true
+    })
   })
 
   it('should strip additional fields', () => {
@@ -99,6 +111,23 @@ describe('ObjectDecoder.struct', () => {
       done: true
     }
     expect(pipe(todo, Decoder.validate(TodoDto), Result.isKo)).toBe(true)
+  })
+
+  it('should remove field with undefined value', () => {
+    const todo: TodoDto = {
+      id: 1,
+      title: 'Wake up',
+      done: true,
+      description: undefined
+    }
+
+    const out = pipe(todo, Decoder.validate(TodoDto), Result.get)
+
+    expect(out).toEqual({
+      id: 1,
+      title: 'Wake up',
+      done: true
+    })
   })
 })
 
@@ -154,7 +183,7 @@ describe('ObjectDecoder.partial', () => {
 
   it('should succeed without any properties', () => {
     const todo: TodoPutDto = {}
-    expect(pipe(todo, Decoder.validate(TodoPutDto), Result.isOk)).toBe(true)
+    expect(pipe(todo, Decoder.validate(TodoPutDto), Result.get)).toEqual({})
   })
 
   it('should succeed with properties', () => {

@@ -59,8 +59,8 @@ export const optional = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | undefined
   create((input: I) => (input === undefined ? Result.ok(undefined) : pipe(input, validate(decoder))))
 
 export const required = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | undefined> =>
-  create((input: I) =>
-    input === undefined || input === null
+  create((input: any) =>
+    input === undefined || input === null || input === ''
       ? Result.ko(DecodeError.value(input, 'input is required', { code: ErrorCode.REQUIRED }))
       : pipe(input, validate(decoder))
   )
@@ -108,6 +108,13 @@ export function validate<I, O>(decoder: Decoder<I, O>) {
 }
 
 export const lazy = <I, O>(fn: () => Decoder<I, O>): Decoder<I, O> => create((input) => pipe(input, validate(fn())))
+
+export const defaultValue = <T>(value: T) => <I, O>(decoder: Decoder<I, O | undefined>): Decoder<I, O | T> =>
+  pipe(
+    decoder,
+    optional,
+    map((input) => (input === undefined ? value : input))
+  )
 
 export function union<I, O1, O2>(a: Decoder<I, O1>, b: Decoder<I, O2>): Decoder<I, O1 | O2>
 export function union<I, O1, O2, O3>(a: Decoder<I, O1>, b: Decoder<I, O2>, c: Decoder<I, O3>): Decoder<I, O1 | O2 | O3>
@@ -460,6 +467,25 @@ export const Decoder = {
    * ```
    */
   lazy,
+
+  /**
+   * @description
+   * This operator makes the decoder optional and, when the value is undefined, returns instead of undefined the given value
+   *
+   * @example
+   * ```ts
+   * const decoder = pipe(
+   *   TextDecoder.string,
+   *   Decoder.nullable,
+   *   Decoder.default(null)
+   * )
+   *
+   * expect(pipe("text", Decoder.validate(decoder), Result.get)).toEqual("text")
+   * expect(pipe(null, Decoder.validate(decoder), Result.get)).toEqual(null)
+   * expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toEqual(null)
+   * ```
+   */
+  default: defaultValue,
 
   /**
    * @description

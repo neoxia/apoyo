@@ -61,6 +61,7 @@ export const struct = <A extends Dict>(props: Struct<A>, name?: string): ObjectD
                 Result.mapError((err) => DecodeError.key(key, err))
               )
             ),
+            Result.map(Dict.compact),
             Result.mapError((errors) => DecodeError.object(errors, name))
           ) as Result<A, DecodeError>
       )

@@ -99,6 +99,29 @@ describe('Decoder.nullable', () => {
   })
 })
 
+describe('Decoder.default', () => {
+  it('should return expected results', () => {
+    const decoder: Decoder<unknown, string | null> = pipe(TextDecoder.string, Decoder.nullable, Decoder.default(null))
+
+    expect(pipe('text', Decoder.validate(decoder), Result.get)).toBe('text')
+    expect(pipe(null, Decoder.validate(decoder), Result.get)).toBe(null)
+    expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toBe(null)
+  })
+
+  it('should be overridable by another optional operator', () => {
+    const decoder: Decoder<unknown, string | null | undefined> = pipe(
+      TextDecoder.string,
+      Decoder.nullable,
+      Decoder.default(null),
+      Decoder.optional
+    )
+
+    expect(pipe('text', Decoder.validate(decoder), Result.get)).toBe('text')
+    expect(pipe(null, Decoder.validate(decoder), Result.get)).toBe(null)
+    expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toBe(undefined)
+  })
+})
+
 describe('Decoder.lazy', () => {
   interface Tree<T> {
     value: T
