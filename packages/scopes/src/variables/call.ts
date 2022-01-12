@@ -1,5 +1,5 @@
 import { pipe } from '@apoyo/std'
-import { Var } from './core'
+import { Var } from './types'
 import { tuple } from './array'
 import { mapArgs } from './map'
 

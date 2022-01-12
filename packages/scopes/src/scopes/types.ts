@@ -55,8 +55,8 @@ export namespace Scope {
   }
 
   export interface Bound<T = any> {
-    from: Var
-    to: T
+    from: Var<T>
+    to: T | Var<T>
     scope: Scope
   }
 }

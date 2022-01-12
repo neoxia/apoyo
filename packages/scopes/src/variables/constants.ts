@@ -1,7 +1,8 @@
 import { pipe, Prom } from '@apoyo/std'
 import { Resource } from '../resources'
 
-import { create, Var } from './core'
+import { Var } from './types'
+import { create } from './core'
 
 export const thunk = <T>(thunk: () => T | PromiseLike<T>): Var<T> =>
   create(async (ctx) => ({

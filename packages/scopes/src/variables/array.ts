@@ -2,7 +2,8 @@ import { Arr, pipe, Task } from '@apoyo/std'
 
 import { Resource } from '../resources'
 import { Scope } from '../scopes'
-import { create, Var } from './core'
+import { create } from './core'
+import { Var } from './types'
 
 export const array = <A>(variables: Var<A>[], strategy: Task.Strategy): Var<A[]> =>
   create(
