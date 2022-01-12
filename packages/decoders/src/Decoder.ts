@@ -60,7 +60,7 @@ export const optional = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | undefined
 
 export const required = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | undefined> =>
   create((input: any) =>
-    input === undefined || input === null || input === ''
+    input === undefined || input === null
       ? Result.ko(DecodeError.value(input, 'input is required', { code: ErrorCode.REQUIRED }))
       : pipe(input, validate(decoder))
   )
