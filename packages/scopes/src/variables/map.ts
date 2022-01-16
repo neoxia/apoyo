@@ -1,7 +1,8 @@
 import { pipe } from '@apoyo/std'
 
 import { Resource } from '../resources'
-import { factory, resource } from './core'
+import { factory } from './core'
+import { resource } from './resource'
 import { Var } from './types'
 
 export const map = <A, B>(fn: (value: A) => B | PromiseLike<B>) => (variable: Var<A>) =>

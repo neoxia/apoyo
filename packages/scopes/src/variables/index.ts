@@ -1,7 +1,9 @@
 import type { Dict } from '@apoyo/std'
 
 import { Var as VarTmp } from './types'
-import { create, override, lazy, resource, isVar, getReference, getFactory, getLoader } from './core'
+import { create, override, isVar, getReference, getFactory, getLoader } from './core'
+import { lazy } from './lazy'
+import { resource } from './resource'
 import { empty, thunk, of } from './constants'
 import { array, all, concurrent, sequence, tuple } from './array'
 import { struct } from './struct'

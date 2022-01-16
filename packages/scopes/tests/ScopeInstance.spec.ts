@@ -114,7 +114,7 @@ describe('ScopeInstance.get', () => {
 
         const internal = scope[SCOPE_INTERNAL]
 
-        expect(internal.bindings.has(Req)).toBe(true)
+        expect(internal.bindings.has(Var.getReference(Req))).toBe(true)
 
         const value = await scope.get(Handler)
 

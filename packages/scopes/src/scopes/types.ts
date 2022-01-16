@@ -37,7 +37,7 @@ export namespace Scope {
   }
 
   export interface Internal {
-    bindings: Map<Var, Bound>
+    bindings: Map<Ref, Bound>
     created: WeakMap<Ref, PromiseLike<Var.Loader>>
     mounted: WeakMap<Ref, PromiseLike<any>>
     unmount: Scope.UnmountContext[]

@@ -122,6 +122,7 @@ describe('Var.abstract', () => {
 
     const findAll = await root.get(ITodoRepository.findAll)
 
+    expect(typeof findAll).toBe('function')
     expect(findAll()).toEqual([
       {
         id: 'xxxx',

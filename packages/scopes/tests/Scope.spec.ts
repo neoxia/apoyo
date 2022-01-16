@@ -1,4 +1,4 @@
-import { pipe, Prom, Result } from '@apoyo/std'
+import { pipe, Prom, Result, Option } from '@apoyo/std'
 import { Resource, Scope, Var } from '../src'
 import { SCOPE_INTERNAL, SCOPE_SYMBOL } from '../src/scopes/symbols'
 
@@ -187,5 +187,49 @@ describe('Scope.bind', () => {
     expect(calls).toEqual([])
     expect(a).toBe(10)
     expect(b).toBe(10)
+  })
+
+  it('should be able to rebind abstract vars', async () => {
+    interface IRepository<T> {
+      findAll: () => T[]
+      findById: (id: string) => Option<T>
+    }
+    interface Todo {
+      id: string
+      title: string
+    }
+
+    interface ITodoRepository extends IRepository<Todo> {}
+
+    const ITodoRepository = Var.abstract<ITodoRepository>('ITodoRepository')
+
+    const FindAll = pipe(
+      ITodoRepository,
+      Var.map((repo) => repo.findAll)
+    )
+
+    const root = Scope.create({
+      bindings: [
+        Scope.bind(ITodoRepository, {
+          findAll: () => [
+            {
+              id: 'xxxx',
+              title: 'Wake up'
+            }
+          ],
+          findById: () => undefined
+        })
+      ]
+    })
+
+    const findAll = await root.get(FindAll)
+
+    expect(typeof findAll).toBe('function')
+    expect(findAll()).toEqual([
+      {
+        id: 'xxxx',
+        title: 'Wake up'
+      }
+    ])
   })
 })

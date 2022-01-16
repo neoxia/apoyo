@@ -13,7 +13,7 @@ export const abstract = <T>(description: string): Var.Abstract<T> =>
       throw new Error(`cannot mount abstract variable ${description}`)
     }),
     [VAR_ABSTRACT]: true
-  }) as any
+  })
 
 export const defaultVar = <U, T extends U>(def: Var<T>) => (variable: Var.Abstract<U>): Var<U> =>
   override(variable, async (ctx) => {

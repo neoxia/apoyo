@@ -9,22 +9,26 @@ import { Var } from './types'
 export function struct<A extends Dict<Var>>(obj: A): Var.Struct<A>
 export function struct(obj: Dict<Var>): Var<Dict>
 export function struct(obj: Dict<Var>): Var<Dict> {
-  return create<Dict>(
-    async (ctx: Context): Promise<Var.Loader> => {
-      const created = await pipe(obj, Dict.map(Task.taskify(ctx.scope.load)), Task.struct(Task.all))
-      const scope = Scope.getLowestScope(
-        ctx.scope,
-        pipe(
-          created,
-          Dict.collect((c) => c.scope)
+  return {
+    ...create<Dict>(
+      async (ctx: Context): Promise<Var.Loader> => {
+        const created = await pipe(obj, Dict.map(Task.taskify(ctx.scope.load)), Task.struct(Task.all))
+        const scope = Scope.getLowestScope(
+          ctx.scope,
+          pipe(
+            created,
+            Dict.collect((c) => c.scope)
+          )
         )
-      )
-      const mount = () => pipe(obj, Dict.map(Task.taskify(ctx.scope.get)), Task.struct(Task.all), Task.map(Resource.of))
+        const mount = () =>
+          pipe(obj, Dict.map(Task.taskify(ctx.scope.get)), Task.struct(Task.all), Task.map(Resource.of))
 
-      return {
-        scope,
-        mount
+        return {
+          scope,
+          mount
+        }
       }
-    }
-  )
+    ),
+    ...obj
+  }
 }
