@@ -108,6 +108,13 @@ describe('Decoder.default', () => {
     expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toBe(null)
   })
 
+  it('should type correctly when defaulting an empty array', () => {
+    const decoder: Decoder<unknown, string[]> = pipe(ArrayDecoder.array(TextDecoder.string), Decoder.default([]))
+
+    expect(pipe(['text'], Decoder.validate(decoder), Result.get)).toBe(['text'])
+    expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toBe([])
+  })
+
   it('should be overridable by another optional operator', () => {
     const decoder: Decoder<unknown, string | null | undefined> = pipe(
       TextDecoder.string,
