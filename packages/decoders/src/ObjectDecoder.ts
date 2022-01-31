@@ -10,7 +10,7 @@ export type ObjectDecoder<I, O extends Dict> = Decoder<I, O> & {
 }
 
 type Struct<A extends Dict<unknown>> = {
-  [P in keyof A]: Decoder<unknown, A[P]>
+  [P in keyof A]-?: Decoder<unknown, A[P]>
 }
 
 const create = <I, O extends Dict>(props: Dict, decoder: Decoder<I, O>): ObjectDecoder<I, O> => ({
@@ -61,6 +61,7 @@ export const struct = <A extends Dict>(props: Struct<A>, name?: string): ObjectD
                 Result.mapError((err) => DecodeError.key(key, err))
               )
             ),
+            Result.map(Dict.compact),
             Result.mapError((errors) => DecodeError.object(errors, name))
           ) as Result<A, DecodeError>
       )

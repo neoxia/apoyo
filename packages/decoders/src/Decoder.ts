@@ -53,7 +53,7 @@ export const withMessage = (msg: string, meta?: Dict<unknown>) => <I, A>(decoder
   )
 
 export const nullable = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | null> =>
-  create((input: I) => (input === null ? Result.ok(null) : pipe(input, validate(decoder))))
+  create((input: I) => (input === null || input === undefined ? Result.ok(null) : pipe(input, validate(decoder))))
 
 export const optional = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | undefined> =>
   create((input: I) => (input === undefined ? Result.ok(undefined) : pipe(input, validate(decoder))))
@@ -109,6 +109,17 @@ export function validate<I, O>(decoder: Decoder<I, O>) {
 
 export const lazy = <I, O>(fn: () => Decoder<I, O>): Decoder<I, O> => create((input) => pipe(input, validate(fn())))
 
+export function defaultValue(value: never[]): <I, O extends any[]>(decoder: Decoder<I, O | undefined>) => Decoder<I, O>
+export function defaultValue<T>(value: T): <I, O>(decoder: Decoder<I, O | undefined>) => Decoder<I, O | T>
+export function defaultValue(value: any) {
+  return (decoder: Decoder<unknown, unknown>) =>
+    pipe(
+      decoder,
+      optional,
+      map((input) => (input === undefined ? value : input))
+    )
+}
+
 export function union<I, O1, O2>(a: Decoder<I, O1>, b: Decoder<I, O2>): Decoder<I, O1 | O2>
 export function union<I, O1, O2, O3>(a: Decoder<I, O1>, b: Decoder<I, O2>, c: Decoder<I, O3>): Decoder<I, O1 | O2 | O3>
 export function union<I, O1, O2, O3, O4>(
@@ -153,8 +164,11 @@ export const unknown: Decoder<unknown, unknown> = create(Result.ok)
  * ```ts
  * export const TodoDto = ObjectDecoder.struct({
  *   id: IntegerDecoder.int,
- *   title: TextDecoder.range(1, 100),
- *   description: pipe(TextDecoder.range(0, 2000), TextDecoder.nullable),
+ *   title: TextDecoder.varchar(1, 100),
+ *   description: pipe(
+ *     TextDecoder.varchar(0, 2000),
+ *     TextDecoder.nullable
+ *   ),
  *   done: BooleanDecoder.boolean
  * })
  *
@@ -237,9 +251,8 @@ export const Decoder = {
    *
    * @example
    * ```ts
-   * const validateAge = (dob: string): Result<string, DecodeError> => {
+   * const validateAge = (date: Date): Result<string, DecodeError> => {
    *   const now = new Date()
-   *   const date = new Date(dob)
    *
    *   if (date.getFullYear() < now.getFullYear() - 100) {
    *     return Result.ko(DecodeError.value(dob, 'Date of birth is more than 100 years ago'))
@@ -282,9 +295,8 @@ export const Decoder = {
    *
    * @example
    * ```ts
-   * const validateAge = (dob: string): Option<DecodeError> => {
+   * const validateAge = (date: Date): Option<DecodeError> => {
    *   const now = new Date()
-   *   const date = new Date(dob)
    *
    *   if (date.getFullYear() < now.getFullYear() - 100) {
    *     return DecodeError.value(dob, 'Date of birth is more than 100 years ago')
@@ -316,16 +328,17 @@ export const Decoder = {
    * @see `Decoder.guard`
    * @see `Decoder.reject`
    *
+   * @see `DateDecoder.min`
+   * @see `DateDecoder.max`
+   *
    * @example
    * ```ts
-   * const maxAge = (age: number) => (dob: string) => {
+   * const maxAge = (age: number) => (dob: Date) => {
    *   const now = new Date()
-   *   const date = new Date(dob)
    *   return date.getFullYear() > now.getFullYear() - age
    * }
-   * const minAge = (age: number) => (dob: string) => {
+   * const minAge = (age: number) => (dob: Date) => {
    *   const now = new Date()
-   *   const date = new Date(dob)
    *   return date.getFullYear() < now.getFullYear() - age
    * }
    *
@@ -366,7 +379,7 @@ export const Decoder = {
 
   /**
    * @description
-   * Makes the value nullable.
+   * Makes the value nullable. If the input is undefined, the decoder will return null instead.
    *
    * **Note**: If you want to transform an empty string to `null`, use `TextDecoder.nullable` instead.
    *
@@ -380,10 +393,10 @@ export const Decoder = {
    *   Decoder.nullable
    * )
    *
-   * expect(pipe('Hello', Decoder.validate(decoder), Result.isOk)).toBe(true)
-   * expect(pipe('', Decoder.validate(decoder), Result.isOk)).toBe(true)
+   * expect(pipe('Hello', Decoder.validate(decoder), Result.get)).toBe('Hello')
    * expect(pipe('', Decoder.validate(decoder), Result.get)).toBe('')
    * expect(pipe(null, Decoder.validate(decoder), Result.get)).toBe(null)
+   * expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toBe(null)
    * ```
    */
   nullable,
@@ -404,8 +417,7 @@ export const Decoder = {
    *   Decoder.optional
    * )
    *
-   * expect(pipe('Hello', Decoder.validate(decoder), Result.isOk)).toBe(true)
-   * expect(pipe('', Decoder.validate(decoder), Result.isOk)).toBe(true)
+   * expect(pipe('Hello', Decoder.validate(decoder), Result.get)).toBe('Hello')
    * expect(pipe('', Decoder.validate(decoder), Result.get)).toBe('')
    * expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toBe(undefined)
    * ```
@@ -460,6 +472,24 @@ export const Decoder = {
    * ```
    */
   lazy,
+
+  /**
+   * @description
+   * This operator makes the decoder optional and returns the given value when the input is undefined.
+   *
+   * @example
+   * ```ts
+   * const decoder = pipe(
+   *   BooleanDecoder.boolean,
+   *   Decoder.default(false)
+   * )
+   *
+   * expect(pipe(true, Decoder.validate(decoder), Result.get)).toEqual(true)
+   * expect(pipe(false, Decoder.validate(decoder), Result.get)).toEqual(false)
+   * expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toEqual(false)
+   * ```
+   */
+  default: defaultValue,
 
   /**
    * @description

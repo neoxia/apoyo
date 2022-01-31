@@ -89,13 +89,43 @@ describe('Decoder.optional', () => {
 
 describe('Decoder.nullable', () => {
   it('should succeed', () => {
-    expect(pipe(42, Decoder.validate(NumberDecoder.number), Result.isOk)).toBe(true)
-    expect(pipe(null, Decoder.validate(Decoder.nullable(NumberDecoder.number)), Result.isOk)).toBe(true)
+    expect(pipe(42, Decoder.validate(Decoder.nullable(NumberDecoder.number)), Result.get)).toBe(42)
+    expect(pipe(null, Decoder.validate(Decoder.nullable(NumberDecoder.number)), Result.get)).toBe(null)
+    expect(pipe(undefined, Decoder.validate(Decoder.nullable(NumberDecoder.number)), Result.get)).toBe(null)
   })
 
   it('should fail', () => {
     expect(pipe(null, Decoder.validate(NumberDecoder.number), Result.isKo)).toBe(true)
-    expect(pipe(undefined, Decoder.validate(Decoder.nullable(NumberDecoder.number)), Result.isKo)).toBe(true)
+  })
+})
+
+describe('Decoder.default', () => {
+  it('should return expected results', () => {
+    const decoder: Decoder<unknown, string | null> = pipe(TextDecoder.string, Decoder.nullable, Decoder.default(null))
+
+    expect(pipe('text', Decoder.validate(decoder), Result.get)).toBe('text')
+    expect(pipe(null, Decoder.validate(decoder), Result.get)).toBe(null)
+    expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toBe(null)
+  })
+
+  it('should type correctly when defaulting an empty array', () => {
+    const decoder: Decoder<unknown, string[]> = pipe(ArrayDecoder.array(TextDecoder.string), Decoder.default([]))
+
+    expect(pipe(['text'], Decoder.validate(decoder), Result.get)).toEqual(['text'])
+    expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toEqual([])
+  })
+
+  it('should be overridable by another optional operator', () => {
+    const decoder: Decoder<unknown, string | null | undefined> = pipe(
+      TextDecoder.string,
+      Decoder.nullable,
+      Decoder.default(null),
+      Decoder.optional
+    )
+
+    expect(pipe('text', Decoder.validate(decoder), Result.get)).toBe('text')
+    expect(pipe(null, Decoder.validate(decoder), Result.get)).toBe(null)
+    expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toBe(undefined)
   })
 })
 
