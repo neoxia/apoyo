@@ -251,9 +251,8 @@ export const Decoder = {
    *
    * @example
    * ```ts
-   * const validateAge = (dob: string): Result<string, DecodeError> => {
+   * const validateAge = (date: Date): Result<string, DecodeError> => {
    *   const now = new Date()
-   *   const date = new Date(dob)
    *
    *   if (date.getFullYear() < now.getFullYear() - 100) {
    *     return Result.ko(DecodeError.value(dob, 'Date of birth is more than 100 years ago'))
