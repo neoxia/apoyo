@@ -89,13 +89,13 @@ describe('Decoder.optional', () => {
 
 describe('Decoder.nullable', () => {
   it('should succeed', () => {
-    expect(pipe(42, Decoder.validate(NumberDecoder.number), Result.isOk)).toBe(true)
-    expect(pipe(null, Decoder.validate(Decoder.nullable(NumberDecoder.number)), Result.isOk)).toBe(true)
+    expect(pipe(42, Decoder.validate(Decoder.nullable(NumberDecoder.number)), Result.get)).toBe(42)
+    expect(pipe(null, Decoder.validate(Decoder.nullable(NumberDecoder.number)), Result.get)).toBe(null)
+    expect(pipe(undefined, Decoder.validate(Decoder.nullable(NumberDecoder.number)), Result.get)).toBe(null)
   })
 
   it('should fail', () => {
     expect(pipe(null, Decoder.validate(NumberDecoder.number), Result.isKo)).toBe(true)
-    expect(pipe(undefined, Decoder.validate(Decoder.nullable(NumberDecoder.number)), Result.isKo)).toBe(true)
   })
 })
 
@@ -111,8 +111,8 @@ describe('Decoder.default', () => {
   it('should type correctly when defaulting an empty array', () => {
     const decoder: Decoder<unknown, string[]> = pipe(ArrayDecoder.array(TextDecoder.string), Decoder.default([]))
 
-    expect(pipe(['text'], Decoder.validate(decoder), Result.get)).toBe(['text'])
-    expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toBe([])
+    expect(pipe(['text'], Decoder.validate(decoder), Result.get)).toEqual(['text'])
+    expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toEqual([])
   })
 
   it('should be overridable by another optional operator', () => {

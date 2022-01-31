@@ -117,10 +117,11 @@ describe('TextDecoder.nullable', () => {
     expect(pipe('Test', Decoder.validate(decoder), Result.get)).toBe('Test')
     expect(pipe('', Decoder.validate(decoder), Result.get)).toBe(null)
     expect(pipe(null, Decoder.validate(decoder), Result.get)).toBe(null)
+    expect(pipe(undefined, Decoder.validate(decoder), Result.get)).toBe(null)
   })
 
   it('should fail', () => {
-    expect(pipe(undefined, Decoder.validate(decoder), Result.isKo)).toBe(true)
+    expect(pipe(42, Decoder.validate(decoder), Result.isKo)).toBe(true)
   })
 })
 
