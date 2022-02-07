@@ -5,13 +5,13 @@ import type { Context } from '../types'
 import type { Ref } from '../refs'
 
 import { SCOPE_INTERNAL } from './symbols'
-import { Var } from '../variables'
+import { Injectable } from '../injectables'
 
 export const mergeBindings = (scope: Scope, parent: Context | undefined, bindings: Scope.Binding[]) => {
   const localBindings = pipe(
     bindings || [],
     Arr.map(({ from, to }): [Ref, Scope.Bound] => [
-      Var.getReference(from),
+      Injectable.getReference(from),
       {
         from,
         to,

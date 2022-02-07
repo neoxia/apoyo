@@ -19,11 +19,11 @@ Today, a lot of solutions exists for dependency injection in JS/TS, the most pop
 
 There are however a few issues:
 
-- They are mostly used with classes and decorators
+- They are primarily used with classes and decorators. This works nicely for people using an OOP-based approach. For people favoring a more functional approach however, no good alternatives exist up to day.
 
-- They don't support custom scopes creation: Most only have a singleton scope, transient scope and maybe request scope
+- They don't support custom scopes creation
 
-- Most of them don't have a clear shutdown mechanism, to gracefully shutdown the services
+- Most of them don't have a clear shutdown mechanism, to gracefully shutdown loaded resources
 
 ## Goal
 
@@ -45,12 +45,12 @@ This package is a more functional based dependency injection solution, with the 
 
 **Note**: The entire source code of the examples will be available under the *examples/scopes* folder.
 
-First, we will need to declare some injectables using the utils in the `Var` namespace:
+First, we will need to declare some injectables using the utils in the `Injectable` namespace:
 
 ```ts
 
-// This injectable does not have any dependencies. As such we simply use `Var.thunk`
-const Env = Var.thunk(async () => {
+// This injectable does not have any dependencies. As such we simply use `Injectable.thunk`
+const Env = Injectable.thunk(async () => {
   // Load env variables from .env files
   // Validate env variables
   // etc...
@@ -62,15 +62,15 @@ const Env = Var.thunk(async () => {
 const Config = {
   API: pipe(
     Env,
-    Var.map(env => ({
+    Injectable.map(env => ({
       port: env.PORT
     }))
   )
 }
 
 const HealthRoutes = pipe(
-  Var.empty,
-  Var.map(() => {
+  Injectable.empty,
+  Injectable.map(() => {
     const route = Router()
 
     route.get('/', (req, res) => {
@@ -84,8 +84,8 @@ const HealthRoutes = pipe(
 )
 
 const TodoRoutes = pipe(
-  Var.empty,
-  Var.map(() => {
+  Injectable.empty,
+  Injectable.map(() => {
     const route = Router()
 
     route.get('/', (req, res) => {
@@ -108,11 +108,11 @@ const TodoRoutes = pipe(
 )
 
 export const Routes = pipe(
-  Var.struct({
+  Injectable.struct({
     health: HealthRoutes,
     todos: TodoRoutes
   }),
-  Var.map((routes) => {
+  Injectable.map((routes) => {
     const route = Router()
     route.use('/health', routes.health)
     route.use('/todos', routes.todos)
@@ -121,11 +121,11 @@ export const Routes = pipe(
 )
 
 const API = pipe(
-  Var.struct({
+  Injectable.struct({
     config: Config.API, 
     routes: Routes
   }),
-  Var.resource(async ({ config, routes }) => {
+  Injectable.resource(async ({ config, routes }) => {
 
     const app = express()
     // use middlewares
@@ -149,7 +149,7 @@ const API = pipe(
 )
 ```
 
-Once all the variables you need have been created, you need to create a scope that will host / manage these variables for you.
+Once all the injectables you need have been created, you need to create a scope that will host / manage these injectables for you.
 
 ```ts
 const main = async () => {

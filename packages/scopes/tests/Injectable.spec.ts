@@ -1,10 +1,10 @@
 import { pipe, Prom, Result, Option } from '@apoyo/std'
-import { Scope, Var } from '../src'
+import { Scope, Injectable } from '../src'
 
-describe('Var.thunk', () => {
+describe('Injectable.thunk', () => {
   it('should create a constant', async () => {
     let calls = 0
-    const VarA = Var.thunk(() => {
+    const VarA = Injectable.thunk(() => {
       ++calls
       return 1
     })
@@ -21,7 +21,7 @@ describe('Var.thunk', () => {
 
   it('should always create a constant on root level', async () => {
     let calls = 0
-    const VarA = Var.thunk(() => {
+    const VarA = Injectable.thunk(() => {
       ++calls
       return 1
     })
@@ -39,9 +39,9 @@ describe('Var.thunk', () => {
   })
 })
 
-describe('Var.of', () => {
+describe('Injectable.of', () => {
   it('should create a constant', async () => {
-    const VarA = Var.of(1)
+    const VarA = Injectable.of(1)
 
     const root = Scope.create()
 
@@ -53,7 +53,7 @@ describe('Var.of', () => {
   })
 
   it('should always create a constant on root level', async () => {
-    const VarA = Var.of(1)
+    const VarA = Injectable.of(1)
 
     const root = Scope.create()
     const factory = root.factory()
@@ -67,9 +67,9 @@ describe('Var.of', () => {
   })
 })
 
-describe('Var.lazy', () => {
+describe('Injectable.lazy', () => {
   it('should allow lazy import', async () => {
-    const VarA = Var.lazy(() => import('./utils/mocks').then((i) => i.LazyVar))
+    const VarA = Injectable.lazy(() => import('./utils/mocks').then((i) => i.LazyVar))
 
     const root = Scope.create()
 
@@ -81,9 +81,9 @@ describe('Var.lazy', () => {
   })
 })
 
-describe('Var.abstract', () => {
+describe('Injectable.abstract', () => {
   it('should throw by default', async () => {
-    const CurrentStorage = Var.abstract<{ type: 'aws' | 'azure' }>('CurrentStorage')
+    const CurrentStorage = Injectable.abstract<{ type: 'aws' | 'azure' }>('CurrentStorage')
 
     const root = Scope.create()
 
@@ -104,7 +104,7 @@ describe('Var.abstract', () => {
 
     interface ITodoRepository extends IRepository<Todo> {}
 
-    const ITodoRepository = Var.abstract<ITodoRepository>('ITodoRepository')
+    const ITodoRepository = Injectable.abstract<ITodoRepository>('ITodoRepository')
 
     const root = Scope.create({
       bindings: [
@@ -132,11 +132,11 @@ describe('Var.abstract', () => {
   })
 })
 
-describe('Var.map', () => {
-  const VarA = Var.of(1)
+describe('Injectable.map', () => {
+  const VarA = Injectable.of(1)
   const VarB = pipe(
     VarA,
-    Var.map((a) => a * 2)
+    Injectable.map((a) => a * 2)
   )
 
   it('should map the variable correctly', async () => {
@@ -146,41 +146,41 @@ describe('Var.map', () => {
   })
 
   it('should contain the correct factory function', async () => {
-    const factory = Var.getFactory(VarB)
+    const factory = Injectable.getFactory(VarB)
     const value = await factory(1)
     expect(value).toEqual(2)
   })
 })
 
-describe('Var.chain', () => {
+describe('Injectable.chain', () => {
   it('should allow dynamically switching on Vars', async () => {
     const calls: string[] = []
 
-    const Env = Var.thunk(async () => {
+    const Env = Injectable.thunk(async () => {
       calls.push('env')
       return {}
     })
 
     const AWSStorage = pipe(
       Env,
-      Var.map(() => {
+      Injectable.map(() => {
         calls.push('aws_storage')
         return 'aws_storage'
       })
     )
     const AzureStorage = pipe(
       Env,
-      Var.map(() => {
+      Injectable.map(() => {
         calls.push('azure_storage')
         return 'azure_storage'
       })
     )
 
-    const StorageConfig = Var.abstract<{ type: 'aws' | 'azure' }>('CurrentStorage')
+    const StorageConfig = Injectable.abstract<{ type: 'aws' | 'azure' }>('CurrentStorage')
 
     const StorageType = pipe(
       StorageConfig,
-      Var.map((config) => {
+      Injectable.map((config) => {
         calls.push('storage_type')
         return config.type
       })
@@ -188,7 +188,7 @@ describe('Var.chain', () => {
 
     const StorageByType = pipe(
       StorageType,
-      Var.chain((type) => {
+      Injectable.chain((type) => {
         calls.push('storage_by_type')
         if (type === 'aws') return AWSStorage
         if (type === 'azure') return AzureStorage
@@ -229,16 +229,16 @@ describe('Var.chain', () => {
     const root = Scope.create()
 
     const DoSomething = (name: string) =>
-      Var.thunk(() => {
+      Injectable.thunk(() => {
         calls.push('do ' + name)
         return name
       })
 
     const VarA = pipe(
-      Var.empty,
-      Var.chain(() => DoSomething('a')),
-      Var.chain(() => DoSomething('b')),
-      Var.map(async (name) => {
+      Injectable.empty,
+      Injectable.chain(() => DoSomething('a')),
+      Injectable.chain(() => DoSomething('b')),
+      Injectable.map(async (name) => {
         await Prom.sleep(200)
         return name
       })
@@ -251,26 +251,26 @@ describe('Var.chain', () => {
   })
 
   it('should contain the correct factory function', async () => {
-    const VarA = Var.of(1)
+    const VarA = Injectable.of(1)
 
     const VarB = pipe(
-      Var.empty,
-      Var.chain(() => VarA)
+      Injectable.empty,
+      Injectable.chain(() => VarA)
     )
 
-    const factory = Var.getFactory(VarB)
+    const factory = Injectable.getFactory(VarB)
     const value = factory()
 
     expect(value).toBe(VarA)
   })
 })
 
-describe('Var.mapArgs', () => {
-  const VarA = Var.of(1)
-  const VarB = Var.of(2)
+describe('Injectable.mapArgs', () => {
+  const VarA = Injectable.of(1)
+  const VarB = Injectable.of(2)
   const VarC = pipe(
-    Var.tuple(VarA, VarB),
-    Var.mapArgs((a, b) => a + b)
+    Injectable.tuple(VarA, VarB),
+    Injectable.mapArgs((a, b) => a + b)
   )
 
   it('should spread all arguments', async () => {
@@ -279,22 +279,22 @@ describe('Var.mapArgs', () => {
   })
 
   it('should contain the correct factory function', async () => {
-    const factory = Var.getFactory(VarC)
+    const factory = Injectable.getFactory(VarC)
     const value = await factory(1, 2)
     expect(value).toEqual(3)
   })
 })
 
-describe('Var.struct', () => {
+describe('Injectable.struct', () => {
   it('should combine a struct of vars into a single var', async () => {
-    const VarA = Var.of(1)
-    const VarB = Var.of(2)
+    const VarA = Injectable.of(1)
+    const VarB = Injectable.of(2)
     const VarC = pipe(
-      Var.struct({
+      Injectable.struct({
         a: VarA,
         b: VarB
       }),
-      Var.map(({ a, b }) => a + b)
+      Injectable.map(({ a, b }) => a + b)
     )
 
     const value = await Scope.run(VarC)
@@ -302,14 +302,14 @@ describe('Var.struct', () => {
   })
 
   it('should proxy sub-properties correctly', async () => {
-    const VarA = Var.of({
+    const VarA = Injectable.of({
       port: 3000
     })
-    const VarB = Var.of(2)
+    const VarB = Injectable.of(2)
 
-    const VarC = Var.struct({
+    const VarC = Injectable.struct({
       a: VarA,
-      b: Var.struct({
+      b: Injectable.struct({
         b: VarB
       })
     })

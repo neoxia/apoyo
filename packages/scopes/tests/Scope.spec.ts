@@ -1,5 +1,5 @@
 import { pipe, Prom, Result, Option } from '@apoyo/std'
-import { Resource, Scope, Var } from '../src'
+import { Resource, Scope, Injectable } from '../src'
 import { SCOPE_INTERNAL, SCOPE_SYMBOL } from '../src/scopes/symbols'
 
 describe('Scope.create', () => {
@@ -31,8 +31,8 @@ describe('Scope.run', () => {
   it('should run given variable and return result', async () => {
     let unmountCalls = 0
     const Main = pipe(
-      Var.of(1),
-      Var.resource((nb) => {
+      Injectable.of(1),
+      Injectable.resource((nb) => {
         return Resource.of(nb * 10, () => {
           ++unmountCalls
         })
@@ -49,8 +49,8 @@ describe('Scope.run', () => {
     let unmountCalls = 0
 
     const Db = pipe(
-      Var.empty,
-      Var.resource(() => {
+      Injectable.empty,
+      Injectable.resource(() => {
         const db = {
           close: async () => {
             await Prom.sleep(100)
@@ -64,7 +64,7 @@ describe('Scope.run', () => {
 
     const Main = pipe(
       Db,
-      Var.map(() => {
+      Injectable.map(() => {
         throw new Error('expected')
       })
     )
@@ -77,9 +77,9 @@ describe('Scope.run', () => {
 })
 
 describe('Scope.bind', () => {
-  it('should bind a Var to a constant value', async () => {
+  it('should bind a Injectable to a constant value', async () => {
     const calls: string[] = []
-    const VarA = Var.thunk(() => {
+    const VarA = Injectable.thunk(() => {
       calls.push('a')
       return 1
     })
@@ -98,13 +98,13 @@ describe('Scope.bind', () => {
     expect(a).toBe(2)
   })
 
-  it('should bind a Var to another Var', async () => {
+  it('should bind a Injectable to another Injectable', async () => {
     const calls: string[] = []
-    const VarA = Var.thunk(() => {
+    const VarA = Injectable.thunk(() => {
       calls.push('a')
       return 1
     })
-    const VarB = Var.thunk(() => {
+    const VarB = Injectable.thunk(() => {
       calls.push('b')
       return 2
     })
@@ -128,15 +128,15 @@ describe('Scope.bind', () => {
 
   it('should resolve deeply', async () => {
     const calls: string[] = []
-    const VarA = Var.thunk(() => {
+    const VarA = Injectable.thunk(() => {
       calls.push('a')
       return 1
     })
-    const VarB = Var.thunk(() => {
+    const VarB = Injectable.thunk(() => {
       calls.push('b')
       return 2
     })
-    const VarC = Var.thunk(() => {
+    const VarC = Injectable.thunk(() => {
       calls.push('c')
       return 3
     })
@@ -162,11 +162,11 @@ describe('Scope.bind', () => {
 
   it('should resolve correctly with Vars and constants', async () => {
     const calls: string[] = []
-    const VarA = Var.thunk(() => {
+    const VarA = Injectable.thunk(() => {
       calls.push('a')
       return 1
     })
-    const VarB = Var.thunk(() => {
+    const VarB = Injectable.thunk(() => {
       calls.push('b')
       return 2
     })
@@ -201,11 +201,11 @@ describe('Scope.bind', () => {
 
     interface ITodoRepository extends IRepository<Todo> {}
 
-    const ITodoRepository = Var.abstract<ITodoRepository>('ITodoRepository')
+    const ITodoRepository = Injectable.abstract<ITodoRepository>('ITodoRepository')
 
     const FindAll = pipe(
       ITodoRepository,
-      Var.map((repo) => repo.findAll)
+      Injectable.map((repo) => repo.findAll)
     )
 
     const root = Scope.create({
