@@ -1,12 +1,12 @@
 import { pipe, Prom, Result } from '@apoyo/std'
-import { Resource, Scope, Var } from '../src'
+import { Resource, Scope, Injectable } from '../src'
 import { SCOPE_INTERNAL } from '../src/scopes/symbols'
 
 describe('ScopeInstance.get', () => {
   it('should load and get the variable once', async () => {
     let calls = 0
 
-    const VarA = Var.thunk(() => {
+    const VarA = Injectable.thunk(() => {
       ++calls
       return calls
     })
@@ -28,13 +28,13 @@ describe('ScopeInstance.get', () => {
   it('should work with vars having dependencies', async () => {
     let calls = 0
 
-    const VarA = Var.thunk(() => {
+    const VarA = Injectable.thunk(() => {
       ++calls
       return calls
     })
     const VarB = pipe(
       VarA,
-      Var.map((nb) => nb * 10)
+      Injectable.map((nb) => nb * 10)
     )
 
     const scope = Scope.create()
@@ -49,16 +49,16 @@ describe('ScopeInstance.get', () => {
     const internal = scope[SCOPE_INTERNAL]
 
     expect(internal.unmount.length).toEqual(0)
-    expect(internal.created.has(Var.getReference(VarA))).toEqual(true)
-    expect(internal.created.has(Var.getReference(VarB))).toEqual(true)
-    expect(internal.mounted.has(Var.getReference(VarA))).toEqual(true)
-    expect(internal.mounted.has(Var.getReference(VarB))).toEqual(true)
+    expect(internal.created.has(Injectable.getReference(VarA))).toEqual(true)
+    expect(internal.created.has(Injectable.getReference(VarB))).toEqual(true)
+    expect(internal.mounted.has(Injectable.getReference(VarA))).toEqual(true)
+    expect(internal.mounted.has(Injectable.getReference(VarB))).toEqual(true)
   })
 
   it('should not mount more than once when loaded in concurrency', async () => {
     let calls = 0
 
-    const VarA = Var.thunk(async () => {
+    const VarA = Injectable.thunk(async () => {
       ++calls
       await Prom.sleep(200)
       return calls
@@ -82,31 +82,31 @@ describe('ScopeInstance.get', () => {
   })
 
   it('should mount vars in correct scope', async () => {
-    const Env = Var.of({})
+    const Env = Injectable.of({})
     const Db = pipe(
       Env,
-      Var.map(() => {
+      Injectable.map(() => {
         return {
           query: async (nb: number) => [nb]
         }
       })
     )
 
-    const Req = Var.abstract<number>('Req')
+    const Req = Injectable.abstract<number>('Req')
 
     const Handler = pipe(
-      Var.tuple(Req, Db),
-      Var.mapArgs(async (req, db) => {
+      Injectable.tuple(Req, Db),
+      Injectable.mapArgs(async (req, db) => {
         return await db.query(req)
       })
     )
 
     const Api = pipe(
-      Var.struct({
+      Injectable.struct({
         env: Env,
         factory: Scope.Factory()
       }),
-      Var.map(async ({ factory }) => {
+      Injectable.map(async ({ factory }) => {
         const bindings = [Scope.bind(Req, 1)]
         const scope = factory.create({
           bindings
@@ -114,15 +114,15 @@ describe('ScopeInstance.get', () => {
 
         const internal = scope[SCOPE_INTERNAL]
 
-        expect(internal.bindings.has(Var.getReference(Req))).toBe(true)
+        expect(internal.bindings.has(Injectable.getReference(Req))).toBe(true)
 
         const value = await scope.get(Handler)
 
         expect(value).toEqual([1])
 
-        expect(internal.mounted.has(Var.getReference(Handler))).toBe(true)
-        expect(internal.mounted.has(Var.getReference(Req))).toBe(true)
-        expect(internal.mounted.has(Var.getReference(Db))).toBe(false)
+        expect(internal.mounted.has(Injectable.getReference(Handler))).toBe(true)
+        expect(internal.mounted.has(Injectable.getReference(Req))).toBe(true)
+        expect(internal.mounted.has(Injectable.getReference(Db))).toBe(false)
 
         return value
       })
@@ -135,10 +135,10 @@ describe('ScopeInstance.get', () => {
     const value = await scope.get(Api)
     expect(value).toEqual([1])
 
-    expect(internal.mounted.has(Var.getReference(Api))).toBe(true)
-    expect(internal.mounted.has(Var.getReference(Db))).toBe(true)
-    expect(internal.mounted.has(Var.getReference(Handler))).toBe(false)
-    expect(internal.mounted.has(Var.getReference(Req))).toBe(false)
+    expect(internal.mounted.has(Injectable.getReference(Api))).toBe(true)
+    expect(internal.mounted.has(Injectable.getReference(Db))).toBe(true)
+    expect(internal.mounted.has(Injectable.getReference(Handler))).toBe(false)
+    expect(internal.mounted.has(Injectable.getReference(Req))).toBe(false)
   })
 })
 
@@ -147,8 +147,8 @@ describe('ScopeInstance.close', () => {
     let calls = 0
 
     const VarA = pipe(
-      Var.of(1),
-      Var.resource((nb) => {
+      Injectable.of(1),
+      Injectable.resource((nb) => {
         return Resource.of(nb * 10, () => {
           ++calls
         })
@@ -170,8 +170,8 @@ describe('ScopeInstance.close', () => {
     let calls = 0
 
     const VarA = pipe(
-      Var.of(1),
-      Var.resource((nb) => {
+      Injectable.of(1),
+      Injectable.resource((nb) => {
         return Resource.of(nb * 10, () => {
           ++calls
         })
@@ -187,7 +187,7 @@ describe('ScopeInstance.close', () => {
   })
 
   it('should throw when used after closing', async () => {
-    const VarA = Var.of(1)
+    const VarA = Injectable.of(1)
 
     const scope = Scope.create()
 
@@ -201,10 +201,10 @@ describe('ScopeInstance.close', () => {
   it('should unmount vars mounted from child scopes correctly', async () => {
     const calls: string[] = []
 
-    const Env = Var.of({})
+    const Env = Injectable.of({})
     const Db = pipe(
       Env,
-      Var.resource(() => {
+      Injectable.resource(() => {
         const db = {
           query: async (nb: number) => [nb],
           close: async () => {
@@ -216,24 +216,24 @@ describe('ScopeInstance.close', () => {
       })
     )
 
-    const Req = Var.abstract<number>('Req')
+    const Req = Injectable.abstract<number>('Req')
 
     const Handler = pipe(
-      Var.struct({
+      Injectable.struct({
         req: Req,
         db: Db
       }),
-      Var.map(async ({ req, db }) => {
+      Injectable.map(async ({ req, db }) => {
         return await db.query(req)
       })
     )
 
     const Api = pipe(
-      Var.struct({
+      Injectable.struct({
         env: Env,
         factory: Scope.Factory()
       }),
-      Var.resource(({ factory }) => {
+      Injectable.resource(({ factory }) => {
         const handlerResponse = factory.run(Handler, {
           bindings: [Scope.bind(Req, 1)]
         })

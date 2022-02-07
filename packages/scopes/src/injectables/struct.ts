@@ -4,14 +4,14 @@ import { Resource } from '../resources'
 import { Scope } from '../scopes'
 import { Context } from '../types'
 import { create } from './core'
-import { Var } from './types'
+import { Injectable } from './types'
 
-export function struct<A extends Dict<Var>>(obj: A): Var.Struct<A>
-export function struct(obj: Dict<Var>): Var<Dict>
-export function struct(obj: Dict<Var>): Var<Dict> {
+export function struct<A extends Dict<Injectable>>(obj: A): Injectable.Struct<A>
+export function struct(obj: Dict<Injectable>): Injectable<Dict>
+export function struct(obj: Dict<Injectable>): Injectable<Dict> {
   return {
     ...create<Dict>(
-      async (ctx: Context): Promise<Var.Loader> => {
+      async (ctx: Context): Promise<Injectable.Loader> => {
         const created = await pipe(obj, Dict.map(Task.taskify(ctx.scope.load)), Task.struct(Task.all))
         const scope = Scope.getLowestScope(
           ctx.scope,

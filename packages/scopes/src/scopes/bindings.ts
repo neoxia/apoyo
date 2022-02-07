@@ -1,23 +1,23 @@
 import type { Scope } from './types'
 import { Resource } from '../resources'
-import { Var } from '../variables'
+import { Injectable } from '../injectables'
 
-export const bind = <T, U extends T>(from: Var<T>, to: U | Var<U>): Scope.Binding<T, U> => ({
+export const bind = <T, U extends T>(from: Injectable<T>, to: U | Injectable<U>): Scope.Binding<T, U> => ({
   from,
-  to: Var.isVar(to) ? to : Var.of(to)
+  to: Injectable.isVar(to) ? to : Injectable.of(to)
 })
 
-export const override = <T>(binding: Scope.Bound<T>): Var<T> => {
+export const override = <T>(binding: Scope.Bound<T>): Injectable<T> => {
   const { from, to, scope } = binding
-  if (Var.isVar(to)) {
-    return Var.override(from, async (ctx) => {
+  if (Injectable.isVar(to)) {
+    return Injectable.override(from, async (ctx) => {
       return {
         scope,
         mount: () => ctx.scope.get<T>(to).then(Resource.of)
       }
     })
   }
-  return Var.override(from, async () => {
+  return Injectable.override(from, async () => {
     return {
       scope,
       mount: async () => Resource.of(to)

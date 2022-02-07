@@ -1,25 +1,25 @@
 import { Arr, pipe, Task } from '@apoyo/std'
 
 import { Context } from '../types'
-import { Var } from '../variables'
+import { Injectable } from '../injectables'
 import { override } from './bindings'
 import { SCOPE_INTERNAL } from './symbols'
 import { create, run } from './factory'
 import type { Scope } from './types'
 import { isOpen, searchChildOf } from './utils'
 
-export const resolve = <T>(scope: Scope, variable: Var<T>): Var<T> => {
-  const ref = Var.getReference(variable)
+export const resolve = <T>(scope: Scope, variable: Injectable<T>): Injectable<T> => {
+  const ref = Injectable.getReference(variable)
   const binding = scope[SCOPE_INTERNAL].bindings.get(ref)
   return binding ? override<T>(binding) : variable
 }
 
-export const load = async <T>(scope: Scope, variable: Var<T>): Promise<Var.Loader<T>> => {
+export const load = async <T>(scope: Scope, variable: Injectable<T>): Promise<Injectable.Loader<T>> => {
   if (!isOpen(scope)) {
     throw new Error('Scope has been closed and cannot be re-used')
   }
 
-  const ref = Var.getReference(variable)
+  const ref = Injectable.getReference(variable)
   const internal = scope[SCOPE_INTERNAL]
   if (!internal.created.has(ref)) {
     const resolved = resolve(scope, variable)
@@ -27,17 +27,17 @@ export const load = async <T>(scope: Scope, variable: Var<T>): Promise<Var.Loade
       scope,
       variable: resolved
     }
-    internal.created.set(ref, Var.getLoader(resolved)(ctx))
+    internal.created.set(ref, Injectable.getLoader(resolved)(ctx))
   }
   return await internal.created.get(ref)!
 }
 
-export const get = async <T>(scope: Scope, variable: Var<T>) => {
+export const get = async <T>(scope: Scope, variable: Injectable<T>) => {
   if (!isOpen(scope)) {
     throw new Error('Scope has been closed and cannot be re-used')
   }
 
-  const ref = Var.getReference(variable)
+  const ref = Injectable.getReference(variable)
   const created = await load(scope, variable)
   const targetScope = created.scope[SCOPE_INTERNAL]
   if (!targetScope.mounted.has(ref)) {
@@ -70,7 +70,7 @@ export const factory = (scope: Scope): Scope.Factory => {
     throw new Error('Scope has been closed and cannot be re-used')
   }
 
-  const anchor = Var.of<void>(undefined)
+  const anchor = Injectable.of<void>(undefined)
   const internalScope = scope[SCOPE_INTERNAL]
 
   internalScope.unmount.push({
@@ -85,7 +85,7 @@ export const factory = (scope: Scope): Scope.Factory => {
 
   return {
     create: (options: Scope.Options = {}) => create({ ...options, parent: parentCtx }),
-    run: <T>(variable: Var<T>, options: Scope.Options = {}) => run(variable, { ...options, parent: parentCtx })
+    run: <T>(variable: Injectable<T>, options: Scope.Options = {}) => run(variable, { ...options, parent: parentCtx })
   }
 }
 

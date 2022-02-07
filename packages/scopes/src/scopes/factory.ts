@@ -1,12 +1,12 @@
 import type { Scope } from './types'
-import type { Var } from '../variables'
+import type { Injectable } from '../injectables'
 import { SCOPE_HIERARCHY, SCOPE_INTERNAL, SCOPE_SYMBOL } from './symbols'
 import * as Core from './core'
 import { mergeBindings } from './utils'
 
 export const create = (options: Scope.Options = {}): Scope => {
-  const load = <T>(variable: Var<T>): Promise<Var.Loader<T>> => Core.load(scope, variable)
-  const get = <T>(variable: Var<T>): Promise<T> => Core.get(scope, variable)
+  const load = <T>(variable: Injectable<T>): Promise<Injectable.Loader<T>> => Core.load(scope, variable)
+  const get = <T>(variable: Injectable<T>): Promise<T> => Core.get(scope, variable)
   const factory = (): Scope.Factory => Core.factory(scope)
   const close = (): Promise<void> => Core.close(scope)
 
@@ -43,7 +43,7 @@ export const create = (options: Scope.Options = {}): Scope => {
   return scope
 }
 
-export const run = async <T>(variable: Var<T>, options?: Scope.Options) => {
+export const run = async <T>(variable: Injectable<T>, options?: Scope.Options) => {
   const scope = create(options)
   try {
     const value = await scope.get(variable)

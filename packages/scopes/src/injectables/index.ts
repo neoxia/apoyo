@@ -1,6 +1,6 @@
 import type { Dict } from '@apoyo/std'
 
-import { Var as VarTmp } from './types'
+import { Injectable as InjectableTmp } from './types'
 import { create, override, isVar, getReference, getFactory, getLoader } from './core'
 import { lazy } from './lazy'
 import { resource } from './resource'
@@ -12,17 +12,17 @@ import { chain, chainArgs } from './chain'
 import { call, callArgs } from './call'
 import { abstract, defaultVar, isAbstract } from './abstract'
 
-export type Var<A = any> = VarTmp<A>
+export type Injectable<A = any> = InjectableTmp<A>
 
-export namespace Var {
-  export type Loader<T = any> = VarTmp.Loader<T>
-  export type Factory<T, Fun> = VarTmp.Factory<T, Fun>
-  export type Struct<T extends Dict<Var>> = VarTmp.Struct<T>
-  export type Abstract<T = any> = VarTmp.Abstract<T>
-  export type Proxy<T = any> = VarTmp.Proxy<T>
+export namespace Injectable {
+  export type Loader<T = any> = InjectableTmp.Loader<T>
+  export type Factory<T, Fun> = InjectableTmp.Factory<T, Fun>
+  export type Struct<T extends Dict<Injectable>> = InjectableTmp.Struct<T>
+  export type Abstract<T = any> = InjectableTmp.Abstract<T>
+  export type Proxy<T = any> = InjectableTmp.Proxy<T>
 }
 
-export const Var = {
+export const Injectable = {
   getReference,
   getFactory,
   getLoader,

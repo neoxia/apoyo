@@ -1,7 +1,7 @@
 import type { Scope } from './scopes'
-import type { Var } from './variables'
+import type { Injectable } from './injectables'
 
 export interface Context {
   scope: Scope
-  variable: Var
+  variable: Injectable
 }

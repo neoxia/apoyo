@@ -1,9 +1,9 @@
 import type { Resource } from '../resources'
-import type { Var } from './types'
+import type { Injectable } from './types'
 
 import { create, factory } from './core'
 
-export const resource = <A, B>(fn: (value: A) => Resource<B> | PromiseLike<Resource<B>>) => (variable: Var<A>) =>
+export const resource = <A, B>(fn: (value: A) => Resource<B> | PromiseLike<Resource<B>>) => (variable: Injectable<A>) =>
   factory(
     fn,
     create<B>(async (ctx) => {
