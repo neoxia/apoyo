@@ -1,4 +1,4 @@
-import { pipe, Prom, Result } from '@apoyo/std'
+import { pipe, Prom, Result, Option } from '@apoyo/std'
 import { Scope, Var } from '../src'
 
 describe('Var.thunk', () => {
@@ -91,6 +91,45 @@ describe('Var.abstract', () => {
 
     expect(pipe(err, Result.isKo)).toBe(true)
   })
+
+  it('should get sub-property via proxy', async () => {
+    interface IRepository<T> {
+      findAll: () => T[]
+      findById: (id: string) => Option<T>
+    }
+    interface Todo {
+      id: string
+      title: string
+    }
+
+    interface ITodoRepository extends IRepository<Todo> {}
+
+    const ITodoRepository = Var.abstract<ITodoRepository>('ITodoRepository')
+
+    const root = Scope.create({
+      bindings: [
+        Scope.bind(ITodoRepository, {
+          findAll: () => [
+            {
+              id: 'xxxx',
+              title: 'Wake up'
+            }
+          ],
+          findById: () => undefined
+        })
+      ]
+    })
+
+    const findAll = await root.get(ITodoRepository.findAll)
+
+    expect(typeof findAll).toBe('function')
+    expect(findAll()).toEqual([
+      {
+        id: 'xxxx',
+        title: 'Wake up'
+      }
+    ])
+  })
 })
 
 describe('Var.map', () => {
@@ -107,7 +146,7 @@ describe('Var.map', () => {
   })
 
   it('should contain the correct factory function', async () => {
-    const factory = VarB.factory
+    const factory = Var.getFactory(VarB)
     const value = await factory(1)
     expect(value).toEqual(2)
   })
@@ -219,7 +258,7 @@ describe('Var.chain', () => {
       Var.chain(() => VarA)
     )
 
-    const factory = VarB.factory
+    const factory = Var.getFactory(VarB)
     const value = factory()
 
     expect(value).toBe(VarA)
@@ -240,7 +279,7 @@ describe('Var.mapArgs', () => {
   })
 
   it('should contain the correct factory function', async () => {
-    const factory = VarC.factory
+    const factory = Var.getFactory(VarC)
     const value = await factory(1, 2)
     expect(value).toEqual(3)
   })
@@ -260,5 +299,36 @@ describe('Var.struct', () => {
 
     const value = await Scope.run(VarC)
     expect(value).toBe(3)
+  })
+
+  it('should proxy sub-properties correctly', async () => {
+    const VarA = Var.of({
+      port: 3000
+    })
+    const VarB = Var.of(2)
+
+    const VarC = Var.struct({
+      a: VarA,
+      b: Var.struct({
+        b: VarB
+      })
+    })
+
+    const root = Scope.create()
+    const c = await root.get(VarC)
+    expect(c).toEqual({
+      a: {
+        port: 3000
+      },
+      b: {
+        b: 2
+      }
+    })
+
+    const b = await root.get(VarC.b.b)
+    expect(b).toBe(2)
+
+    const port = await root.get(VarC.a.port)
+    expect(port).toBe(3000)
   })
 })

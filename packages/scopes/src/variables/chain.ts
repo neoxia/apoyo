@@ -1,7 +1,8 @@
 import { pipe } from '@apoyo/std'
 import { Resource } from '../resources'
 import { Scope } from '../scopes'
-import { create, factory, Var } from './core'
+import { create, factory } from './core'
+import { Var } from './types'
 
 export const chain = <A, B>(fn: (value: A) => PromiseLike<Var<B>> | Var<B>) => (variable: Var<A>) =>
   factory(

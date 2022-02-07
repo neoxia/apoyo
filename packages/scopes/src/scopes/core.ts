@@ -9,8 +9,9 @@ import type { Scope } from './types'
 import { isOpen, searchChildOf } from './utils'
 
 export const resolve = <T>(scope: Scope, variable: Var<T>): Var<T> => {
-  const bindingCtx = scope[SCOPE_INTERNAL].bindings.get(variable)
-  return bindingCtx ? override(bindingCtx) : variable
+  const ref = Var.getReference(variable)
+  const binding = scope[SCOPE_INTERNAL].bindings.get(ref)
+  return binding ? override<T>(binding) : variable
 }
 
 export const load = async <T>(scope: Scope, variable: Var<T>): Promise<Var.Loader<T>> => {
@@ -26,7 +27,7 @@ export const load = async <T>(scope: Scope, variable: Var<T>): Promise<Var.Loade
       scope,
       variable: resolved
     }
-    internal.created.set(ref, resolved.create(ctx))
+    internal.created.set(ref, Var.getLoader(resolved)(ctx))
   }
   return await internal.created.get(ref)!
 }

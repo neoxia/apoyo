@@ -1,18 +1,19 @@
 import { Resource } from '../resources'
-import { ABSTRACT_SYMBOL } from './symbols'
-import { override } from './core'
-import { Var } from './core'
+import { VAR_ABSTRACT } from './symbols'
+import { override, proxify } from './core'
+import { Var } from './types'
 import { thunk } from './constants'
 
 export const isAbstract = <T>(variable: Var<T>): variable is Var.Abstract<T> =>
-  (variable as Var.Abstract<T>)[ABSTRACT_SYMBOL] === true
+  (variable as Var.Abstract<T>)[VAR_ABSTRACT] === true
 
-export const abstract = <T>(description: string): Var.Abstract<T> => ({
-  ...thunk<T>(() => {
-    throw new Error(`cannot mount abstract variable ${description}`)
-  }),
-  [ABSTRACT_SYMBOL]: true
-})
+export const abstract = <T>(description: string): Var.Abstract<T> =>
+  proxify({
+    ...thunk<T>(() => {
+      throw new Error(`cannot mount abstract variable ${description}`)
+    }),
+    [VAR_ABSTRACT]: true
+  })
 
 export const defaultVar = <U, T extends U>(def: Var<T>) => (variable: Var.Abstract<U>): Var<U> =>
   override(variable, async (ctx) => {

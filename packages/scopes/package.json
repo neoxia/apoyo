@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/scopes",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Functional dependency injection",
   "main": "lib/index.js",
   "module": "es6/index.js",
@@ -12,13 +12,13 @@
     "typescript",
     "dependency injection",
     "ioc",
-    "scopes"
+    "injectables"
   ],
   "keywords": [
     "typescript",
     "dependency injection",
     "ioc",
-    "scopes"
+    "injectables"
   ],
   "repository": {
     "type": "git",

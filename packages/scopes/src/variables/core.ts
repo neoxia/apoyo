@@ -1,68 +1,51 @@
-import { Dict } from '@apoyo/std'
+import type { Context } from '../types'
+
+import { Var } from './types'
 import { Ref } from '../refs'
-import { Resource } from '../resources'
-import { Scope } from '../scopes'
-import { Context } from '../types'
-import { ABSTRACT_SYMBOL, VAR_SYMBOL } from './symbols'
+import { VAR_CREATE, VAR_FACTORY, VAR_REF } from './symbols'
+import { pipe } from '@apoyo/std'
+import { map } from './map'
 
-export interface Var<T = any> {
-  [VAR_SYMBOL]: Ref
-  create: (ctx: Context) => PromiseLike<Var.Loader<T>>
-}
+export const isVar = (value: any): value is Var<any> => (value as Var)[VAR_REF] !== undefined
 
-export namespace Var {
-  export interface Abstract<T> extends Var<T> {
-    [ABSTRACT_SYMBOL]: boolean
-  }
+export const getReference = (variable: Var) => variable[VAR_REF]
+export const getFactory = <Fun>(variable: Var.Factory<any, Fun>) => variable[VAR_FACTORY]
+export const getLoader = <T>(variable: Var<T>) => variable[VAR_CREATE]
 
-  export interface Factory<T, Fun> extends Var<T> {
-    factory: Fun
-  }
-  export interface Loader<T = any> {
-    scope: Scope
-    mount: () => PromiseLike<Resource<T>>
-  }
-  export type Struct<A extends Dict<Var>> = Var<
-    {
-      [P in keyof A]: A[P] extends Var<infer I> ? I : never
-    }
-  >
-}
-
-export const isVar = (value: any): value is Var<any> => (value as Var)[VAR_SYMBOL] !== undefined
-
-export const getReference = (variable: Var) => variable[VAR_SYMBOL]
-
-export const create = <T>(fn: (ctx: Context) => PromiseLike<Var.Loader<T>>): Var<T> => ({
-  [VAR_SYMBOL]: Ref.create(),
-  create: fn
-})
-
-export const override = <T, U extends T>(
-  variable: Var<T>,
-  fn: (ctx: Context) => PromiseLike<Var.Loader<U>>
-): Var<T> => ({
-  [VAR_SYMBOL]: variable[VAR_SYMBOL],
-  create: fn
-})
-
-export const factory = <T, Fun>(factory: Fun, variable: Var<T>): Var.Factory<T, Fun> => ({
-  ...variable,
-  factory
-})
-
-export const lazy = <A>(fn: () => PromiseLike<Var<A>> | Var<A>): Var<A> =>
-  create(async (ctx) => Promise.resolve().then(fn).then(ctx.scope.load))
-
-export const resource = <A, B>(fn: (value: A) => Resource<B> | PromiseLike<Resource<B>>) => (variable: Var<A>) =>
-  factory(
-    fn,
-    create<B>(async (ctx) => {
-      const created = await ctx.scope.load(variable)
-
-      return {
-        scope: created.scope,
-        mount: () => ctx.scope.get(variable).then(fn)
+export function proxify<T, Fun>(internal: Var.Factory<T, Fun>): Var.Factory<T, Fun>
+export function proxify<T>(internal: Var.Abstract<T>): Var.Abstract<T>
+export function proxify<T>(internal: Var.Value<T>): Var<T>
+export function proxify<T>(internal: Var.Value<T>): Var<T> {
+  const proxy = new Proxy(internal, {
+    get(target: any, key) {
+      let v = target[key]
+      if (v === undefined) {
+        v = target[key] = pipe(
+          target,
+          map((t: any) => t[key])
+        )
       }
-    })
-  )
+      return v
+    }
+  })
+
+  return proxy
+}
+
+export const create = <T>(fn: (ctx: Context) => PromiseLike<Var.Loader<T>>): Var<T> =>
+  proxify({
+    [VAR_REF]: Ref.create(),
+    [VAR_CREATE]: fn
+  })
+
+export const override = <T>(variable: Var<T>, fn: (ctx: Context) => PromiseLike<Var.Loader<T>>): Var<T> =>
+  proxify({
+    [VAR_REF]: variable[VAR_REF],
+    [VAR_CREATE]: fn
+  })
+
+export const factory = <T, Fun>(factory: Fun, variable: Var<T>): Var.Factory<T, Fun> =>
+  proxify({
+    ...variable,
+    [VAR_FACTORY]: factory
+  })
