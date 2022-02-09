@@ -2,16 +2,25 @@ import { Arr, pipe, Task } from '@apoyo/std'
 
 import { Context } from '../types'
 import { Injectable } from '../injectables'
-import { override } from './bindings'
 import { SCOPE_INTERNAL } from './symbols'
 import { create, run } from './factory'
-import type { Scope } from './types'
 import { isOpen, searchChildOf } from './utils'
+import type { Scope } from './types'
+import type { Ref } from '../refs'
 
-export const resolve = <T>(scope: Scope, variable: Injectable<T>): Injectable<T> => {
-  const ref = Injectable.getReference(variable)
-  const binding = scope[SCOPE_INTERNAL].bindings.get(ref)
-  return binding ? override<T>(binding) : variable
+const resolveBinding = <T>(scope: Scope, ref: Ref) =>
+  scope[SCOPE_INTERNAL].bindings.get(ref) as Injectable<T> | undefined
+
+export const resolve = <T>(scope: Scope, from: Injectable<T>): Injectable<T> => {
+  const ref = Injectable.getReference(from)
+
+  let tmp = scope
+  let to = resolveBinding<T>(tmp, ref)
+  while (!to && tmp.parent) {
+    tmp = tmp.parent.scope
+    to = resolveBinding<T>(tmp, ref)
+  }
+  return to ? to : from
 }
 
 export const load = async <T>(scope: Scope, variable: Injectable<T>): Promise<Injectable.Loader<T>> => {

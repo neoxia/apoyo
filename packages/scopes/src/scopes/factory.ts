@@ -1,8 +1,8 @@
 import type { Scope } from './types'
-import type { Injectable } from '../injectables'
+import { Injectable } from '../injectables'
 import { SCOPE_HIERARCHY, SCOPE_INTERNAL } from './symbols'
 import * as Core from './core'
-import { mergeBindings } from './utils'
+import { computeBindings } from './utils'
 
 export const create = (options: Scope.Options = {}): Scope => {
   const load = <T>(variable: Injectable<T>): Promise<Injectable.Loader<T>> => Core.load(scope, variable)
@@ -37,7 +37,7 @@ export const create = (options: Scope.Options = {}): Scope => {
     close
   }
 
-  internal.bindings = mergeBindings(scope, options.parent, options.bindings ?? [])
+  internal.bindings = computeBindings(scope, options.bindings ?? [])
 
   return scope
 }
