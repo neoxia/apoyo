@@ -1,6 +1,6 @@
 import type { Scope } from './types'
 import type { Injectable } from '../injectables'
-import { SCOPE_HIERARCHY, SCOPE_INTERNAL, SCOPE_SYMBOL } from './symbols'
+import { SCOPE_HIERARCHY, SCOPE_INTERNAL } from './symbols'
 import * as Core from './core'
 import { mergeBindings } from './utils'
 
@@ -21,7 +21,6 @@ export const create = (options: Scope.Options = {}): Scope => {
   }
 
   const scope: Scope = {
-    [SCOPE_SYMBOL]: true,
     [SCOPE_INTERNAL]: internal,
     [SCOPE_HIERARCHY]: undefined,
 

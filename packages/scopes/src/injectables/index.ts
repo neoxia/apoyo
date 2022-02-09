@@ -1,7 +1,7 @@
 import type { Dict } from '@apoyo/std'
 
 import { Injectable as InjectableTmp } from './types'
-import { create, override, isVar, getReference, getFactory, getLoader } from './core'
+import { create, override, isInjectable, getReference, getFactory, getLoader } from './core'
 import { lazy } from './lazy'
 import { resource } from './resource'
 import { empty, thunk, of } from './constants'
@@ -26,7 +26,7 @@ export const Injectable = {
   getReference,
   getFactory,
   getLoader,
-  isVar,
+  isInjectable,
   isAbstract,
   empty,
   create,

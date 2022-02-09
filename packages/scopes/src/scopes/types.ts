@@ -4,10 +4,9 @@ import type { Context } from '../types'
 import type { Injectable } from '../injectables'
 import type { Resource } from '../resources'
 import type { Ref } from '../refs'
-import type { SCOPE_HIERARCHY, SCOPE_INTERNAL, SCOPE_SYMBOL } from './symbols'
+import type { SCOPE_HIERARCHY, SCOPE_INTERNAL } from './symbols'
 
 export type Scope = {
-  [SCOPE_SYMBOL]: boolean
   [SCOPE_INTERNAL]: Scope.Internal
   [SCOPE_HIERARCHY]?: Scope.Hierarchy
 
@@ -51,7 +50,7 @@ export namespace Scope {
 
   export interface Binding<A = any, B extends A = any> {
     from: Injectable<A>
-    to: Injectable<B>
+    to: B | Injectable<B>
   }
 
   export interface Bound<T = any> {

@@ -1,12 +1,12 @@
 import { pipe, Prom, Result, Option } from '@apoyo/std'
 import { Resource, Scope, Injectable } from '../src'
-import { SCOPE_INTERNAL, SCOPE_SYMBOL } from '../src/scopes/symbols'
+import { SCOPE_INTERNAL } from '../src/scopes/symbols'
 
 describe('Scope.create', () => {
   it('should build and return scope', () => {
     const scope = Scope.create()
 
-    expect(scope[SCOPE_SYMBOL]).toEqual(true)
+    expect(scope[SCOPE_INTERNAL]).toBeDefined()
     expect(scope.parent).toEqual(undefined)
     expect(typeof scope.get).toEqual('function')
     expect(typeof scope.close).toEqual('function')
