@@ -1,15 +1,15 @@
 import { Router } from 'express'
 
-import { Var } from '@apoyo/scopes'
+import { Injectable } from '@apoyo/scopes'
 import { pipe } from '@apoyo/std'
 
 import { ListTodos } from './list'
 
 export const TodoRoutes = pipe(
-  Var.struct({
+  Injectable.struct({
     list: ListTodos
   }),
-  Var.map(({ list }) => {
+  Injectable.map(({ list }) => {
     const route = Router({
       mergeParams: true
     })

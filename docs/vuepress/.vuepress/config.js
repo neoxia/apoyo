@@ -80,7 +80,9 @@ module.exports = {
         children: [
           '/guide/scopes/getting-started.md',
           '/guide/scopes/injectables.md',
-          '/guide/scopes/scopes.md'
+          '/guide/scopes/resources.md',
+          '/guide/scopes/scopes.md',
+          '/guide/scopes/advanced-features.md',
         ]
       },
       {

@@ -1,22 +1,22 @@
 import { Env } from '@/env'
-import { Var } from '@apoyo/scopes'
+import { Injectable } from '@apoyo/scopes'
 import { pipe } from '@apoyo/std'
 
 const API = pipe(
   Env,
-  Var.map((env) => ({
+  Injectable.map((env) => ({
     port: env.PORT
   }))
 )
 
 const JsonPlaceholderAPI = pipe(
   Env,
-  Var.map((env) => ({
+  Injectable.map((env) => ({
     baseURL: env.JSON_PLACEHOLDER_URL
   }))
 )
 
-export const Config = {
+export const Config = Injectable.struct({
   API,
   JsonPlaceholderAPI
-}
+})

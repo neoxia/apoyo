@@ -2,14 +2,17 @@ import express from 'express'
 import { Server } from 'http'
 
 import { Config } from '@/config'
-import { Var } from '@apoyo/scopes'
+import { Injectable, Resource } from '@apoyo/scopes'
 import { pipe } from '@apoyo/std'
 
 import { Routes } from './routes'
 
 export const API = pipe(
-  Var.inject(Config.API, Routes),
-  Var.mapWith(async (config, routes) => {
+  Injectable.struct({
+    config: Config.API,
+    routes: Routes
+  }),
+  Injectable.resource(async ({ config, routes }) => {
     const app = express()
     // use middlewares
     // ...
@@ -21,12 +24,13 @@ export const API = pipe(
       const server = app.listen(port, () => resolve(server))
     })
 
+    const close = async () => {
+      console.log('Stopping server...')
+      await new Promise<void>((resolve, reject) => server.close((err) => (err ? reject(err) : resolve())))
+    }
+
     console.log(`Server started on port ${port}`)
 
-    return server
-  }),
-  Var.closeWith(async (server) => {
-    console.log('Stopping server...')
-    await new Promise<void>((resolve, reject) => server.close((err) => (err ? reject(err) : resolve())))
+    return Resource.of(server, close)
   })
 )

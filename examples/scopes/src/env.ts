@@ -2,7 +2,7 @@ import dotenvExpand from 'dotenv-expand'
 import dotenv from 'dotenv-flow'
 
 import { DecodeError, Decoder, IntegerDecoder, ObjectDecoder, TextDecoder } from '@apoyo/decoders'
-import { Var } from '@apoyo/scopes'
+import { Injectable } from '@apoyo/scopes'
 import { Err, pipe, Result } from '@apoyo/std'
 
 export const EnvSchema = ObjectDecoder.struct({
@@ -11,7 +11,7 @@ export const EnvSchema = ObjectDecoder.struct({
   JSON_PLACEHOLDER_URL: pipe(TextDecoder.string, TextDecoder.trim, TextDecoder.min(1))
 })
 
-export const Env = Var.thunk(async () => {
+export const Env = Injectable.thunk(async () => {
   // Load env files and expand variables
   const env = pipe(
     dotenv.config({

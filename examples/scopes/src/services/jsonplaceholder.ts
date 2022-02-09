@@ -1,12 +1,12 @@
 import axios from 'axios'
 
 import { Config } from '@/config'
-import { Var } from '@apoyo/scopes'
+import { Injectable } from '@apoyo/scopes'
 import { pipe } from '@apoyo/std'
 
 export const JsonPlaceholderAPI = pipe(
-  Var.inject(Config.JsonPlaceholderAPI),
-  Var.mapWith((config) =>
+  Config.JsonPlaceholderAPI,
+  Injectable.map((config) =>
     axios.create({
       baseURL: config.baseURL
     })
