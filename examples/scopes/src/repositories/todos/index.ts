@@ -1,5 +1,5 @@
-import { JsonPlaceholderAPI } from '@/services/datasources'
-import { Var } from '@apoyo/scopes'
+import { JsonPlaceholderAPI } from '@/services/jsonplaceholder'
+import { Injectable } from '@apoyo/scopes'
 import { pipe } from '@apoyo/std'
 
 export interface Todo {
@@ -9,11 +9,11 @@ export interface Todo {
   completed: boolean
 }
 
-export const FindTodos = pipe(
+export const findAll = pipe(
   JsonPlaceholderAPI,
-  Var.map((api) => () => api.get<Todo[]>(`/todos`).then((res) => res.data))
+  Injectable.map((api) => () => api.get<Todo[]>(`/todos`).then((res) => res.data))
 )
 
-export const TodoRepository = {
-  FindTodos
-}
+export const TodoRepository = Injectable.struct({
+  findAll
+})

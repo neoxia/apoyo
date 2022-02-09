@@ -1,11 +1,11 @@
-import { Var } from '@apoyo/scopes'
+import { Injectable } from '@apoyo/scopes'
 import { pipe } from '@apoyo/std'
 
 import { Router } from 'express'
 
 export const HealthRoutes = pipe(
-  Var.inject(),
-  Var.map(() => {
+  Injectable.empty,
+  Injectable.map(() => {
     const route = Router({
       mergeParams: true
     })

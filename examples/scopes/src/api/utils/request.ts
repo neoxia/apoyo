@@ -1,3 +1,3 @@
-import { Var } from '@apoyo/scopes'
+import { Injectable } from '@apoyo/scopes'
 
-export const Req = Var.abstract('Req')
+export const Req = Injectable.abstract('Req')

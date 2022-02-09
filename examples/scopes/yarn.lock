@@ -7,10 +7,10 @@
   resolved "https://registry.yarnpkg.com/@apoyo/decoders/-/decoders-0.0.11.tgz#cd8e8a0d7a6e8a296094a12087f44a0c9008b26a"
   integrity sha512-aH2lBQljbKV/8tbQvnWS/7Sphy4ubDXgkfK54PNP2KO4XQTUDUaW62pkjcxQvR92Pun+MKIBIPrANqJdf4t1Fw==
 
-"@apoyo/scopes@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@apoyo/scopes/-/scopes-0.0.5.tgz#2e1af8f1021ecefdb44e2e134709e91d183d4950"
-  integrity sha512-9hCUDaxeJPF4K1+rxUr2wcg3M5xm6FQZr9+GvA+sU6ZTPfejRPrpkgsRe0CLaRdBEyW88zX5uyzYL0UiH0muig==
+"@apoyo/scopes@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@apoyo/scopes/-/scopes-0.1.0.tgz#2d4c6f642e36ff2c7451db0d6d0c8d6647ad15b6"
+  integrity sha512-nJ2NrzV/nN+Zm3tqTV6bQxDJvIr9Dn3Sm3wblpUjMOqcOIemDPmxd4fzeLTXutBeS+NHpj02Bcm6S6ER3NNbmA==
 
 "@apoyo/std@^0.0.11":
   version "0.0.11"
