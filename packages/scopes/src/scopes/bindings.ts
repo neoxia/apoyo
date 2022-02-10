@@ -4,12 +4,12 @@ import { Injectable } from '../injectables'
 
 export const bind = <T, U extends T>(from: Injectable<T>, to: U | Injectable<U>): Scope.Binding<T, U> => ({
   from,
-  to: Injectable.isVar(to) ? to : Injectable.of(to)
+  to
 })
 
 export const override = <T>(binding: Scope.Bound<T>): Injectable<T> => {
   const { from, to, scope } = binding
-  if (Injectable.isVar(to)) {
+  if (Injectable.isInjectable(to)) {
     return Injectable.override(from, async (ctx) => {
       return {
         scope,

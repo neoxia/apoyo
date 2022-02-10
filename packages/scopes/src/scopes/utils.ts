@@ -1,27 +1,21 @@
-import { Arr, pipe } from '@apoyo/std'
-
 import type { Scope } from './types'
 import type { Context } from '../types'
-import type { Ref } from '../refs'
 
 import { SCOPE_INTERNAL } from './symbols'
 import { Injectable } from '../injectables'
+import { override } from './bindings'
 
-export const mergeBindings = (scope: Scope, parent: Context | undefined, bindings: Scope.Binding[]) => {
-  const localBindings = pipe(
-    bindings || [],
-    Arr.map(({ from, to }): [Ref, Scope.Bound] => [
+export const computeBindings = (scope: Scope, bindings: Scope.Binding[]) => {
+  return new Map(
+    bindings.map(({ from, to }) => [
       Injectable.getReference(from),
-      {
+      override({
         from,
         to,
         scope
-      }
+      })
     ])
   )
-  return parent
-    ? new Map([...parent.scope[SCOPE_INTERNAL].bindings.entries(), ...localBindings])
-    : new Map(localBindings)
 }
 
 export const isOpen = (scope: Scope) => scope[SCOPE_INTERNAL].open
