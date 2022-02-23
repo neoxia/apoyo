@@ -123,12 +123,28 @@ export const Ord = {
   /**
    * @description
    * Order strings
+   *
+   * @example
+   * ```
+   * const arr = ['B', 'A', 'D', 'C']
+   * const sorted = pipe(arr, Arr.sort(Ord.string))
+   *
+   * expect(sorted).toEqual(['A', 'B', 'C', 'D'])
+   * ```
    */
   string,
 
   /**
    * @description
    * Order numbers
+   *
+   * @example
+   * ```
+   * const arr = [2, 1, 4, 3]
+   * const sorted = pipe(arr, Arr.sort(Ord.number))
+   *
+   * expect(sorted).toEqual([1, 2, 3, 4])
+   * ```
    */
   number,
 
@@ -137,6 +153,14 @@ export const Ord = {
    * Order booleans.
    *
    * The value `false` comes first.
+   *
+   * @example
+   * ```
+   * const arr = [false, true, false, true]
+   * const sorted = pipe(arr, Arr.sort(Ord.boolean))
+   *
+   * expect(sorted).toEqual([false, false, true, true])
+   * ```
    */
   boolean,
 
@@ -158,6 +182,9 @@ export const Ord = {
    *   Ord.string,
    *   Ord.contramap((todo: Todo) => todo.title)
    * )
+   *
+   * const todos: Todo[] = [...]
+   * const sorted = pipe(todos, Arr.sort(ordTodo))
    * ```
    */
   contramap,

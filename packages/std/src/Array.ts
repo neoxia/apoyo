@@ -144,8 +144,8 @@ export function uniq<T extends string | number>(arr: T[] | readonly T[]): T[] {
   return from(new Set(arr))
 }
 
-export const uniqBy = <A>(fn: (value: A) => string | number) => (arr: A[]): A[] =>
-  pipe(arr, indexBy(fn, first), D.values)
+export const uniqBy = <A>(fn: (value: A) => string | number, strategy: (a: A, b: A) => A = first) => (arr: A[]): A[] =>
+  pipe(arr, indexBy(fn, strategy), D.values)
 
 export const union = <A>(fn: (value: A) => string | number, member: A[]) => (arr: A[]): A[] =>
   pipe(arr, indexBy(fn, first), D.union(pipe(member, indexBy(fn, first))), D.values)

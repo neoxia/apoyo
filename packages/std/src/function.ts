@@ -102,4 +102,36 @@ export const once = <Args extends any[], A>(fn: (...args: Args) => A) => {
   }
 }
 
+/**
+ * @description
+ * Immediately run the given function
+ */
 export const run = <A>(fn: () => A) => fn()
+
+/**
+ * @description
+ * Create a lazy-evaluated cached value
+ */
+export const lazy = <A>(fn: () => A) => {
+  let cached: A
+  let done = false
+  return (): A => {
+    if (!done) {
+      cached = fn()
+      done = true
+    }
+    return cached
+  }
+}
+
+/**
+ * @description
+ * Debounce a given function
+ */
+export const debounce = <Args extends any[]>(fn: (...args: Args) => void, ms: number) => {
+  let timer: any
+  return (...args: Args) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => fn(...args), ms)
+  }
+}
