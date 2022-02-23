@@ -3,7 +3,7 @@ import type { Dict } from './Dict'
 import * as A from './Array'
 import * as D from './Dict'
 import { fcurry2, identity, pipe } from './function'
-import { fromArray, shift } from './List'
+import { Queue } from './Queue'
 import * as P from './Promise'
 import { Result } from './Result'
 
@@ -91,7 +91,7 @@ export const concurrent = (concurrency: number) => <A>(tasks: Task<A>[]): Task<A
     }
 
     const results = Array(tasks.length)
-    const queue = fromArray(
+    const queue = Queue.fromArray(
       tasks.map((task, index) => ({
         index,
         task
@@ -99,11 +99,11 @@ export const concurrent = (concurrency: number) => <A>(tasks: Task<A>[]): Task<A
     )
 
     const loop = async (): Promise<void> => {
-      let item = shift(queue)
+      let item = queue.dequeue()
       while (item) {
         const { index, task } = item
         results[index] = await task
-        item = shift(queue)
+        item = queue.dequeue()
       }
     }
 
