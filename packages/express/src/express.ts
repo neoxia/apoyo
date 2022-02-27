@@ -2,7 +2,6 @@ import { Application, Router } from 'express'
 import { Server } from 'http'
 
 import { Injectable, Resource, Scope } from '@apoyo/scopes'
-import { pipe } from '@apoyo/std'
 
 import { Request } from './request'
 import { Route } from './route'
@@ -59,26 +58,22 @@ const applyRoute = (route: Route): Router => {
   return (router as any)[route.method](route.path, route.handler)
 }
 
-export const createRouter = (route: Route): Injectable<Router> =>
-  pipe(
-    Injectable.struct({
-      factory: Scope.Factory()
-    }),
-    Injectable.map(({ factory }) => {
-      const router = Router({
-        mergeParams: true
-      })
-
-      router.use((req: any, _res, next) => {
-        req.scope = factory.create({
-          bindings: []
-        })
-        next()
-      })
-      router.use(applyRoute(route))
-      return router
+export const createRouter = (route: Route, factory: Injectable<Scope.Factory> = Scope.Factory()): Injectable<Router> =>
+  Injectable.define(factory, (factory) => {
+    const router = Router({
+      mergeParams: true
     })
-  )
+
+    router.use((req: any, _res, next) => {
+      req.scope = factory.create({
+        bindings: [Scope.bind(Request.req, req as Request)]
+      })
+      next()
+    })
+
+    router.use(applyRoute(route))
+    return router
+  })
 
 export const listen = (app: Application, port: number): Promise<Server> => {
   return new Promise<Server>((resolve) => {
@@ -93,18 +88,11 @@ export const close = (server: Server) => {
 }
 
 export const createServer = (options: Express.CreateServerOptions) =>
-  pipe(
-    Injectable.struct({
-      app: options.app,
-      config: options.config
-    }),
-    Injectable.resource(async ({ app, config }) => {
-      const server = await Express.listen(app, config.port)
-      const close = () => Express.close(server)
-
-      return Resource.of(server, close)
-    })
-  )
+  Injectable.define(options.app, options.config, async (app, config) => {
+    const server = await Express.listen(app, config.port)
+    const close = () => Express.close(server)
+    return Resource.of(server, close)
+  })
 
 export const Express = {
   createRouter,

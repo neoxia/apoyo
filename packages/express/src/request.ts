@@ -1,15 +1,17 @@
 import {
+  ErrorRequestHandler,
   Handler as ExpressHandler,
   NextFunction as ExpressNext,
   Request as ExpressRequest,
-  Response as ExpressResponse,
-  ErrorRequestHandler
+  Response as ExpressResponse
 } from 'express'
 import { pipeline } from 'stream'
 
+import { DecodeError, Decoder } from '@apoyo/decoders'
 import { Http, Response } from '@apoyo/http'
 import { Injectable } from '@apoyo/scopes'
 import { pipe, Prom, Result } from '@apoyo/std'
+
 import { ExceptionFilter } from './exception-filters'
 
 export type Request = ExpressRequest
@@ -178,8 +180,49 @@ export function catchException(...args: any[]) {
 export const catchFilters = (filters: ExceptionFilter[]) =>
   catchException((err) => ExceptionFilter.execute(err, filters))
 
+export const req = Injectable.abstract<Request>('Express.Request')
+
+export const validate = <T>(data: unknown, decoder: Decoder<unknown, T>, message: string) =>
+  pipe(
+    data,
+    Decoder.validate(decoder),
+    Result.mapError((err) =>
+      Http.UnprocessableEntity({
+        message,
+        errors: DecodeError.format(err)
+      })
+    ),
+    Result.get
+  )
+
+export const body = <T>(decoder: Decoder<unknown, T>): Injectable<T> =>
+  Injectable.define(req, (req) => validate(req.body, decoder, 'Request body failed validation'))
+
+export const query = <T>(decoder: Decoder<unknown, T>): Injectable<T> =>
+  Injectable.define(req, (req) => validate(req.query, decoder, 'Request query parameters failed validation'))
+
+export const param = <T>(name: string, decoder: Decoder<unknown, T>): Injectable<T> =>
+  Injectable.define(req, (req) => validate(req.params[name], decoder, 'Request parameter failed validation'))
+
+export function header(name: string): Injectable<string | undefined>
+export function header<T>(name: string, decoder: Decoder<unknown, T>): Injectable<T>
+export function header(name: string, decoder?: Decoder<unknown, any>) {
+  return Injectable.define(req, (req) => {
+    const value = req.header(name)
+    return decoder ? validate(value, decoder, 'Request header failed validation') : value
+  })
+}
+
 export const Request = {
   reply,
   catch: catchException,
-  catchFilters
+  catchFilters,
+
+  validate,
+
+  req,
+  body,
+  query,
+  param,
+  header
 }

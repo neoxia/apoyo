@@ -105,27 +105,23 @@ const todoRoutes = Route.group('/todos', {
 })
 ```
 
-- Easy to setup:
+- Easy to setup from scratch:
 
 ```ts
-const App = pipe(
-  Injectable.struct({
-    router: Express.createRouter(routes)
-  }),
-  Injectable.map(({ router }) => {
+const Router = Express.createRouter(routes)
 
-    const app = express()
+const App = Injectable.define(Router, (router) => {
+  const app = express()
 
-    // Configure your express app
-    ...
+  // Configure your express app
+  ...
 
-    // Register router
-    app.use(router)
+  // Register router
+  app.use(router)
 
-    // Return our app without starting it
-    return app
-  })
-)
+  // Return our app without starting it
+  return app
+})
 
 const Server = Express.createServer({
   app: App,
@@ -136,6 +132,9 @@ async function main () {
   const scope = Scope.create()
   try {
     await scope.get(Server)
+    // Handle SIGINT and other signals to gracefully exit server
+    // Not implemented in this library!
+    await Program.signals()
   } catch (err) {
     console.error('Application has crashed', err)
   } finally {
