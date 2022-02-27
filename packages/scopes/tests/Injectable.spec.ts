@@ -1,5 +1,5 @@
 import { pipe, Prom, Result, Option } from '@apoyo/std'
-import { Scope, Injectable } from '../src'
+import { Scope, Injectable, Resource } from '../src'
 
 describe('Injectable.thunk', () => {
   it('should create a constant', async () => {
@@ -330,5 +330,55 @@ describe('Injectable.struct', () => {
 
     const port = await root.get(VarC.a.port)
     expect(port).toBe(3000)
+  })
+})
+
+describe('Injectable.define', () => {
+  it('should work with values', async () => {
+    const Value: Injectable<number> = Injectable.define(() => 42)
+    const Value2 = Injectable.define(Value, (v) => v + 1)
+
+    const root = Scope.create()
+    const value = await root.get(Value)
+    const value2 = await root.get(Value2)
+
+    expect(value).toEqual(42)
+    expect(value2).toEqual(43)
+  })
+
+  it('should work with async values', async () => {
+    const Value: Injectable<number> = Injectable.define(async () => 42)
+    const Value2 = Injectable.define(Value, async (v) => v + 1)
+
+    const root = Scope.create()
+    const value = await root.get(Value)
+    const value2 = await root.get(Value2)
+
+    expect(value).toEqual(42)
+    expect(value2).toEqual(43)
+  })
+
+  it('should work with resources', async () => {
+    const Value: Injectable<number> = Injectable.define(() => Resource.of(42))
+    const Value2 = Injectable.define(Value, (v) => Resource.of(v + 1))
+
+    const root = Scope.create()
+    const value = await root.get(Value)
+    const value2 = await root.get(Value2)
+
+    expect(value).toEqual(42)
+    expect(value2).toEqual(43)
+  })
+
+  it('should work with async resources', async () => {
+    const Value: Injectable<number> = Injectable.define(async () => Resource.of(42))
+    const Value2 = Injectable.define(Value, async (v) => Resource.of(v + 1))
+
+    const root = Scope.create()
+    const value = await root.get(Value)
+    const value2 = await root.get(Value2)
+
+    expect(value).toEqual(42)
+    expect(value2).toEqual(43)
   })
 })

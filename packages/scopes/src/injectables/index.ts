@@ -11,6 +11,7 @@ import { map, mapArgs } from './map'
 import { chain, chainArgs } from './chain'
 import { call, callArgs } from './call'
 import { abstract, defaultVar, isAbstract } from './abstract'
+import { define } from './define'
 
 export type Injectable<A = any> = InjectableTmp<A>
 
@@ -23,6 +24,7 @@ export namespace Injectable {
 }
 
 export const Injectable = {
+  define,
   getReference,
   getFactory,
   getLoader,
