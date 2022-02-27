@@ -28,6 +28,9 @@
     "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
   },
   "devDependencies": {
+    "@apoyo/std": "^0.0.12",
+    "@apoyo/decoders": "^0.0.12",
+    "@apoyo/scopes": "^0.1.1",
     "@types/express": "^4.17.13",
     "@types/jest": "^26.0.23",
     "@types/node": "^12.6.8",
@@ -44,6 +47,9 @@
     "access": "public"
   },
   "peerDependencies": {
+    "@apoyo/std": "^0.0.12",
+    "@apoyo/decoders": "^0.0.12",
+    "@apoyo/scopes": "^0.1.1",
     "@types/express": "^4.17.13",
     "express": "^4.17.3"
   },
