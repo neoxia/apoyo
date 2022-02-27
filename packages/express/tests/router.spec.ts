@@ -48,16 +48,26 @@ describe('Route', () => {
       expect(response.body).toEqual([])
     })
 
-    it('should throw error and log error from /:id route', async () => {
+    it('should return a not found response', async () => {
       const response = await request(app).get('/todos/1')
 
-      expect(response.status).toEqual(500)
-
-      expect(logger.error.mock.calls.length).toBe(1)
-      expect(logger.error.mock.calls[0][0]).toBe('Internal error')
+      expect(response.status).toEqual(404)
     })
 
-    it('should throw error and log error from /:id route', async () => {
+    it('should return a validation error', async () => {
+      const response = await request(app).post('/todos').send({})
+      expect(response.status).toEqual(422)
+    })
+
+    it('should return created response', async () => {
+      const response = await request(app).post('/todos').send({
+        title: 'Test',
+        done: false
+      })
+      expect(response.status).toEqual(201)
+    })
+
+    it('should return a no content response', async () => {
       const response = await request(app).delete('/todos/1')
 
       expect(response.status).toEqual(204)
@@ -65,23 +75,46 @@ describe('Route', () => {
     })
   })
 
-  describe('Catch filters', () => {
+  describe('Catch errors', () => {
+    it('should throw error and log error', async () => {
+      const response = await request(app).get('/uncatched/throw-error')
+
+      expect(response.status).toEqual(500)
+
+      expect(logger.error.mock.calls.length).toBe(1)
+      expect(logger.error.mock.calls[0][0]).toBe('Internal error')
+    })
+
     it('should not catch filter when catch handler has been added', async () => {
-      const response = await request(app).get('/uncaught-access')
+      const response = await request(app).get('/uncatched/throw-access')
 
       expect(response.status).toEqual(500)
     })
 
     it('should not catch filter when filters do not match the error', async () => {
-      const response = await request(app).get('/uncaught-error')
+      const response = await request(app).get('/catched/throw-error')
 
       expect(response.status).toEqual(500)
     })
 
     it('should catch filter when catch handler has been added', async () => {
-      const response = await request(app).get('/caught-access')
+      const response = await request(app).get('/catched/throw-access')
 
       expect(response.status).toEqual(403)
+    })
+  })
+
+  describe('Middlewares', () => {
+    it('should throw unauthorized error', async () => {
+      const response = await request(app).get('/admin/users')
+
+      expect(response.status).toEqual(401)
+    })
+
+    it('should return ok response', async () => {
+      const response = await request(app).get('/admin/users').set('Authorization', 'Bearer xxxx')
+
+      expect(response.status).toEqual(200)
     })
   })
 })
