@@ -334,32 +334,51 @@ describe('Injectable.struct', () => {
 })
 
 describe('Injectable.define', () => {
-  it('should work without dependencies', async () => {
+  it('should work with values', async () => {
     const Value: Injectable<number> = Injectable.define(() => 42)
+    const Value2 = Injectable.define(Value, (v) => v + 1)
 
     const root = Scope.create()
     const value = await root.get(Value)
+    const value2 = await root.get(Value2)
 
     expect(value).toEqual(42)
+    expect(value2).toEqual(43)
   })
 
-  it('should work with dependencies', async () => {
-    const A = Injectable.of(1)
-    const B = Injectable.of(2)
-    const Value: Injectable.Factory<number, (a: number, b: number) => number> = Injectable.define(A, B, (a, b) => a + b)
+  it('should work with async values', async () => {
+    const Value: Injectable<number> = Injectable.define(async () => 42)
+    const Value2 = Injectable.define(Value, async (v) => v + 1)
 
     const root = Scope.create()
     const value = await root.get(Value)
+    const value2 = await root.get(Value2)
 
-    expect(value).toEqual(3)
+    expect(value).toEqual(42)
+    expect(value2).toEqual(43)
   })
 
   it('should work with resources', async () => {
     const Value: Injectable<number> = Injectable.define(() => Resource.of(42))
+    const Value2 = Injectable.define(Value, (v) => Resource.of(v + 1))
 
     const root = Scope.create()
     const value = await root.get(Value)
+    const value2 = await root.get(Value2)
 
     expect(value).toEqual(42)
+    expect(value2).toEqual(43)
+  })
+
+  it('should work with async resources', async () => {
+    const Value: Injectable<number> = Injectable.define(async () => Resource.of(42))
+    const Value2 = Injectable.define(Value, async (v) => Resource.of(v + 1))
+
+    const root = Scope.create()
+    const value = await root.get(Value)
+    const value2 = await root.get(Value2)
+
+    expect(value).toEqual(42)
+    expect(value2).toEqual(43)
   })
 })
