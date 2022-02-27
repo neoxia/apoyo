@@ -8,7 +8,7 @@ import { Injectable } from './types'
 export const array = <A>(variables: Injectable<A>[], strategy: Task.Strategy): Injectable<A[]> =>
   create(
     async (ctx): Promise<Injectable.Loader> => {
-      const created = await pipe(variables, Arr.map(Task.taskify(ctx.scope.load)), strategy)
+      const created: Injectable.Loader[] = await pipe(variables, Arr.map(Task.taskify(ctx.scope.load)), strategy)
       const scope = Scope.getLowestScope(
         ctx.scope,
         pipe(

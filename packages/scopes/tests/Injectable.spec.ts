@@ -1,5 +1,5 @@
 import { pipe, Prom, Result, Option } from '@apoyo/std'
-import { Scope, Injectable } from '../src'
+import { Scope, Injectable, Resource } from '../src'
 
 describe('Injectable.thunk', () => {
   it('should create a constant', async () => {
@@ -330,5 +330,36 @@ describe('Injectable.struct', () => {
 
     const port = await root.get(VarC.a.port)
     expect(port).toBe(3000)
+  })
+})
+
+describe('Injectable.define', () => {
+  it('should work without dependencies', async () => {
+    const Value: Injectable<number> = Injectable.define(() => 42)
+
+    const root = Scope.create()
+    const value = await root.get(Value)
+
+    expect(value).toEqual(42)
+  })
+
+  it('should work with dependencies', async () => {
+    const A = Injectable.of(1)
+    const B = Injectable.of(2)
+    const Value: Injectable.Factory<number, (a: number, b: number) => number> = Injectable.define(A, B, (a, b) => a + b)
+
+    const root = Scope.create()
+    const value = await root.get(Value)
+
+    expect(value).toEqual(3)
+  })
+
+  it('should work with resources', async () => {
+    const Value: Injectable<number> = Injectable.define(() => Resource.of(42))
+
+    const root = Scope.create()
+    const value = await root.get(Value)
+
+    expect(value).toEqual(3)
   })
 })

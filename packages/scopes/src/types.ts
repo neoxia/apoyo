@@ -5,3 +5,5 @@ export interface Context {
   scope: Scope
   variable: Injectable
 }
+
+export type MaybePromise<T> = Promise<T> | T

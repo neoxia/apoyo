@@ -1,16 +1,11 @@
-export type Resource<T = any> = {
-  value: T
-  unmount?: Resource.Unmount
-}
 export namespace Resource {
   export type Unmount = () => void | Promise<void>
 }
 
-export const of = <T>(value: T, unmount?: Resource.Unmount): Resource<T> => ({
-  value,
-  unmount
-})
+export class Resource<T> {
+  private constructor(public readonly value: T, public readonly unmount?: Resource.Unmount) {}
 
-export const Resource = {
-  of
+  public static of<T>(value: T, unmount?: Resource.Unmount): Resource<T> {
+    return new Resource(value, unmount)
+  }
 }
