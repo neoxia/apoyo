@@ -360,6 +360,6 @@ describe('Injectable.define', () => {
     const root = Scope.create()
     const value = await root.get(Value)
 
-    expect(value).toEqual(3)
+    expect(value).toEqual(42)
   })
 })
