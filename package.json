@@ -42,5 +42,8 @@
     "*.{js,ts,tsx}": [
       "npx eslint --fix"
     ]
+  },
+  "resolutions": {
+    "@types/superagent": "4.1.14"
   }
 }
