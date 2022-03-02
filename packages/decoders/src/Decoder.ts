@@ -58,7 +58,7 @@ export const nullable = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | null> =>
 export const optional = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | undefined> =>
   create((input: I) => (input === undefined ? Result.ok(undefined) : pipe(input, validate(decoder))))
 
-export const required = <I, O>(decoder: Decoder<I, O>): Decoder<I, O | undefined> =>
+export const required = <I, O>(decoder: Decoder<I, O>): Decoder<I, O> =>
   create((input: I) =>
     input === undefined || input === null
       ? Result.ko(DecodeError.value(input, 'input is required', { code: ErrorCode.REQUIRED }))

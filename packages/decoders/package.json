@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/decoders",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Validation utilities",
   "main": "lib/index.js",
   "module": "es6/index.js",
