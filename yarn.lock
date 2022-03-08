@@ -14,6 +14,11 @@
   resolved "https://registry.yarnpkg.com/@apoyo/decoders/-/decoders-0.0.11.tgz#cd8e8a0d7a6e8a296094a12087f44a0c9008b26a"
   integrity sha512-aH2lBQljbKV/8tbQvnWS/7Sphy4ubDXgkfK54PNP2KO4XQTUDUaW62pkjcxQvR92Pun+MKIBIPrANqJdf4t1Fw==
 
+"@apoyo/decoders@^0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@apoyo/decoders/-/decoders-0.0.12.tgz#63116c88d77c231a15cd84732d005395035adc9b"
+  integrity sha512-ABWLMKkM6P+qoSOa3JcK31hk18mw2vRZWwdFxBvh23ilT1WxRxjiL/UdHamchGd2FEowYl7WdouRudz7TvVnUg==
+
 "@apoyo/std@^0.0.11":
   version "0.0.11"
   resolved "https://registry.yarnpkg.com/@apoyo/std/-/std-0.0.11.tgz#677cef9ce287418218e2c7857ef764fb2998d4ab"
@@ -6309,10 +6314,10 @@ prettier-linter-helpers@^1.0.0:
   dependencies:
     fast-diff "^1.1.2"
 
-prettier@^2.2.1:
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.5.1.tgz#fff75fa9d519c54cf0fce328c1017d94546bc56a"
-  integrity sha512-vBZcPRUR5MZJwoyi3ZoyQlc1rXeEck8KgeC9AwwOn+exuxLxq5toTRDTSaVrXHxelDMHy9zlicw8u66yxoSUFg==
+prettier@~2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.2.1.tgz#795a1a78dd52f073da0cd42b21f9c91381923ff5"
+  integrity sha512-PqyhM2yCjg/oKkFPtTGUojv7gnZAoG80ttl45O6x2Ug/rMJw4wcc9k6aaf2hibP7BGVCCM33gZoGjyvt9mm16Q==
 
 pretty-format@^26.0.0, pretty-format@^26.6.2:
   version "26.6.2"
