@@ -1,17 +1,20 @@
-import { Scope, Injectable } from '@apoyo/scopes'
-import { pipe } from '@apoyo/std'
+import { Scope } from '@apoyo/scopes'
+import { $server } from './app/http'
+import { Process } from './utils/process'
 
-import { API } from './api'
-import { Process } from './process'
+async function main() {
+  const scope = Scope.create()
 
-const Main = pipe(
-  Injectable.sequence([API]),
-  Injectable.map(async () => {
+  try {
+    await scope.get($server)
+    console.log('Application started')
     await Process.end()
+  } catch (err) {
+    console.error(`An internal error occured`, err)
+  } finally {
+    await scope.close()
     console.log('Shutdown application...')
-  })
-)
+  }
+}
 
-Scope.run(Main).catch((err) => {
-  console.error(`An internal error occured`, err)
-})
+main()

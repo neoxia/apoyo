@@ -4,16 +4,19 @@
     "start": "node dist/main.js",
     "clean": "npx rimraf ./dist",
     "prebuild": "npm run clean",
-    "build": "ttsc -p ./tsconfig.json"
+    "build": "ttsc -p ./tsconfig.json",
+    "watch": "ttsc -p ./tsconfig.json --watch"
   },
   "dependencies": {
     "@apoyo/decoders": "^0.0.11",
-    "@apoyo/scopes": "^0.1.0",
+    "@apoyo/express": "^0.0.2",
+    "@apoyo/scopes": "^0.1.2",
     "@apoyo/std": "^0.0.11",
     "axios": "^0.23.0",
+    "body-parser": "^1.19.2",
     "dotenv-expand": "^5.1.0",
     "dotenv-flow": "^3.2.0",
-    "express": "^4.17.1"
+    "express": "^4.17.3"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
