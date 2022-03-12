@@ -3,6 +3,7 @@ import dotenv from 'dotenv-flow'
 
 import { DecodeError, Decoder, ObjectDecoder, TextDecoder } from '@apoyo/decoders'
 import { Err, pipe, Result } from '@apoyo/std'
+import { Injectable } from '@apoyo/scopes'
 
 export const loadEnv = (options?: dotenv.DotenvConfigOptions) => {
   // Load env files and expand variables
@@ -21,3 +22,9 @@ export const loadEnv = (options?: dotenv.DotenvConfigOptions) => {
     Result.get
   )
 }
+
+export const $env = Injectable.define(async () => {
+  return loadEnv({
+    path: process.cwd()
+  })
+})
