@@ -87,7 +87,7 @@ export const close = (server: Server) => {
   })
 }
 
-export const createServer = (options: Express.CreateServerOptions) =>
+export const createServer = (options: Express.CreateServerOptions): Injectable<Server> =>
   Injectable.define(options.app, options.config, async (app, config) => {
     const server = await Express.listen(app, config.port)
     const close = () => Express.close(server)

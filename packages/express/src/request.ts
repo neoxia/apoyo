@@ -180,7 +180,7 @@ export function catchException(...args: any[]) {
 export const catchFilters = (filters: ExceptionFilter[]) =>
   catchException((err) => ExceptionFilter.execute(err, filters))
 
-export const req = Injectable.abstract<Request>('Express.Request')
+export const req: Injectable.Abstract<Request> = Injectable.abstract<Request>('Express.Request')
 
 export const validate = <T>(data: unknown, decoder: Decoder<unknown, T>, message: string) =>
   pipe(
