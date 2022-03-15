@@ -18,7 +18,7 @@ export interface User {
   role: 'member' | 'admin'
 }
 
-export const AuthenticateByJwt = Request.reply(Request.req, AuthHeader, (req: any, authHeader) => {
+export const authenticateByJwt = Request.reply(Request.$request, AuthHeader, (req: any, authHeader) => {
   const token = getJwtToken(authHeader)
   if (!token) {
     throw Http.Unauthorized()
@@ -30,8 +30,8 @@ export const AuthenticateByJwt = Request.reply(Request.req, AuthHeader, (req: an
   return Http.next()
 })
 
-export const CurrentUser = Injectable.define(
-  Request.req,
+export const $currentUser = Injectable.define(
+  Request.$request,
   (req: any): User => {
     const user = req.user
     if (!user) {
@@ -41,7 +41,7 @@ export const CurrentUser = Injectable.define(
   }
 )
 
-export const IsAdmin = Request.reply(CurrentUser, (user) => {
+export const isAdmin = Request.reply($currentUser, (user) => {
   if (user.role !== 'admin') {
     throw Http.Forbidden()
   }
