@@ -1,4 +1,4 @@
-import { Application, Router } from 'express'
+import { Application, Router, Express as ExpressType } from 'express'
 import { Server } from 'http'
 
 import { Injectable, Resource, Scope } from '@apoyo/scopes'
@@ -6,16 +6,11 @@ import { Injectable, Resource, Scope } from '@apoyo/scopes'
 import { Request } from './request'
 import { Route } from './route'
 
-export type Express = Application
+export type Express = ExpressType
 
 export namespace Express {
   export interface Config {
     port: number
-  }
-
-  export interface CreateServerOptions {
-    app: Injectable<Application>
-    config: Injectable<Config>
   }
 }
 
