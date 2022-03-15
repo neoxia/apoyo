@@ -66,7 +66,10 @@ export const createRouter = (route: Route, factory: Injectable<Scope.Factory> = 
 
     router.use((req: any, _res, next) => {
       req.scope = factory.create({
-        bindings: [Scope.bind(Request.req, req as Request)]
+        bindings: [
+          // Abstract variables
+          Scope.bind(Request.$request, req as Request)
+        ]
       })
       next()
     })
@@ -87,7 +90,7 @@ export const close = (server: Server) => {
   })
 }
 
-export const createServer = (options: Express.CreateServerOptions) =>
+export const createServer = (options: Express.CreateServerOptions): Injectable<Server> =>
   Injectable.define(options.app, options.config, async (app, config) => {
     const server = await Express.listen(app, config.port)
     const close = () => Express.close(server)
