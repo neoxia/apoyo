@@ -66,10 +66,7 @@ export const createRouter = (route: Route, factory: Injectable<Scope.Factory> = 
 
     router.use((req: any, _res, next) => {
       req.scope = factory.create({
-        bindings: [
-          // Abstract variables
-          Scope.bind(Request.$request, req as Request)
-        ]
+        bindings: [Scope.bind(Request.req, req as Request)]
       })
       next()
     })
