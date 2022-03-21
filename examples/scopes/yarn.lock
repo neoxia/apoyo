@@ -7,10 +7,10 @@
   resolved "https://registry.yarnpkg.com/@apoyo/decoders/-/decoders-0.0.11.tgz#cd8e8a0d7a6e8a296094a12087f44a0c9008b26a"
   integrity sha512-aH2lBQljbKV/8tbQvnWS/7Sphy4ubDXgkfK54PNP2KO4XQTUDUaW62pkjcxQvR92Pun+MKIBIPrANqJdf4t1Fw==
 
-"@apoyo/express@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@apoyo/express/-/express-0.0.2.tgz#3e984dd9c01a5e1b71216d85c9535ce5463fe7f1"
-  integrity sha512-AB3vC6tbW+gKqS4plbtyHTpG6Qc+eVhN6jNd+j/+UWlfuJ1krMPPKdPtMVyN3FGoxeb/mpLSX39EpD/EYg6Ucw==
+"@apoyo/express@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@apoyo/express/-/express-0.1.0.tgz#822622037353fab0c82c852fbd717060455d58dd"
+  integrity sha512-WZTWjT1BKlimQ1cW9MTxc0bHtxoeKQQ7kiYp2UDJgIfmDk+6cTrAkEfP7T0nNMZuguASFeUncc0dixm9FiHdXA==
   dependencies:
     "@apoyo/http" "^0.0.4"
 

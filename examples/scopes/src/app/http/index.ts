@@ -23,7 +23,4 @@ export const $app = Injectable.define($router, (router) => {
   return app
 })
 
-export const $server = Express.createServer({
-  app: $app,
-  config: $config
-})
+export const $server = Express.createServer($app, $config)
