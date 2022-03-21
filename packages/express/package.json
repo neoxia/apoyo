@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/express",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "Express utils",
   "main": "lib/index.js",
   "module": "es6/index.js",

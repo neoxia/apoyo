@@ -1,8 +1,8 @@
 import { Http, Request, Route } from '../../../src'
-import { AuthenticateByJwt, IsAdmin } from '../middlewares/auth.middleware'
+import { authenticateByJwt, isAdmin } from '../middlewares/auth.middleware'
 
 export const adminRoutes = Route.group('/admin', {
-  middlewares: [AuthenticateByJwt, IsAdmin],
+  middlewares: [authenticateByJwt, isAdmin],
   children: [
     Route.get(
       '/users',

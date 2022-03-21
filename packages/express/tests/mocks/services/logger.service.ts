@@ -7,4 +7,4 @@ export interface Logger {
   error(msg: string, data?: any): void
 }
 
-export const Logger = pipe(Injectable.abstract<Logger>('Logger'), Injectable.default(Injectable.of(console)))
+export const $logger = pipe(Injectable.abstract<Logger>('Logger'), Injectable.default(Injectable.of(console)))

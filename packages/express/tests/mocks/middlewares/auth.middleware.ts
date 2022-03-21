@@ -1,9 +1,7 @@
 import { Injectable } from '@apoyo/scopes'
 import { Http, Request } from '../../../src'
 
-const AuthHeader = Request.header('Authorization')
-
-const getJwtToken = (header: string | undefined) => {
+const getBearerToken = (header: string | undefined) => {
   if (!header) {
     return undefined
   }
@@ -18,8 +16,10 @@ export interface User {
   role: 'member' | 'admin'
 }
 
-export const AuthenticateByJwt = Request.reply(Request.req, AuthHeader, (req: any, authHeader) => {
-  const token = getJwtToken(authHeader)
+const $authHeader = Request.header('Authorization')
+const $bearerToken = Injectable.define($authHeader, getBearerToken)
+
+export const authenticateByJwt = Request.reply(Request.$request, $bearerToken, (req: any, token) => {
   if (!token) {
     throw Http.Unauthorized()
   }
@@ -30,8 +30,8 @@ export const AuthenticateByJwt = Request.reply(Request.req, AuthHeader, (req: an
   return Http.next()
 })
 
-export const CurrentUser = Injectable.define(
-  Request.req,
+export const $currentUser = Injectable.define(
+  Request.$request,
   (req: any): User => {
     const user = req.user
     if (!user) {
@@ -41,7 +41,7 @@ export const CurrentUser = Injectable.define(
   }
 )
 
-export const IsAdmin = Request.reply(CurrentUser, (user) => {
+export const isAdmin = Request.reply($currentUser, (user) => {
   if (user.role !== 'admin') {
     throw Http.Forbidden()
   }
