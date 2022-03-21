@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/express",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Express utils",
   "main": "lib/index.js",
   "module": "es6/index.js",
@@ -48,9 +48,9 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@apoyo/decoders": "^0.0.12",
-    "@apoyo/scopes": "^0.1.2",
     "@apoyo/std": "^0.0.12",
+    "@apoyo/decoders": "^0.0.13",
+    "@apoyo/scopes": "^0.1.2",
     "@types/express": "^4.17.13",
     "express": "^4.17.3"
   },

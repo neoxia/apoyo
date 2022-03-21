@@ -1,7 +1,5 @@
 import { Dict, Enum, Str } from '@apoyo/std'
 
-import { Json } from './Json'
-
 export enum ResponseType {
   RESULT = 'http.result',
   REDIRECT = 'http.redirect',
@@ -18,7 +16,7 @@ export namespace Response {
   }
   export interface Result extends Open {
     type: ResponseType.RESULT
-    body?: Json
+    body?: unknown
   }
   export interface Redirect extends Open {
     type: ResponseType.REDIRECT
@@ -58,7 +56,7 @@ const header = (name: string, value: string) => (res: Response.Open): Response.O
   }
 })
 
-const send = (body?: Json) => (res: Response.Open): Response.Result => ({
+const send = (body?: unknown) => (res: Response.Open): Response.Result => ({
   ...res,
   type: ResponseType.RESULT,
   body

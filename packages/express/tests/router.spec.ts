@@ -1,5 +1,5 @@
 import { Scope } from '@apoyo/scopes'
-import { App, Logger } from './mocks'
+import { $app, $logger } from './mocks'
 
 import request from 'supertest'
 import { Application } from 'express'
@@ -21,10 +21,10 @@ describe('Route', () => {
     }
 
     scope = Scope.create({
-      bindings: [Scope.bind(Logger, logger)]
+      bindings: [Scope.bind($logger, logger)]
     })
 
-    app = await scope.get(App)
+    app = await scope.get($app)
   })
 
   afterEach(async () => {

@@ -1,19 +1,20 @@
-import { ExceptionFilter, Http, Request, Route } from '../../../src'
+import { Http, Request, Route } from '../../../src'
 import { AccessException } from '../exceptions/access-exception'
-import { Logger } from '../services/logger.service'
+import { $logger } from '../services/logger.service'
 import { adminRoutes } from './admin.route'
 import { healthRoutes } from './health.route'
 import { todoRoutes } from './todos.route'
 
-export const catchByFilters = Request.catchFilters([
-  ExceptionFilter.instanceOf(AccessException, (err) =>
-    Http.Forbidden({
+export const catchAppErrors = Request.catch((err) => {
+  if (err instanceof AccessException) {
+    throw Http.Forbidden({
       message: err.message
     })
-  )
-])
+  }
+  throw err
+})
 
-export const catchAll = Request.catch(Logger, (err, logger) => {
+export const catchAll = Request.catch($logger, (err, logger) => {
   logger.error('Internal error', err)
   throw err
 })
@@ -43,7 +44,7 @@ export const routes = Route.group({
     }),
     Route.group('/catched', {
       children: errorRoutes,
-      catch: [catchByFilters]
+      catch: [catchAppErrors]
     })
   ],
   catch: [catchAll]

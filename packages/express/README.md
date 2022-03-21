@@ -7,9 +7,8 @@ HTTP server utilities for express.
 - Better async support for handlers
 
 ```ts
-const GetHealth = Request.reply(async () => {
+const getHealth = Request.reply(async () => {
   return Http.Ok({
-    status: 'OK',
     message: 'Everything is alright'
   })
 })
@@ -18,16 +17,38 @@ const GetHealth = Request.reply(async () => {
 - Dependency injection integration with `@apoyo/scopes`
 
 ```ts
-const ListTodos = Request.reply(TodoService, async (todoService) => {
-  const todos = await todoService.findAll()
-  return Http.Ok(todos)
+const listTodos = Request.reply(
+  TodoService.$findAll, 
+  async (findTodos) => {
+    const todos = await findTodos()
+    return Http.Ok(todos)
 })
 ```
 
 - Validation with `@apoyo/decoders`
 
 ```ts
-// TODO
+const updateTodoSchema = ObjectDecoder.struct({
+  title: TextDecoder.string,
+  completed: BooleanDecoder.boolean
+})
+
+const $id = Request.param('id', TextDecoder.uuid)
+const $body = Request.body(updateTodoSchema)
+
+const updateTodo = Request.reply(
+  $id, 
+  $body, 
+  TodoService.$findById,
+  TodoService.$update,
+  (id, body, findTodo, updateTodo) => {
+    const todo = await findTodo(id)
+    if (!todo) {
+      throw Http.NotFound()
+    }
+    const saved = await updateTodo(todo.id, body)
+    return Http.Ok(saved)
+})
 ```
 
 - Easier routing configuration:
@@ -77,19 +98,24 @@ const routes = Route.group({
 
 ```
 
-- Exception filtering and mapping included. **This feature may still be removed if it is not useful enough.**
+- Exception filtering can be done via error catchers
 
 ```ts
-// Exception filters can be used to transform specific types of errors into HTTP responses
-const catchByFilters = Request.catchFilters([
-  ExceptionFilter.instanceOf(AccessException, (err) => Http.Forbidden({ 
-    message: err.message 
-  })),
-  ExceptionFilter.instanceOf(ValidationException, (err) => Http.UnprocessableEntity({
-    message: err.message, 
-    errors: err.errors
-  }))
-])
+const catchCustomErrors = Request.catch((err) => {
+  if (err instanceof AccessException) {
+    throw Http.Forbidden({ 
+      message: err.message 
+    })
+  }
+  if (err instanceof ValidationException) {
+    throw Http.UnprocessableEntity({
+        message: err.message, 
+        errors: err.errors
+    })
+  }
+  // Re-throw non-http error to continue to the next error handler
+  throw err
+})
 
 const todoRoutes = Route.group('/todos', {
   children: [
@@ -100,7 +126,7 @@ const todoRoutes = Route.group('/todos', {
   catch: [
     // They can also be added for a specific group of routes. 
     // This error handler will not be executed for /health for example.
-    catchByFilters
+    catchCustomErrors
   ]
 })
 ```
@@ -108,38 +134,34 @@ const todoRoutes = Route.group('/todos', {
 - Easy to setup from scratch:
 
 ```ts
-const Router = Express.createRouter(routes)
+const $router = Express.createRouter(routes)
 
-const App = Injectable.define(Router, (router) => {
+const $config = Injectable.of({
+  port: 3000
+})
+
+// Returning our app without starting it allows us to:
+// - Easily combine multiple apps if necessary.
+// - Test our endpoints with the "supertest" package.
+const $app = Injectable.define($router, (router) => {
   const app = express()
 
   // Configure your express app
   ...
-
-  // Register router
   app.use(router)
 
-  // Return our app without starting it
   return app
 })
 
-const Server = Express.createServer({
-  app: App,
-  config: Config
-})
+// We start our application on the given port
+const $server = Express.createServer($app, $config)
 
+// This example has been simplified.
+// As such, it does not listen to exit signals to gracefully exit the app.
+// Usually, you should call `scope.close` to close the resources that have been opened.
 async function main () {
   const scope = Scope.create()
-  try {
-    await scope.get(Server)
-    // Handle SIGINT and other signals to gracefully exit server
-    // Not implemented in this library!
-    await Program.signals()
-  } catch (err) {
-    console.error('Application has crashed', err)
-  } finally {
-    await scope.close()
-  }
+  await scope.get($server)
 }
 
 main()
@@ -154,9 +176,10 @@ const app = express()
 ...
 
 // Create new scope for your application and register router
-const Router = Express.createRouter(routes)
+const $router = Express.createRouter(routes)
 const scope = Scope.create()
-const router = await scope.get(Router)
+const router = await scope.get($router)
+
 app.use(router)
 
 ...

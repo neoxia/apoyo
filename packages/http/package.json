@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/http",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "HTTP response utility library",
   "main": "lib/index.js",
   "module": "es6/index.js",
@@ -33,7 +33,7 @@
     "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
   },
   "devDependencies": {
-    "@apoyo/std": "^0.0.11",
+    "@apoyo/std": "^0.0.12",
     "@types/jest": "^26.0.23",
     "@types/node": "^12.6.8",
     "jest": "^26.4.2",

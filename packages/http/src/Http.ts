@@ -1,6 +1,5 @@
 import { Dict, pipe, Prom } from '@apoyo/std'
 import { HttpCode } from './HttpCode'
-import { Json } from './Json'
 
 import { Response as Res } from './Response'
 
@@ -9,7 +8,7 @@ export namespace Http {
   export type Response = Res
 }
 
-export const send = (body?: Json, status = 200): Http.Response => pipe(Res.status(status), Res.send(body))
+export const send = (body?: unknown, status = 200): Http.Response => pipe(Res.status(status), Res.send(body))
 
 export const redirect = (url: string, status = 302): Http.Response => pipe(Res.status(status), Res.redirect(url))
 export const download = (stream: NodeJS.ReadableStream, fileName?: string, fileType?: string): Http.Response =>
@@ -29,8 +28,8 @@ export const tryCatch = (fn: () => Res | Promise<Res>): Promise<Http.Response> =
     Prom.catchError((err) => (Res.isResponse(err) ? Prom.resolve(err) : Prom.reject(err)))
   )
 
-export const Ok = (data: Json): Http.Response => send(data, 200)
-export const Created = (data: Json): Http.Response => send(data, 201)
+export const Ok = (data: unknown): Http.Response => send(data, 200)
+export const Created = (data: unknown): Http.Response => send(data, 201)
 export const NoContent = (): Http.Response => send(undefined, 204)
 
 const errorFactory = (status: HttpCode, code: string, message: string) => (data: Dict = {}): Http.Response =>
