@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@apoyo/decoders": "^0.0.11",
-    "@apoyo/express": "^0.1.0",
+    "@apoyo/express": "^0.1.1",
     "@apoyo/scopes": "^0.1.2",
     "@apoyo/std": "^0.0.11",
     "axios": "^0.23.0",

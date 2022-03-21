@@ -1,5 +1,5 @@
 import { Scope } from '@apoyo/scopes'
-import { $server } from './app/http'
+import { $server } from './http/server'
 import { Process } from './utils/process'
 
 async function main() {
