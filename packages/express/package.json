@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/express",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Express utils",
   "main": "lib/index.js",
   "module": "es6/index.js",
@@ -55,6 +55,6 @@
     "express": "^4.17.3"
   },
   "dependencies": {
-    "@apoyo/http": "^0.0.4"
+    "@apoyo/http": "^0.0.5"
   }
 }
