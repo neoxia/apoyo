@@ -1,7 +1,7 @@
+import { JsonPlaceholder } from '@/infra/jsonplaceholder'
 import { Injectable } from '@apoyo/scopes'
 
-import { Todo } from '../../models/todo.model'
-import { JsonPlaceholder } from '../jsonplaceholder'
+import { Todo } from '../models/todo.model'
 
 interface TodoListOptions {
   page?: number
