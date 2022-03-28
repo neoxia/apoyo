@@ -12,7 +12,7 @@ export function struct(obj: Dict<Injectable>): Injectable<Dict> {
   return {
     ...create<Dict>(
       async (ctx: Context): Promise<Injectable.Loader> => {
-        const created = await pipe(obj, Dict.map(Task.taskify(ctx.scope.load)), Task.struct(Task.all))
+        const created = await pipe(obj, Dict.map(Task.taskify((v) => ctx.scope.load(v))), Task.struct(Task.all))
         const scope = Scope.getLowestScope(
           ctx.scope,
           pipe(
@@ -21,7 +21,7 @@ export function struct(obj: Dict<Injectable>): Injectable<Dict> {
           )
         )
         const mount = () =>
-          pipe(obj, Dict.map(Task.taskify(ctx.scope.get)), Task.struct(Task.all), Task.map(Resource.of))
+          pipe(obj, Dict.map(Task.taskify((v) => ctx.scope.get(v))), Task.struct(Task.all), Task.map(Resource.of))
 
         return {
           scope,

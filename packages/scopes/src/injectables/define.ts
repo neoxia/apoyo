@@ -1,6 +1,6 @@
 import { Resource } from '../resources'
 import { sequence } from './array'
-import { create, factory } from './core'
+import { create, factory, isInjectable } from './core'
 import { Injectable } from './types'
 
 type InjectableType<T> = T extends Injectable<infer I> ? I : never
@@ -12,18 +12,26 @@ type DefineFactory<T, Deps extends Injectable[]> = (...args: InjectableTypes<Dep
 type DefineArgs<T, Deps extends Injectable[]> = [...Deps, DefineFactory<T, Deps>]
 
 export function define<T>(fn: () => Promise<Resource<T>>): Injectable.Factory<T, () => Promise<Resource<T>>>
+export function define<T>(fn: () => Promise<Injectable<T>>): Injectable.Factory<T, () => Promise<Injectable<T>>>
 export function define<T>(fn: () => Promise<T>): Injectable.Factory<T, () => Promise<T>>
 export function define<T>(fn: () => Resource<T>): Injectable.Factory<T, () => Resource<T>>
+export function define<T>(fn: () => Injectable<T>): Injectable.Factory<T, () => Injectable<T>>
 export function define<T>(fn: () => T): Injectable.Factory<T, () => T>
 export function define<T, Deps extends Injectable[]>(
   ...args: DefineArgs<Promise<Resource<T>>, Deps>
 ): Injectable.Factory<T, DefineFactory<Promise<Resource<T>>, Deps>>
+export function define<T, Deps extends Injectable[]>(
+  ...args: DefineArgs<Promise<Injectable<T>>, Deps>
+): Injectable.Factory<T, DefineFactory<Promise<Injectable<T>>, Deps>>
 export function define<T, Deps extends Injectable[]>(
   ...args: DefineArgs<Promise<T>, Deps>
 ): Injectable.Factory<T, DefineFactory<Promise<T>, Deps>>
 export function define<T, Deps extends Injectable[]>(
   ...args: DefineArgs<Resource<T>, Deps>
 ): Injectable.Factory<T, DefineFactory<Resource<T>, Deps>>
+export function define<T, Deps extends Injectable[]>(
+  ...args: DefineArgs<Injectable<T>, Deps>
+): Injectable.Factory<T, DefineFactory<Injectable<T>, Deps>>
 export function define<T, Deps extends Injectable[]>(
   ...args: DefineArgs<T, Deps>
 ): Injectable.Factory<T, DefineFactory<T, Deps>>
@@ -41,7 +49,13 @@ export function define(...args: any[]) {
         mount: async () => {
           const resolved = await ctx.scope.get(deps)
           const value = await fn(...resolved)
-          return value instanceof Resource ? value : Resource.of(value)
+          if (value instanceof Resource) {
+            return value
+          }
+          if (isInjectable(value)) {
+            return ctx.scope.get(value)
+          }
+          return Resource.of(value)
         }
       }
     })
