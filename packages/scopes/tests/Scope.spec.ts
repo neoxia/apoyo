@@ -30,16 +30,14 @@ describe('Scope.factory', () => {
 describe('Scope.run', () => {
   it('should run given variable and return result', async () => {
     let unmountCalls = 0
-    const Main = pipe(
-      Injectable.of(1),
-      Injectable.resource((nb) => {
-        return Resource.of(nb * 10, () => {
-          ++unmountCalls
-        })
-      })
-    )
 
-    const value = await Scope.run(Main)
+    const $main = Injectable.define(() => {
+      return Resource.of(10, () => {
+        ++unmountCalls
+      })
+    })
+
+    const value = await Scope.run($main)
 
     expect(value).toBe(10)
     expect(unmountCalls).toBe(1)
@@ -48,28 +46,21 @@ describe('Scope.run', () => {
   it('should also close on error', async () => {
     let unmountCalls = 0
 
-    const Db = pipe(
-      Injectable.empty,
-      Injectable.resource(() => {
-        const db = {
-          close: async () => {
-            await Prom.sleep(100)
-            ++unmountCalls
-          }
+    const $db = Injectable.define(() => {
+      const db = {
+        close: async () => {
+          await Prom.sleep(100)
+          ++unmountCalls
         }
+      }
+      return Resource.of(db, () => db.close())
+    })
 
-        return Resource.of(db, () => db.close())
-      })
-    )
+    const $main = Injectable.define($db, () => {
+      throw new Error('expected')
+    })
 
-    const Main = pipe(
-      Db,
-      Injectable.map(() => {
-        throw new Error('expected')
-      })
-    )
-
-    const result = await pipe(Scope.run(Main), Prom.tryCatch)
+    const result = await pipe(Scope.run($main), Prom.tryCatch)
 
     expect(pipe(result, Result.isKo)).toBe(true)
     expect(unmountCalls).toBe(1)
@@ -79,12 +70,12 @@ describe('Scope.run', () => {
 describe('Scope.bind', () => {
   it('should bind a Injectable to a constant value', async () => {
     const calls: string[] = []
-    const VarA = Injectable.thunk(() => {
+    const $a = Injectable.define(() => {
       calls.push('a')
       return 1
     })
 
-    const bindings = [Scope.bind(VarA, 2)]
+    const bindings = [Scope.bind($a, 2)]
     const scope = Scope.create({
       bindings
     })
@@ -92,7 +83,7 @@ describe('Scope.bind', () => {
     const internal = scope[SCOPE_INTERNAL]
     expect(internal.bindings.size).toBe(1)
 
-    const a = await scope.get(VarA)
+    const a = await scope.get($a)
 
     expect(calls).toEqual([])
     expect(a).toBe(2)
@@ -100,16 +91,16 @@ describe('Scope.bind', () => {
 
   it('should bind a Injectable to another Injectable', async () => {
     const calls: string[] = []
-    const VarA = Injectable.thunk(() => {
+    const $a = Injectable.define(() => {
       calls.push('a')
       return 1
     })
-    const VarB = Injectable.thunk(() => {
+    const $b = Injectable.define(() => {
       calls.push('b')
       return 2
     })
 
-    const bindings = [Scope.bind(VarA, VarB)]
+    const bindings = [Scope.bind($a, $b)]
     const scope = Scope.create({
       bindings
     })
@@ -118,8 +109,8 @@ describe('Scope.bind', () => {
 
     expect(internal.bindings.size).toBe(1)
 
-    const a = await scope.get(VarA)
-    const b = await scope.get(VarB)
+    const a = await scope.get($a)
+    const b = await scope.get($b)
 
     expect(calls).toEqual(['b'])
     expect(a).toBe(2)
@@ -128,20 +119,20 @@ describe('Scope.bind', () => {
 
   it('should resolve deeply', async () => {
     const calls: string[] = []
-    const VarA = Injectable.thunk(() => {
+    const $a = Injectable.define(() => {
       calls.push('a')
       return 1
     })
-    const VarB = Injectable.thunk(() => {
+    const $b = Injectable.define(() => {
       calls.push('b')
       return 2
     })
-    const VarC = Injectable.thunk(() => {
+    const $c = Injectable.define(() => {
       calls.push('c')
       return 3
     })
 
-    const bindings = [Scope.bind(VarB, VarC), Scope.bind(VarA, VarB)]
+    const bindings = [Scope.bind($b, $c), Scope.bind($a, $b)]
     const scope = Scope.create({
       bindings
     })
@@ -150,9 +141,9 @@ describe('Scope.bind', () => {
 
     expect(internal.bindings.size).toBe(2)
 
-    const a = await scope.get(VarA)
-    const b = await scope.get(VarB)
-    const c = await scope.get(VarC)
+    const a = await scope.get($a)
+    const b = await scope.get($b)
+    const c = await scope.get($c)
 
     expect(calls).toEqual(['c'])
     expect(a).toBe(3)
@@ -162,16 +153,16 @@ describe('Scope.bind', () => {
 
   it('should resolve correctly with Vars and constants', async () => {
     const calls: string[] = []
-    const VarA = Injectable.thunk(() => {
+    const $a = Injectable.define(() => {
       calls.push('a')
       return 1
     })
-    const VarB = Injectable.thunk(() => {
+    const $b = Injectable.define(() => {
       calls.push('b')
       return 2
     })
 
-    const bindings = [Scope.bind(VarB, 10), Scope.bind(VarA, VarB)]
+    const bindings = [Scope.bind($b, 10), Scope.bind($a, $b)]
 
     const scope = Scope.create({
       bindings
@@ -181,8 +172,8 @@ describe('Scope.bind', () => {
 
     expect(internal.bindings.size).toBe(2)
 
-    const a = await scope.get(VarA)
-    const b = await scope.get(VarB)
+    const a = await scope.get($a)
+    const b = await scope.get($b)
 
     expect(calls).toEqual([])
     expect(a).toBe(10)
@@ -201,16 +192,13 @@ describe('Scope.bind', () => {
 
     interface ITodoRepository extends IRepository<Todo> {}
 
-    const ITodoRepository = Injectable.abstract<ITodoRepository>('ITodoRepository')
+    const $todoRepository = Injectable.abstract<ITodoRepository>('ITodoRepository')
 
-    const FindAll = pipe(
-      ITodoRepository,
-      Injectable.map((repo) => repo.findAll)
-    )
+    const $findAll = Injectable.define($todoRepository, (repo) => repo.findAll)
 
     const root = Scope.create({
       bindings: [
-        Scope.bind(ITodoRepository, {
+        Scope.bind($todoRepository, {
           findAll: () => [
             {
               id: 'xxxx',
@@ -222,7 +210,7 @@ describe('Scope.bind', () => {
       ]
     })
 
-    const findAll = await root.get(FindAll)
+    const findAll = await root.get($findAll)
 
     expect(typeof findAll).toBe('function')
     expect(findAll()).toEqual([

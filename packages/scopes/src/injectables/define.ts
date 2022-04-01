@@ -53,7 +53,7 @@ export function define(...args: any[]) {
             return value
           }
           if (isInjectable(value)) {
-            return ctx.scope.get(value)
+            return Resource.of(ctx.scope.get(value))
           }
           return Resource.of(value)
         }

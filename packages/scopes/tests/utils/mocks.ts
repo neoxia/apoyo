@@ -1,5 +1,5 @@
 import { Injectable } from '../../src'
 
-export const LazyVar = Injectable.thunk(() => {
+export const $lazy = Injectable.define(() => {
   return 'lazy'
 })
