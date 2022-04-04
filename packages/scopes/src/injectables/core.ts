@@ -5,7 +5,7 @@ import { Ref } from '../refs'
 import { INJECTABLE_CREATE, INJECTABLE_FACTORY, INJECTABLE_REF } from './symbols'
 
 export const isInjectable = (value: any): value is Injectable<any> =>
-  (value as Injectable)[INJECTABLE_REF] !== undefined
+  value && (value as Injectable)[INJECTABLE_REF] !== undefined
 
 export const getReference = (variable: Injectable) => variable[INJECTABLE_REF]
 export const getFactory = <Fun>(variable: Injectable.Factory<any, Fun>) => variable[INJECTABLE_FACTORY]
