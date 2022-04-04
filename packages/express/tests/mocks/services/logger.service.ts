@@ -1,5 +1,4 @@
 import { Injectable } from '@apoyo/scopes'
-import { pipe } from '@apoyo/std'
 
 export interface Logger {
   info(msg: string, data?: any): void
@@ -7,4 +6,6 @@ export interface Logger {
   error(msg: string, data?: any): void
 }
 
-export const $logger = pipe(Injectable.abstract<Logger>('Logger'), Injectable.default(Injectable.of(console)))
+export const $consoleLogger = Injectable.of<Logger>(console)
+
+export const $logger = Injectable.abstract<Logger>('Logger', $consoleLogger)

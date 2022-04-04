@@ -17,40 +17,17 @@ Today, a lot of solutions exists for dependency injection in JS/TS, the most pop
 - Nestjs
 - etc...
 
-There are however a few issues:
+However, very few DI solutions exist for people wanting a more functional approach, while keeping everything fully typed.
 
-- They are primarily used with classes and decorators. This works nicely for people using an OOP-based approach. For people favoring a more functional approach however, no good alternatives exist up to day.
+Here a few unique features of this library:
 
-- They don't support custom scopes creation
-
-- Most of them don't have a clear shutdown mechanism, to gracefully shutdown loaded resources
-
-## Goal
-
-This package is a more functional based dependency injection solution, with the following characteristics:
-
-- Without classes / decorators: This encourages better code splitting, and makes it a lot easier to expose primitives, async values, functions, etc... instead of mostly class instances only. It also encourages composition.
-
-- Typescript friendly
-
-- Custom scopes: You will have complete control over how many scopes and child scopes you create. This makes it very easy to create, for example, a separate scope for each "Job", containing the data of the job that is being currently processed.
-
-- Lazy loading: If your application contains hundreds of services, why should we start them all up if only a handful are needed on program startup?
-
-- Powerful scope shutdown mechanism: In production environments, we most probably want to shutdown our application properly before restarting it (example: Wait for current HTTP requests to finish, then close server, then close database connection, etc...)
-
-- Easier testability
-
-## Example
-
-**Note**: The entire source code of the examples will be available under the *examples/scopes* folder.
-
-First, we will need to declare some injectables using the utils in the `Injectable` namespace:
+1/ Building injectables from primitives, async values, functions, etc... while keeping everything fully typed:
 
 ```ts
+import { Injectable } from '@apoyo/scopes'
 
-// This injectable does not have any dependencies. As such we simply use `Injectable.thunk`
-const Env = Injectable.thunk(async () => {
+// Define an injectable without dependencies
+export const $env = Injectable.define(async () => {
   // Load env variables from .env files
   // Validate env variables
   // etc...
@@ -59,94 +36,193 @@ const Env = Injectable.thunk(async () => {
   }
 })
 
-const Config = {
-  API: pipe(
-    Env,
-    Injectable.map(env => ({
-      port: env.PORT
-    }))
-  )
+// Define an injectable with one or multiple dependencies
+export const $apiConfig = Injectable.define($env, env => ({
+  port: env.PORT
+}))
+```
+
+**Note**: Keep in mind that all injectables are lazy and will only be initialized / loaded when required. As such, the code above does not execute anything yet!
+
+2/ Very easy to integrate with existing libraries, without being required to create "wrappers" around every third party code:
+
+```ts
+const $todoRoutes = Injectable.define(() => {
+  const route = Router()
+
+  route.get('/', (req, res) => {
+    res.json([
+      {
+        id: 1,
+        title: 'Eat breakfast',
+        done: false
+      },
+      {
+        id: 2,
+        title: 'Go to work',
+        done: false
+      }
+    ])
+  })
+
+  return route
+})
+```
+
+3/ Encourages composition: As an injectable is a simple variable, we can also pass them as parameters to functions and build upon them to create new ones:
+
+*Example*:
+
+```ts
+// define some utils
+export const prefixRoute = (prefix: string, $route: Injectable<Router>) => 
+  Injectable.define($route, (route) => {
+    const router = Router()
+    router.use(route)
+    return router
+  })
+
+export const combineRoutes = (routes: Array<Injectable<Router>>) => {
+  const $routes = Injectable.sequence(routes) // returns Injectable<Router[]>
+  return Injectable.define($routes, routes => {
+    const router = Router()
+    for (const route of routes) {
+      router.use(route)
+    }
+    return router
+  })
 }
 
-const HealthRoutes = pipe(
-  Injectable.empty,
-  Injectable.map(() => {
-    const route = Router()
+// define some routes
+const $routes = combineRoutes([
+  prefixRoutes('/health', $healthRoutes),
+  prefixRoutes('/todos', $todoRoutes),
+])
+```
 
-    route.get('/', (req, res) => {
-      res.json({
-        status: 'OK'
-      })
-    })
+4/ Disposable resources that can be cleaned up when the scope / container is closed:
 
-    return route
-  })
-)
+```ts
+// Create some utils
+const listen = (app: Express.Application, port: number) => new Promise<Server>((resolve, reject) => {
+  const server = app.listen(port, (err) => err ? reject(err) : resolve(server))
+})
 
-const TodoRoutes = pipe(
-  Injectable.empty,
-  Injectable.map(() => {
-    const route = Router()
+const close = (server: Server) => new Promise<void>((resolve, reject) => {
+  server.close((err) => err ? reject(err) : resolve())
+})
 
-    route.get('/', (req, res) => {
-      res.json([
-        {
-          id: 1,
-          title: 'Eat breakfast',
-          done: false
-        },
-        {
-          id: 2,
-          title: 'Go to work',
-          done: false
-        }
-      ])
-    })
-
-    return route
-  })
-)
-
-export const Routes = pipe(
-  Injectable.struct({
-    health: HealthRoutes,
-    todos: TodoRoutes
-  }),
-  Injectable.map((routes) => {
-    const route = Router()
-    route.use('/health', routes.health)
-    route.use('/todos', routes.todos)
-    return route
-  })
-)
-
-const API = pipe(
-  Injectable.struct({
-    config: Config.API, 
-    routes: Routes
-  }),
-  Injectable.resource(async ({ config, routes }) => {
-
-    const app = express()
-    // use middlewares
-    // ...
-    // use routes
-    app.use(routes)
-
+export const createExpressServer = ($app: Injectable<Express.Application>, $config: Injectable<{ port: number }>) =>
+  Injectable.define($app, $config, (app, config) => {
     const port = config.port
-    const server = await new Promise((resolve, reject) => {
-      const server = app.listen(port, (err) => err ? reject(err) : resolve(server))
-    })
+    const server = await listen(app, port)
 
     const close = async () => {
-      return new Promise((resolve, reject) => {
-        server.close((err) => err ? reject(err) : resolve(err))
-      })
+      await close(server)
     }
-
+    // Return a resource to specify a cleanup function for an injectable
     return Resource.of(server, close)
   })
-)
+
+const $app = Injectable.define($routes, (routes) => {
+  const app = express()
+  app.use(express.json())
+  app.use(routes)
+  return app
+})
+
+const $server = createExpressServer($app, $apiConfig)
+```
+
+5/ No native support decorators: while this is opiniated, there are not supported for multiple reasons:
+
+- Decorators have the issue of not always being type-safe:
+
+```ts
+@Injectable()
+class Foo {
+  // How should we know if MY_TOKEN is a "string"? It may as well be a "number" or anything else. 
+  // There is no type verification here at all.
+  // It also makes injecting non-class variables a real pain.
+  constructor(@Inject(MY_TOKEN) myToken: string) {
+
+  }
+}
+```
+
+- Decorators also only work with classes, and classes are harder to compose than simple functions or objects.
+
+6/ No circular dependencies are supported. As such, the following is impossible:
+
+```ts
+// This does not work
+const $a = Injectable.define($b, (b) => b)
+const $b = Injectable.define($a, (a) => a)
+
+// This does not work either
+const a = b
+const b = a
+```
+
+Most of the time, circular dependencies can be avoided by splitting up your code correctly, which is very easy with this library by simply using functions.
+
+## Example
+
+First, we will need to declare some injectables using the utils in the `Injectable` namespace:
+
+```ts
+export const $env = Injectable.define(async () => {
+  return {
+    PORT: parseInt(process.PORT) || 3000
+  }
+})
+
+export const $config = Injectable.define($env, env => ({
+  port: env.PORT
+}))
+
+export const $todoRoutes = Injectable.define(() => {
+  const route = Router()
+
+  route.get('/', (req, res) => {
+    res.json([
+      {
+        id: 1,
+        title: 'Eat breakfast',
+        done: false
+      },
+      {
+        id: 2,
+        title: 'Go to work',
+        done: false
+      }
+    ])
+  })
+
+  return route
+})
+
+export const $app = Injectable.define($todoRoutes, (todoRoutes) => {
+  const app = express()
+  app.use(express.json())
+  app.use('/todos', todoRoutes)
+  return app
+})
+
+export const $server = Injectable.define($app, $config, (app, config) => {
+  const port = config.port
+  const server = await new Promise((resolve, reject) => {
+    const server = app.listen(port, (err) => err ? reject(err) : resolve(server))
+  })
+
+  const close = async () => {
+    return new Promise((resolve, reject) => {
+      server.close((err) => err ? reject(err) : resolve(err))
+    })
+  }
+
+  return Resource.of(server, close)
+})
 ```
 
 Once all the injectables you need have been created, you need to create a scope that will host / manage these injectables for you.

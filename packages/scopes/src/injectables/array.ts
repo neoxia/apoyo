@@ -8,7 +8,11 @@ import { Injectable } from './types'
 export const array = <A>(variables: Injectable<A>[], strategy: Task.Strategy): Injectable<A[]> =>
   create(
     async (ctx): Promise<Injectable.Loader> => {
-      const created: Injectable.Loader[] = await pipe(variables, Arr.map(Task.taskify(ctx.scope.load)), strategy)
+      const created: Injectable.Loader[] = await pipe(
+        variables,
+        Arr.map(Task.taskify((v) => ctx.scope.load(v))),
+        strategy
+      )
       const scope = Scope.getLowestScope(
         ctx.scope,
         pipe(
@@ -16,7 +20,8 @@ export const array = <A>(variables: Injectable<A>[], strategy: Task.Strategy): I
           Arr.map((c) => c.scope)
         )
       )
-      const mount = () => pipe(variables, Arr.map(Task.taskify(ctx.scope.get)), strategy, Task.map(Resource.of))
+      const mount = () =>
+        pipe(variables, Arr.map(Task.taskify((v) => ctx.scope.get(v))), strategy, Task.map(Resource.of))
 
       return {
         scope,
@@ -27,8 +32,6 @@ export const array = <A>(variables: Injectable<A>[], strategy: Task.Strategy): I
 
 export const all = <A>(variables: Injectable<A>[]): Injectable<A[]> => array(variables, Task.all)
 export const sequence = <A>(variables: Injectable<A>[]): Injectable<A[]> => array(variables, Task.sequence)
-export const concurrent = (nb: number) => <A>(variables: Injectable<A>[]): Injectable<A[]> =>
-  array(variables, Task.concurrent(nb))
 
 export function tuple(): Injectable<[]>
 export function tuple<A>(a: Injectable<A>): Injectable<[A]>
