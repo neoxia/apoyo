@@ -12,14 +12,10 @@ There are however a few big differences:
 
 - ... and a few more that we will cover later.
 
-In fact, this dependency injector has heavily inspired itself from how Javascript scopes work:
-
-![javascript scopes](./images/scopes-javascript.png)
-
 ## Creating a scope
 
 ```ts
-const Env = Injectable.thunk(async () => {
+const $env = Injectable.define(async () => {
   // Load .env files, ..
   return process.env
 })
@@ -31,7 +27,7 @@ const scope = Scope.create({
 
 // Get the value of the injectable. 
 // Once an injectable has been loaded for a given scope, it will stay loaded until the scope is destroyed.
-const env = await scope.get(Env)
+const env = await scope.get($env)
 ```
 
 ## Creating a sub-scope
@@ -52,52 +48,43 @@ const childScope = factory.create()
 
 ```ts
 // Declare abstract injectables that will be implemented by the sub-scope
-const Req = Injectable.abstract<Express.Request>('Request')
+const $req = Injectable.abstract<Express.Request>('Request')
 
-// Do not use in production! This example has been heavily simplified and does not handle errors correctly
+// Declare factory
+const $httpFactory = Scope.Factory()
 
-const HttpFactory = Scope.Factory()
-
-const HttpHandler = (injectable: Injectable<{ status: number, body: any }>) => {
-  return pipe(
-    Injectable.struct({
-      factory: HttpFactory
-    })
-    Injectable.map(({ factory }) => {
-      return (req: Express.Request, res: Express.Response) => {
-        const result = factory.run(injectable, {
+const createHttpHandler = (injectable: Injectable<{ status: number, body: any }>) => {
+  return Injectable.define($httpFactory, (factory) => {
+    return async (req, res, next) => {
+      try {
+        const result = await factory.run(injectable, {
           bindings: [
             Scope.bind(Req, req)
           ]
         })
         res.status(result.status).json(result.body)
+      } catch (err) {
+        next(err)
       }
-    })
-  )
+    }
+  })
 }
 
 // Example
-
-const GetHealth = pipe(
-  Injectable.empty,
-  Injectable.map(() => ({
-    status: 'OK',
-    message: 'All services are online'
-  }))
-)
-
-const HealthRoutes = pipe(
-  Injectable.struct({
-    getHealth: HttpHandler(GetHealth)
-  }),
-  Injectable.map(handlers => {
-    const route = Router()
-
-    route.get('/', handlers.getHealth)
-
-    return route
+const $getHealth = createHttpHandler(
+  Injectable.define($req, (_req) => {
+    return {
+      status: 200,
+      body: 'All services are online'
+    }
   })
 )
+
+const $healthRoutes = Injectable.define($getHealth, (getHealth) => {
+  const route = Router()
+  route.get('/', getHealth)
+  return route
+})
 ```
 
 ## In which scope is an injectable mounted?
