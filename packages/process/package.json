@@ -1,0 +1,57 @@
+{
+  "name": "@apoyo/process",
+  "version": "0.0.1",
+  "description": "Utils focused around the current process",
+  "main": "lib/index.js",
+  "module": "es6/index.js",
+  "typings": "lib/index.d.ts",
+  "sideEffects": false,
+  "author": "Sascha Braun",
+  "license": "MIT",
+  "tags": [
+    "utils",
+    "process",
+    "env",
+    "config"
+  ],
+  "keywords": [
+    "utils",
+    "process",
+    "env",
+    "config"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neoxia/apoyo"
+  },
+  "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/process",
+  "scripts": {
+    "test": "jest --verbose --runInBand",
+    "clean": "npx rimraf ./dist",
+    "prebuild": "npm run clean",
+    "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
+  },
+  "devDependencies": {
+    "@apoyo/scopes": "^0.2.0",
+    "@apoyo/std": "^0.0.12",
+    "@types/jest": "^26.0.23",
+    "@types/node": "^12.6.8",
+    "jest": "^26.4.2",
+    "rimraf": "2.6.2",
+    "ts-jest": "^26.3.0",
+    "ts-node": "^8.0.2",
+    "typescript": "^4.1.2"
+  },
+  "peerDependencies": {
+    "@apoyo/scopes": "^0.2.0",
+    "@apoyo/std": "^0.0.8"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@types/dotenv-flow": "^3.2.0",
+    "dotenv-expand": "^8.0.3",
+    "dotenv-flow": "^3.2.0"
+  }
+}
