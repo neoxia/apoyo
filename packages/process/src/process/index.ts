@@ -1,9 +1,11 @@
-import { $env, load } from './env/env'
+import { $env, $envDir, load } from './env/env'
 import { $nodeEnv } from './env/node-env'
 import { rules, validate } from './env/rules'
 import { $pkg, $version } from './package'
 import { $rootDir } from './root'
 import { end } from './signals'
+
+export { NodeEnvironment } from './env/node-env'
 
 export const Process = {
   /**
@@ -11,6 +13,12 @@ export const Process = {
    * You can override this injectable to customize the root directory
    */
   $rootDir,
+
+  /**
+   * Returns by default the current working directory
+   * You can override this injectable to customize the directory from where to load .env files
+   */
+  $envDir,
 
   /**
    * The current node environment.

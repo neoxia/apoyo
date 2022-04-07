@@ -1,1 +1,1 @@
-export { Process, Env } from './process'
+export { Process, Env, NodeEnvironment } from './process'

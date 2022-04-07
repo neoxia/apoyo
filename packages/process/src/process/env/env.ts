@@ -14,24 +14,27 @@ export const load = (options: dotenv.DotenvConfigOptions = {}): Dict<string> => 
   const path = options.path || process.cwd()
 
   const files = dotenv.listDotenvFiles(path, { node_env: nodeEnv }).filter((filename) => fs.existsSync(filename))
-  const parsed = dotenv.parse(files)
+  const parsed = Dict.compact({
+    ...dotenv.parse(files),
+    ...process.env
+  })
+
   const env = dotenvExpand.expand({
+    ignoreProcessEnv: true,
     parsed
   })
 
-  if (env.error) {
+  if (env.error || !env.parsed) {
     throw pipe(env.error, Err.chain('Could not parse environment files'))
   }
-
-  return Dict.compact({
-    ...env.parsed,
-    ...process.env
-  })
+  return env.parsed
 }
 
-export const $env = Injectable.define($nodeEnv, $rootDir, (nodeEnv, rootDir) =>
+export const $envDir = Injectable.define($rootDir, (rootDir) => rootDir)
+
+export const $env = Injectable.define($nodeEnv, $envDir, (nodeEnv, path) =>
   load({
     node_env: nodeEnv,
-    path: rootDir
+    path
   })
 )
