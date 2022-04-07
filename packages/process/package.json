@@ -32,6 +32,7 @@
     "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
   },
   "devDependencies": {
+    "@apoyo/decoders": "^0.0.13",
     "@apoyo/scopes": "^0.2.0",
     "@apoyo/std": "^0.0.12",
     "@types/jest": "^26.0.23",
@@ -43,8 +44,9 @@
     "typescript": "^4.1.2"
   },
   "peerDependencies": {
+    "@apoyo/decoders": "^0.0.13",
     "@apoyo/scopes": "^0.2.0",
-    "@apoyo/std": "^0.0.8"
+    "@apoyo/std": "^0.0.12"
   },
   "publishConfig": {
     "access": "public"

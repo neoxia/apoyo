@@ -17,7 +17,8 @@ const jsonDecoder = Decoder.create((input: string) =>
 const pkgDecoder = ObjectDecoder.struct({
   name: TextDecoder.string,
   version: TextDecoder.string,
-  description: TextDecoder.string
+  description: pipe(TextDecoder.string, TextDecoder.optional),
+  author: pipe(TextDecoder.string, TextDecoder.optional)
 })
 
 const fileDecoder = pipe(
@@ -25,13 +26,13 @@ const fileDecoder = pipe(
   Decoder.chain(() => pkgDecoder)
 )
 
-export const $pkg = Injectable.define($rootDir, async (rootDir) => {
+export const readPkg = async (rootDir: string) => {
   const path = join(rootDir, 'package.json')
   const content = await fs.promises.readFile(path, {
     encoding: 'utf-8'
   })
 
-  const pkg = pipe(
+  return pipe(
     content,
     Decoder.validate(fileDecoder),
     Result.mapError((err) =>
@@ -42,12 +43,8 @@ export const $pkg = Injectable.define($rootDir, async (rootDir) => {
     ),
     Result.get
   )
+}
 
-  return {
-    name: pkg.name as string,
-    version: pkg.version as string,
-    description: pkg.description as string
-  }
-})
+export const $pkg = Injectable.define($rootDir, (rootDir) => readPkg(rootDir))
 
 export const $version = Injectable.define($pkg, (pkg) => pkg.version)
