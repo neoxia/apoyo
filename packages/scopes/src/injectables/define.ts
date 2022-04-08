@@ -1,6 +1,6 @@
 import { Resource } from '../resources'
 import { sequence } from './array'
-import { create, factory, isInjectable } from './core'
+import { create, factory } from './core'
 import { Injectable } from './types'
 
 type InjectableType<T> = T extends Injectable<infer I> ? I : never
@@ -37,8 +37,35 @@ export function define<T, Deps extends Injectable[]>(
 ): Injectable.Factory<T, DefineFactory<T, Deps>>
 export function define(...args: any[]) {
   const fn: (...args: any[]) => any = args.pop()
-  const deps = sequence(args)
+  if (args.length === 0) {
+    return factory(
+      fn,
+      create(async (ctx) => {
+        return {
+          scope: ctx.scope.root,
+          mount: async () => fn()
+        }
+      })
+    )
+  }
+  if (args.length === 1) {
+    const dep = args[0]
+    return factory(
+      fn,
+      create(async (ctx) => {
+        const created = await ctx.scope.load(dep)
+        return {
+          scope: created.scope,
+          mount: async () => {
+            const resolved = await ctx.scope.get(dep)
+            return await fn(resolved)
+          }
+        }
+      })
+    )
+  }
 
+  const deps = sequence(args)
   return factory(
     fn,
     create(async (ctx) => {
@@ -48,14 +75,7 @@ export function define(...args: any[]) {
         scope: created.scope,
         mount: async () => {
           const resolved = await ctx.scope.get(deps)
-          const value = await fn(...resolved)
-          if (value instanceof Resource) {
-            return value
-          }
-          if (isInjectable(value)) {
-            return Resource.of(ctx.scope.get(value))
-          }
-          return Resource.of(value)
+          return await fn(...resolved)
         }
       }
     })

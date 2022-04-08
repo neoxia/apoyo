@@ -13,6 +13,7 @@ export type Scope = {
   readonly parent?: Context
   readonly root: Scope
 
+  resolve<T>(variable: Injectable<T>): Injectable<T>
   load<T>(variable: Injectable<T>): Promise<Injectable.Loader<T>>
   get<T>(variable: Injectable<T>): Promise<T>
   factory(): Scope.Factory

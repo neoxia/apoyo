@@ -7,6 +7,8 @@ import { create, run } from './factory'
 import { isOpen, searchChildOf } from './utils'
 import type { Scope } from './types'
 import type { Ref } from '../refs'
+import { Resource } from '../resources'
+import { isInjectable } from '../injectables/core'
 
 const resolveBinding = <T>(scope: Scope, ref: Ref) =>
   scope[SCOPE_INTERNAL].bindings.get(ref) as Injectable<T> | undefined
@@ -53,6 +55,14 @@ export const get = async <T>(scope: Scope, variable: Injectable<T>) => {
     targetScope.mounted.set(
       ref,
       created.mount().then((data) => {
+        if (isInjectable(data)) {
+          return get(scope, data)
+        }
+        const isResource = data instanceof Resource
+        if (!isResource) {
+          return data
+        }
+
         const unmountFn = data.unmount
         if (unmountFn) {
           const ctx = searchChildOf(scope, created.scope)
