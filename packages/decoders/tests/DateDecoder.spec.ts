@@ -3,6 +3,7 @@ import { DateDecoder, Decoder } from '../src'
 
 describe('DateDecoder.date', () => {
   it('should succeed', () => {
+    expect(pipe(new Date('2020-01-01'), Decoder.validate(DateDecoder.native), Result.isOk)).toBe(true)
     expect(pipe('2020-01-01', Decoder.validate(DateDecoder.date), Result.isOk)).toBe(true)
   })
 
@@ -16,6 +17,7 @@ describe('DateDecoder.date', () => {
 
 describe('DateDecoder.datetime', () => {
   it('should succeed', () => {
+    expect(pipe(new Date('2020-01-01T10:00:00'), Decoder.validate(DateDecoder.native), Result.isOk)).toBe(true)
     expect(pipe('2020-01-01T10:00:00', Decoder.validate(DateDecoder.datetime), Result.isOk)).toBe(true)
     expect(pipe('2020-01-01 10:00:00', Decoder.validate(DateDecoder.datetime), Result.isOk)).toBe(true)
     expect(pipe('2020-01-01 10:00:00Z', Decoder.validate(DateDecoder.datetime), Result.isOk)).toBe(true)
@@ -43,6 +45,7 @@ describe('DateDecoder.datetime', () => {
 
 describe('DateDecoder.native', () => {
   it('should succeed', () => {
+    expect(pipe(new Date('2020-01-01T10:00:00'), Decoder.validate(DateDecoder.native), Result.isOk)).toBe(true)
     expect(pipe('2020-01-01T10:00:00', Decoder.validate(DateDecoder.native), Result.get)).toBeInstanceOf(Date)
     expect(pipe('2020-01-01 10:00:00', Decoder.validate(DateDecoder.native), Result.get)).toBeInstanceOf(Date)
     expect(pipe('2020-01-01', Decoder.validate(DateDecoder.native), Result.get)).toBeInstanceOf(Date)
