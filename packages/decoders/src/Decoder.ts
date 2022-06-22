@@ -217,6 +217,22 @@ export const Decoder = {
 
   /**
    * @description
+   * Map over the resulting error of an `Decoder`
+   *
+   * @example
+   * ```ts
+   * const decoder = pipe(
+   *   TextDecoder.string,
+   *   Decoder.mapError(err => DecodeError.object([
+   *     DecodeError.key('firstName', err)
+   *   ]))
+   * )
+   * ```
+   */
+  mapError,
+
+  /**
+   * @description
    * Catch the validation error and create a new error with the given message.
    *
    * @example
