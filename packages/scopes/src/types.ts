@@ -1,7 +1,5 @@
-import type { Scope } from './scopes'
-import type { Injectable } from './injectables'
+export type Tuple<T = any> = [T, ...T[]] | [...any[]]
 
-export interface Context {
-  scope: Scope
-  variable: Injectable
-}
+export type NoInfer<T> = T extends infer S ? S : never
+
+export type Fn<Args extends any[], Type> = (...args: NoInfer<Args>) => Type
