@@ -1,4 +1,4 @@
 export { Resource } from './resources'
 export { Ref } from './refs'
-export { Injectable } from './injectables'
+export { Injectable, Abstract, Implementation } from './injectables'
 export { Container } from './container'
