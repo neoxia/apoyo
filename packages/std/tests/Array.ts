@@ -366,6 +366,14 @@ describe('Array.uniq', () => {
     expect(pipe(['1', '2', '3'], Arr.uniq)).toEqual(['1', '2', '3'])
   })
 
+  it('should work correctly with references', () => {
+    const item = {
+      id: 0
+    }
+    const items = [item, item, item, item]
+    expect(pipe(items, Arr.uniq)).toEqual([item])
+  })
+
   it('should work with constants', () => {
     const a: (1 | 2 | 3)[] = pipe([1, 2, 3, 3] as const, Arr.uniq)
     const b: ('1' | '2' | '3')[] = pipe(['1', '2', '3', '3'] as const, Arr.uniq)
