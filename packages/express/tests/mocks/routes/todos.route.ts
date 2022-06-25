@@ -1,4 +1,5 @@
 import { Http, Request, Route } from '../../../src'
+import { createTodoSchema, updateTodoSchema } from './todos.dto'
 
 // Request handlers
 export const listTodos = Request.reply(() => {
@@ -9,12 +10,14 @@ export const getTodo = Request.reply(() => {
   return Http.NotFound()
 })
 
-export const createTodo = Request.reply(() => {
-  return Http.Created({})
+export const createTodo = Request.reply((req) => {
+  const dto = Request.validate(req.body, createTodoSchema, 'Invalid body')
+  return Http.Created(dto)
 })
 
-export const patchTodo = Request.reply(() => {
-  return Http.Ok({})
+export const patchTodo = Request.reply((req) => {
+  const dto = Request.validate(req.body, updateTodoSchema, 'Invalid body')
+  return Http.Ok(dto)
 })
 
 export const removeTodo = Request.reply(() => {
