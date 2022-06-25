@@ -54,25 +54,28 @@ export const send = (res: ExpressResponse, next: ExpressNext, response: Http.Res
   )
 }
 
-export function reply(fn: () => MaybePromise<Http.Response>): Request.Handler
-export function reply<A>(a: Injectable<A>, fn: (a: A) => MaybePromise<Http.Response>): Request.Handler
+export function reply(fn: (req: ExpressRequest) => MaybePromise<Http.Response>): Request.Handler
+export function reply<A>(
+  a: Injectable<A>,
+  fn: (req: ExpressRequest, a: A) => MaybePromise<Http.Response>
+): Request.Handler
 export function reply<A, B>(
   a: Injectable<A>,
   b: Injectable<B>,
-  fn: (a: A, b: B) => MaybePromise<Http.Response>
+  fn: (req: ExpressRequest, a: A, b: B) => MaybePromise<Http.Response>
 ): Request.Handler
 export function reply<A, B, C>(
   a: Injectable<A>,
   b: Injectable<B>,
   c: Injectable<C>,
-  fn: (a: A, b: B, c: C) => MaybePromise<Http.Response>
+  fn: (req: ExpressRequest, a: A, b: B, c: C) => MaybePromise<Http.Response>
 ): Request.Handler
 export function reply<A, B, C, D>(
   a: Injectable<A>,
   b: Injectable<B>,
   c: Injectable<C>,
   d: Injectable<D>,
-  fn: (a: A, b: B, c: C, d: D) => MaybePromise<Http.Response>
+  fn: (req: ExpressRequest, a: A, b: B, c: C, d: D) => MaybePromise<Http.Response>
 ): Request.Handler
 export function reply<A, B, C, D, E>(
   a: Injectable<A>,
@@ -80,7 +83,7 @@ export function reply<A, B, C, D, E>(
   c: Injectable<C>,
   d: Injectable<D>,
   e: Injectable<E>,
-  fn: (a: A, b: B, c: C, d: D, e: E) => MaybePromise<Http.Response>
+  fn: (req: ExpressRequest, a: A, b: B, c: C, d: D, e: E) => MaybePromise<Http.Response>
 ): Request.Handler
 export function reply<A, B, C, D, E, F>(
   a: Injectable<A>,
@@ -89,18 +92,18 @@ export function reply<A, B, C, D, E, F>(
   d: Injectable<D>,
   e: Injectable<E>,
   f: Injectable<F>,
-  fn: (a: A, b: B, c: C, d: D, e: E, f: F) => MaybePromise<Http.Response>
+  fn: (req: ExpressRequest, a: A, b: B, c: C, d: D, e: E, f: F) => MaybePromise<Http.Response>
 ): Request.Handler
 export function reply(...args: any[]) {
   const fn: (...args: any[]) => MaybePromise<Http.Response> = args.pop()
-  const deps = Injectable.sequence(args)
+  const deps = Injectable.array(args)
 
   return async (req: ExpressRequest, res: ExpressResponse, next: ExpressNext) => {
     await pipe(
       Http.tryCatch(async () => {
-        const scope = (req as any).scope
+        const scope = (req as any).container
         const resolved = await scope.get(deps)
-        return fn(...resolved)
+        return fn(req, ...resolved)
       }),
       Prom.tryCatch,
       Prom.map(
@@ -155,12 +158,12 @@ export function catchException<A, B, C, D, E, F>(
 ): Request.ErrorHandler
 export function catchException(...args: any[]) {
   const fn: (err: unknown, ...args: any[]) => MaybePromise<Http.Response> = args.pop()
-  const deps = Injectable.sequence(args)
+  const deps = Injectable.array(args)
 
   return async (err: unknown, req: ExpressRequest, res: ExpressResponse, next: ExpressNext) => {
     await pipe(
       Http.tryCatch(async () => {
-        const scope = (req as any).scope
+        const scope = (req as any).container
         const resolved = await scope.get(deps)
         return fn(err, ...resolved)
       }),
@@ -175,8 +178,6 @@ export function catchException(...args: any[]) {
   }
 }
 
-export const $request: Injectable.Abstract<Request> = Injectable.abstract<Request>('Express.Request')
-
 export const validate = <T>(data: unknown, decoder: Decoder<unknown, T>, message: string) =>
   pipe(
     data,
@@ -190,33 +191,8 @@ export const validate = <T>(data: unknown, decoder: Decoder<unknown, T>, message
     Result.get
   )
 
-export const body = <T>(decoder: Decoder<unknown, T>): Injectable<T> =>
-  Injectable.define($request, (req) => validate(req.body, decoder, 'Request body failed validation'))
-
-export const query = <T>(decoder: Decoder<unknown, T>): Injectable<T> =>
-  Injectable.define($request, (req) => validate(req.query, decoder, 'Request query parameters failed validation'))
-
-export const param = <T>(name: string, decoder: Decoder<unknown, T>): Injectable<T> =>
-  Injectable.define($request, (req) => validate(req.params[name], decoder, 'Request parameter failed validation'))
-
-export function header(name: string): Injectable<string | undefined>
-export function header<T>(name: string, decoder: Decoder<unknown, T>): Injectable<T>
-export function header(name: string, decoder?: Decoder<unknown, any>) {
-  return Injectable.define($request, (req) => {
-    const value = req.header(name)
-    return decoder ? validate(value, decoder, 'Request header failed validation') : value
-  })
-}
-
 export const Request = {
   reply,
   catch: catchException,
-
-  validate,
-
-  $request,
-  body,
-  query,
-  param,
-  header
+  validate
 }
