@@ -14,7 +14,7 @@ Install package:
 
 This package contains various utils and injectable focused on data from the current node process. This includes:
 
-- Reading and validating NODE_ENV, with a preset of values ('development', 'staging', 'production' and 'testing').
+- Reading and validating NODE_ENV, with a preset of supported values ('development', 'staging', 'production' and 'test').
 
 - Reading, validating and parsing environment variables from `process.env` and .env files.
 
@@ -26,44 +26,43 @@ The full documentation will be made available soon.
 
 ## Example
 
-Getting the node environment:
+### Getting the current application environment
 
 ```ts
-Process.$nodeEnv
+Process.$appEnv
 ```
 
-Getting the environment variables:
+**Note**: If no NODE_ENV is specified, the environment will be set to `production`.
+
+### Getting and/or mocking the environment variables
 
 ```ts
-/**
- * This injectable contains the environment variables of your application, no further parsing or loading is required.
- * 
- * The process.env variable is not overriden!
- */
 Process.$env
 ```
 
-Validating and parsing your environment variables:
+**Note**: This injectable will automatically load and include variables from matching .env files. See `dotenv-flow` for more information.
+
+**Note**: The process.env variable is not overriden!
+
+### Validating and parsing your environment variables
+
+`Env.define` creates a new injectable that parses the env with the given schema. This returns a fully typed object.
 
 ```ts
-/**
- * Create a new injectable that parses the env with the given schema.
- * This returns a fully typed object.
- * 
- * There is no need to manually load the environment, as this injectable depends on `Process.$env`, which will automatically load the .env files.
- */
-const $dbEnv = Env.rules({
+const $dbEnv = Env.define({
   DB_HOST: TextDecoder.string,
   DB_PORT: IntegerDecoder.int
 })
 
-const $dbConfig = Injectable.define($dbEnv, (env) => {
+const $dbConfig = Injectable.define([$dbEnv], (env) => {
   return {
     host: env.DB_HOST,
     port: env.DB_PORT
   }
 })
 ```
+
+**Note**: There is no need to manually load the environment, as this injectable depends on `Process.$env`, which will automatically load the .env files.
 
 ## License
 
