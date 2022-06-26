@@ -4,7 +4,7 @@ import { Dict, Err, pipe, Result } from '@apoyo/std'
 
 import { $env } from './env'
 
-export declare type Schema<A extends Dict<unknown>> = {
+export type Schema<A extends Dict<unknown>> = {
   [P in keyof A]-?: Decoder<unknown, A[P]>
 }
 

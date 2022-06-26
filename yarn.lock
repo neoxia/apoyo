@@ -19,10 +19,20 @@
   resolved "https://registry.yarnpkg.com/@apoyo/decoders/-/decoders-0.0.12.tgz#63116c88d77c231a15cd84732d005395035adc9b"
   integrity sha512-ABWLMKkM6P+qoSOa3JcK31hk18mw2vRZWwdFxBvh23ilT1WxRxjiL/UdHamchGd2FEowYl7WdouRudz7TvVnUg==
 
+"@apoyo/decoders@^0.0.13":
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/@apoyo/decoders/-/decoders-0.0.13.tgz#634288d43fbf72aaff95df1c690db55e2bdec2b7"
+  integrity sha512-wrgBZTbvDQ20PmYY+a4NCXA/jmDQ8vtvKKhdJX3QHQz55HeeSCRCq285J86VJI3NPv8cfLCTUz9Z0DKOhZFjgA==
+
 "@apoyo/std@^0.0.11":
   version "0.0.11"
   resolved "https://registry.yarnpkg.com/@apoyo/std/-/std-0.0.11.tgz#677cef9ce287418218e2c7857ef764fb2998d4ab"
   integrity sha512-A24+QV4cbL/q3KtabHc0K3Tw9ZRsFZGqEn/CV2IC0MbbPYOdt49r6+ZqEsJDwuzSqaVm80oi1HXPGOrQh0ocYQ==
+
+"@apoyo/std@^0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@apoyo/std/-/std-0.0.12.tgz#9d513a48f3f455cc7a813a4c59203778a28dbf18"
+  integrity sha512-3IrvvsIeNaK0NBgg0trcqpn2t9LaGzWmZzdBoEmhiFP0i/mRWNZTobYJJo4l8CkbkvH3W6vMKmuL3xDd7740Jw==
 
 "@babel/code-frame@7.12.11":
   version "7.12.11"
@@ -1641,7 +1651,7 @@
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.1.tgz#20f18294f797f2209b5f65c8e3b5c8e8261d127c"
   integrity sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==
 
-"@types/superagent@*":
+"@types/superagent@*", "@types/superagent@4.1.14":
   version "4.1.14"
   resolved "https://registry.yarnpkg.com/@types/superagent/-/superagent-4.1.14.tgz#ca2eed4fad671e704d3d0f33aaf099edb4a5b857"
   integrity sha512-iiXaOL2wSbnSY4qg0mFPWJHL9iwyEsoNYwaHF2w58/fsVAQJlj+KUfFAFZu+nzbz+b7dUprJEAc+O9vhHHhQTA==
