@@ -6,6 +6,6 @@ export interface Logger {
   error(msg: string, data?: any): void
 }
 
-export const $consoleLogger: Injectable<Logger> = Injectable.of(console)
+export const $consoleLogger = Injectable.of<Logger>(console)
 
-export const $logger: Injectable<Logger> = Injectable.of($consoleLogger)
+export const $logger = Injectable.abstract('Logger', $consoleLogger)

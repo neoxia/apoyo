@@ -15,4 +15,4 @@ export class Abstract<T> extends Injectable<T> {
   }
 }
 
-export const abstract = <T>(name: string) => new Abstract<T>(name)
+export const abstract = <T>(name: string, defaultValue?: Injectable<T>) => new Abstract<T>(name, defaultValue)
