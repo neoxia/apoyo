@@ -1,11 +1,11 @@
-import { Scope } from '@apoyo/scopes'
+import { Container } from '@apoyo/scopes'
 import { $app, $logger } from './mocks'
 
 import request from 'supertest'
 import { Application } from 'express'
 
 describe('Route', () => {
-  let scope: Scope
+  let container: Container
   let app: Application
   let logger: {
     info: jest.Mock
@@ -20,15 +20,15 @@ describe('Route', () => {
       error: jest.fn()
     }
 
-    scope = Scope.create({
-      bindings: [Scope.bind($logger, logger)]
+    container = Container.create({
+      bindings: [Container.bind($logger, logger)]
     })
 
-    app = await scope.get($app)
+    app = await container.get($app)
   })
 
   afterEach(async () => {
-    await scope.close()
+    await container.close()
   })
 
   describe('Health route', () => {

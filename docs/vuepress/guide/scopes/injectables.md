@@ -81,32 +81,19 @@ If you require multiple dependencies, simply add more parameters:
 ```ts
 const $a = Injectable.of(1)
 const $b = Injectable.of(2)
-const $c = Injectable.define($a, $b, (a, b) => a + b)
+const $c = Injectable.define([$a, $b], (a, b) => a + b)
 ```
 
 ## Unwrapping
 
-1. You can use `Injectable.struct` to combine multiple injectables into a single injectable:
-
-```ts
-const $a = Injectable.of(1)
-const $b = Injectable.of(2)
-
-// Returns Injectable<{ a: number, b: number }>
-const $c = Injectable.struct({
-  a: $a,
-  b: $b
-})
-```
-
-2. You can use `Injectable.sequence` or `Injectable.all` to combine an array of injectables into a single injectable:
+1. You can use `Injectable.array` to combine an array of injectables into a single injectable:
 
 ```ts
 const $a = Injectable.of(1)
 const $b = Injectable.of(2)
 
 // Returns Injectable<number[]>
-const $c = Injectable.sequence([
+const $c = Injectable.array([
   $a,
   $b
 ])

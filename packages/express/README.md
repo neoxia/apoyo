@@ -19,7 +19,7 @@ const getHealth = Request.reply(async () => {
 ```ts
 const listTodos = Request.reply(
   TodoService.$findAll, 
-  async (findTodos) => {
+  async (req, findTodos) => {
     const todos = await findTodos()
     return Http.Ok(todos)
 })
@@ -28,26 +28,17 @@ const listTodos = Request.reply(
 - Validation with `@apoyo/decoders`
 
 ```ts
-const updateTodoSchema = ObjectDecoder.struct({
+const TodoCreateDto = ObjectDecoder.struct({
   title: TextDecoder.string,
   completed: BooleanDecoder.boolean
 })
 
-const $id = Request.param('id', TextDecoder.uuid)
-const $body = Request.body(updateTodoSchema)
-
-const updateTodo = Request.reply(
-  $id, 
-  $body, 
-  TodoService.$findById,
-  TodoService.$update,
-  (id, body, findTodo, updateTodo) => {
-    const todo = await findTodo(id)
-    if (!todo) {
-      throw Http.NotFound()
-    }
-    const saved = await updateTodo(todo.id, body)
-    return Http.Ok(saved)
+const createTodo = Request.reply(
+  TodoService.$createTodo,
+  (req, createTodo) => {
+    const dto = Request.validate(req.body, TodoCreateDto)
+    const saved = await createTodo(body)
+    return Http.Created(saved)
 })
 ```
 
@@ -56,16 +47,16 @@ const updateTodo = Request.reply(
 ```ts
 const todoRoutes = Route.group('/todos', {
   children: [
-    Route.get('/', ListTodos),
-    Route.get('/:id', GetTodo),
-    Route.post('/', CreateTodo)
+    Route.get('/', listTodos),
+    Route.get('/:id', getTodo),
+    Route.post('/', createTodo)
   ]
 })
 
 const routes = Route.group({
   middlewares: [],
   children: [
-    Route.get('/health', GetHealth),
+    Route.get('/health', getHealth),
     todoRoutes
   ]
 })
@@ -77,7 +68,7 @@ const routes = Route.group({
 // You can create error handlers easily: dependency injection works here as well!
 const catchAll =
   Request.catch(
-    Logger,
+    [$logger],
     async (err, logger) => {
       logger.error('An internal error occured while executing HTTP request', err)
       throw err
@@ -105,12 +96,6 @@ const catchCustomErrors = Request.catch((err) => {
   if (err instanceof AccessException) {
     throw Http.Forbidden({ 
       message: err.message 
-    })
-  }
-  if (err instanceof ValidationException) {
-    throw Http.UnprocessableEntity({
-        message: err.message, 
-        errors: err.errors
     })
   }
   // Re-throw non-http error to continue to the next error handler
@@ -143,7 +128,7 @@ const $config = Injectable.of({
 // Returning our app without starting it allows us to:
 // - Easily combine multiple apps if necessary.
 // - Test our endpoints with the "supertest" package.
-const $app = Injectable.define($router, (router) => {
+const $app = Injectable.define([$router], (router) => {
   const app = express()
 
   // Configure your express app
@@ -158,16 +143,16 @@ const $server = Express.createServer($app, $config)
 
 // This example has been simplified.
 // As such, it does not listen to exit signals to gracefully exit the app.
-// Usually, you should call `scope.close` to close the resources that have been opened.
+// Usually, you should call `container.close` to close the resources that have been opened.
 async function main () {
-  const scope = Scope.create()
-  await scope.get($server)
+  const container = Container.create()
+  await container.get($server)
 }
 
 main()
 ```
 
-- Easy to integrate in existing applications: you only need a `Scope` instance to create the router middleware
+- Easy to integrate in existing applications: you only need a `Container` instance to create the router middleware
 
 ```ts
 const app = express()
@@ -175,10 +160,10 @@ const app = express()
 // Configure your express app
 ...
 
-// Create new scope for your application and register router
+// Create new container for your application and register router
 const $router = Express.createRouter(routes)
-const scope = Scope.create()
-const router = await scope.get($router)
+const container = Container.create()
+const router = await container.get($router)
 
 app.use(router)
 

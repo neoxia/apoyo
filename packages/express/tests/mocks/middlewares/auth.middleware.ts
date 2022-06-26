@@ -1,4 +1,3 @@
-import { Injectable } from '@apoyo/scopes'
 import { Http, Request } from '../../../src'
 
 const getBearerToken = (header: string | undefined) => {
@@ -16,10 +15,8 @@ export interface User {
   role: 'member' | 'admin'
 }
 
-const $authHeader = Request.header('Authorization')
-const $bearerToken = Injectable.define($authHeader, getBearerToken)
-
-export const authenticateByJwt = Request.reply(Request.$request, $bearerToken, (req: any, token) => {
+export const authenticateByJwt = Request.reply((req: any) => {
+  const token = getBearerToken(req.header('Authorization'))
   if (!token) {
     throw Http.Unauthorized()
   }
@@ -30,18 +27,11 @@ export const authenticateByJwt = Request.reply(Request.$request, $bearerToken, (
   return Http.next()
 })
 
-export const $currentUser = Injectable.define(
-  Request.$request,
-  (req: any): User => {
-    const user = req.user
-    if (!user) {
-      throw Http.Unauthorized()
-    }
-    return user
+export const isAdmin = Request.reply((req: any) => {
+  const user = req.user
+  if (!user) {
+    throw Http.Unauthorized()
   }
-)
-
-export const isAdmin = Request.reply($currentUser, (user) => {
   if (user.role !== 'admin') {
     throw Http.Forbidden()
   }

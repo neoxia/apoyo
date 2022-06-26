@@ -12,7 +12,7 @@ export const $config = Injectable.of({
 export const $router = Express.createRouter(routes)
 
 export const $app = Injectable.define(
-  $router,
+  [$router],
   (router): Application => {
     const app = express()
     app.use(express.json())

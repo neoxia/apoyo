@@ -1,63 +1,17 @@
-import { Arr, pipe, Task } from '@apoyo/std'
+import { Tuple } from '../types'
+import { Injectable } from './injectable'
 
-import { Resource } from '../resources'
-import { Scope } from '../scopes'
-import { create } from './core'
-import { Injectable } from './types'
-
-export const array = <A>(variables: Injectable<A>[], strategy: Task.Strategy): Injectable<A[]> =>
-  create(
-    async (ctx): Promise<Injectable.Loader> => {
-      const created: Injectable.Loader[] = await pipe(
-        variables,
-        Arr.map(Task.taskify((v) => ctx.scope.load(v))),
-        strategy
-      )
-      const scope = Scope.getLowestScope(
-        ctx.scope,
-        pipe(
-          created,
-          Arr.map((c) => c.scope)
-        )
-      )
-      const mount = () =>
-        pipe(variables, Arr.map(Task.taskify((v) => ctx.scope.get(v))), strategy, Task.map(Resource.of))
-
-      return {
-        scope,
-        mount
-      }
+export const array = <A>(deps: Injectable<A>[]): Injectable<A[]> => {
+  return new Injectable(async (container) => {
+    const args: A[] = []
+    for (const dep of deps) {
+      args.push(await container.get(dep))
     }
-  )
+    return args
+  })
+}
 
-export const all = <A>(variables: Injectable<A>[]): Injectable<A[]> => array(variables, Task.all)
-export const sequence = <A>(variables: Injectable<A>[]): Injectable<A[]> => array(variables, Task.sequence)
-
-export function tuple(): Injectable<[]>
-export function tuple<A>(a: Injectable<A>): Injectable<[A]>
-export function tuple<A, B>(a: Injectable<A>, b: Injectable<B>): Injectable<[A, B]>
-export function tuple<A, B, C>(a: Injectable<A>, b: Injectable<B>, c: Injectable<C>): Injectable<[A, B, C]>
-export function tuple<A, B, C, D>(
-  a: Injectable<A>,
-  b: Injectable<B>,
-  c: Injectable<C>,
-  d: Injectable<D>
-): Injectable<[A, B, C, D]>
-export function tuple<A, B, C, D, E>(
-  a: Injectable<A>,
-  b: Injectable<B>,
-  c: Injectable<C>,
-  d: Injectable<D>,
-  e: Injectable<E>
-): Injectable<[A, B, C, D, E]>
-export function tuple<A, B, C, D, E, F>(
-  a: Injectable<A>,
-  b: Injectable<B>,
-  c: Injectable<C>,
-  d: Injectable<D>,
-  e: Injectable<E>,
-  f: Injectable<F>
-): Injectable<[A, B, C, D, E, F]>
-export function tuple(...vars: Injectable[]): Injectable<any[]> {
-  return all(vars)
+export function tuple<Deps extends Tuple>(deps: Injectable.ArrayOf<Deps>): Injectable<Deps>
+export function tuple(deps: Injectable[]): Injectable<any[]> {
+  return array(deps)
 }
