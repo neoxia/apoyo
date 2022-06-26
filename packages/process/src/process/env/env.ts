@@ -5,7 +5,7 @@ import fs from 'fs'
 import { Injectable } from '@apoyo/scopes'
 import { Dict, Err, pipe } from '@apoyo/std'
 
-import { $nodeEnv } from './node-env'
+import { $appEnv } from './app-env'
 import { $rootDir } from '../root'
 
 export const load = (options: dotenv.DotenvConfigOptions = {}): Dict<string> => {
@@ -30,11 +30,11 @@ export const load = (options: dotenv.DotenvConfigOptions = {}): Dict<string> => 
   return env.parsed
 }
 
-export const $envDir = Injectable.define($rootDir, (rootDir) => rootDir)
+export const $envDir = Injectable.define([$rootDir], (rootDir) => rootDir)
 
-export const $env = Injectable.define($nodeEnv, $envDir, (nodeEnv, path) =>
+export const $env = Injectable.define([$appEnv, $envDir], (appEnv, path) =>
   load({
-    node_env: nodeEnv,
+    node_env: appEnv.envFileName,
     path
   })
 )

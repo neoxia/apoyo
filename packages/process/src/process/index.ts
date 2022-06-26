@@ -1,12 +1,16 @@
 import { $env, $envDir, load } from './env/env'
-import { $nodeEnv } from './env/node-env'
-import { rules, validate } from './env/rules'
+import { $appEnv, $supportedEnvs } from './env/app-env'
+import { define, validate } from './env/define'
 import { $pkg, $version } from './package'
 import { $rootDir } from './root'
 import { end } from './signals'
 
-export { NodeEnvironment } from './env/node-env'
+export { AppEnvironment } from './env/app-env'
 
+/**
+ * @namespace Process
+ * This namespace contains injectables containing information about the current application.
+ */
 export const Process = {
   /**
    * Returns by default the current working directory
@@ -21,10 +25,18 @@ export const Process = {
   $envDir,
 
   /**
-   * The current node environment.
-   * By default, the value in process.env.NODE_ENV will be used.
+   * List of all supported application environments.
+   * The default environments supported are `development`, `staging`, `production` and `test`
    */
-  $nodeEnv,
+  $supportedEnvs,
+
+  /**
+   * The current app environment.
+   * Only supported environments defined in `Process.$supportedEnvs`.
+   *
+   * If no value is NODE_ENV is specified, the `production` environment is used.
+   */
+  $appEnv,
 
   /**
    * The environment variables for the given application.
@@ -55,6 +67,7 @@ export const Process = {
 
 /**
  * @namespace Env
+ * This namespace contains utilities to easily load and parse environment variables.
  */
 export const Env = {
   /**
@@ -85,5 +98,5 @@ export const Env = {
    *
    * @param schema The validation schema
    */
-  rules
+  define
 }

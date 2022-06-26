@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@apoyo/decoders": "^0.0.13",
-    "@apoyo/scopes": "^0.2.0",
+    "@apoyo/scopes": "^0.3.0",
     "@apoyo/std": "^0.0.12",
     "@types/jest": "^26.0.23",
     "@types/node": "^12.6.8",
@@ -45,7 +45,7 @@
   },
   "peerDependencies": {
     "@apoyo/decoders": "^0.0.13",
-    "@apoyo/scopes": "^0.2.0",
+    "@apoyo/scopes": "^0.3.0",
     "@apoyo/std": "^0.0.12"
   },
   "publishConfig": {

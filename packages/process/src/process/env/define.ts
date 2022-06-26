@@ -23,6 +23,6 @@ export const validate = <T extends Dict>(env: Dict<unknown>, schema: Schema<T>) 
   )
 }
 
-export const rules = <T extends Dict>(schema: Schema<T>) => {
-  return Injectable.define($env, (env) => validate(env, schema))
+export const define = <T extends Dict>(schema: Schema<T>) => {
+  return Injectable.define([$env], (env) => validate(env, schema))
 }
