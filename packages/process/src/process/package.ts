@@ -36,7 +36,7 @@ export const readPkg = async (rootDir: string) => {
     content,
     Decoder.validate(fileDecoder),
     Result.mapError((err) =>
-      Err.of(`Could not find valid package.json file at {{path}}`, {
+      Err.of(`Could not find valid package.json file at ${JSON.stringify(path)}`, {
         path,
         errors: DecodeError.format(err)
       })
@@ -45,6 +45,6 @@ export const readPkg = async (rootDir: string) => {
   )
 }
 
-export const $pkg = Injectable.define($rootDir, (rootDir) => readPkg(rootDir))
+export const $pkg = Injectable.define([$rootDir], (rootDir) => readPkg(rootDir))
 
-export const $version = Injectable.define($pkg, (pkg) => pkg.version)
+export const $version = Injectable.define([$pkg], (pkg) => pkg.version)

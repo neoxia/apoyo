@@ -2,16 +2,12 @@ import { Injectable } from '@apoyo/scopes'
 import { Err } from '@apoyo/std'
 
 export class AppEnvironment {
-  public static DEV = new AppEnvironment(['dev', 'develop', 'development'], 'development', 'dev')
-  public static STAGING = new AppEnvironment(['staging'], 'staging', 'staging')
-  public static PROD = new AppEnvironment(['prod', 'production'], 'production', 'prod')
-  public static TEST = new AppEnvironment(['test', 'testing'], 'test', 'test')
+  public static DEV = new AppEnvironment(['dev', 'develop', 'development'], 'development')
+  public static STAGING = new AppEnvironment(['staging'], 'staging')
+  public static PROD = new AppEnvironment(['prod', 'production'], 'production')
+  public static TEST = new AppEnvironment(['test', 'testing'], 'test')
 
-  constructor(
-    public readonly validNames: string[],
-    public readonly name: string,
-    public readonly envFileName: string
-  ) {}
+  constructor(public readonly validNames: string[], public readonly name: string) {}
 }
 
 export const findCurrentEnv = (nodeEnv: string, supportedEnvs: AppEnvironment[]) => {

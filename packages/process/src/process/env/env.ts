@@ -34,7 +34,7 @@ export const $envDir = Injectable.define([$rootDir], (rootDir) => rootDir)
 
 export const $env = Injectable.define([$appEnv, $envDir], (appEnv, path) =>
   load({
-    node_env: appEnv.envFileName,
+    node_env: appEnv.name,
     path
   })
 )
