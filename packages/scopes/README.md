@@ -4,6 +4,8 @@
 [![build size](https://badgen.net/bundlephobia/min/@apoyo/scopes)](https://bundlephobia.com/result?p=@apoyo/scopes)
 [![three shaking](https://badgen.net/bundlephobia/tree-shaking/@apoyo/scopes)](https://bundlephobia.com/result?p=@apoyo/scopes)
 
+**Warning**: This package is still in development and features may still change, be renamed or removed.
+
 ## Installation
 
 Install peer dependencies:

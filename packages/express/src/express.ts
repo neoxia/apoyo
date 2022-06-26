@@ -1,7 +1,7 @@
 import { Application, Router, Express as ExpressType } from 'express'
 import { Server } from 'http'
 
-import { Injectable, Resource, Scope } from '@apoyo/scopes'
+import { Injectable, Resource } from '@apoyo/scopes'
 
 import { Request } from './request'
 import { Route } from './route'
@@ -53,19 +53,14 @@ const applyRoute = (route: Route): Router => {
   return (router as any)[route.method](route.path, route.handler)
 }
 
-export const createRouter = (route: Route, factory: Injectable<Scope.Factory> = Scope.Factory()): Injectable<Router> =>
-  Injectable.define(factory, (factory) => {
+export const createRouter = (route: Route): Injectable<Router> =>
+  Injectable.create(async (container) => {
     const router = Router({
       mergeParams: true
     })
 
     router.use((req: any, _res, next) => {
-      req.scope = factory.create({
-        bindings: [
-          // Abstract variables
-          Scope.bind(Request.$request, req as Request)
-        ]
-      })
+      req.container = container
       next()
     })
 
@@ -86,7 +81,7 @@ export const close = (server: Server) => {
 }
 
 export const createServer = ($app: Injectable<Application>, $config: Injectable<Express.Config>): Injectable<Server> =>
-  Injectable.define($app, $config, async (app, config) => {
+  Injectable.define([$app, $config], async (app, config) => {
     const server = await Express.listen(app, config.port)
     const close = () => Express.close(server)
     return Resource.of(server, close)

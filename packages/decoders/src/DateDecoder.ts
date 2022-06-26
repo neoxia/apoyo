@@ -7,14 +7,21 @@ import { TextDecoder } from './TextDecoder'
 
 export type DateDecoder<I, O extends Date> = Decoder<I, O>
 
-export const date = pipe(
-  TextDecoder.date,
-  Decoder.map((str) => new Date(str))
+const isValid = Decoder.filter(
+  (date: Date): date is Date => !Number.isNaN(date.getTime()),
+  `string is not a valid Date`,
+  {
+    code: ErrorCode.DATE
+  }
 )
-export const datetime = pipe(
-  TextDecoder.datetime,
-  Decoder.map((str) => new Date(str))
-)
+
+const createDateDecoder = (decoder: Decoder<unknown, string>): Decoder<unknown, Date> => {
+  const fromString = pipe(
+    decoder,
+    Decoder.map((str) => new Date(str))
+  )
+  return pipe(Decoder.union(strict, fromString), isValid)
+}
 
 export const strict = Decoder.fromGuard(
   (input: unknown): input is Date => input instanceof Date,
@@ -24,13 +31,9 @@ export const strict = Decoder.fromGuard(
   }
 )
 
-export const native: Decoder<unknown, Date> = pipe(
-  TextDecoder.string,
-  Decoder.map((str) => new Date(str)),
-  Decoder.filter((date): date is Date => !Number.isNaN(date.getTime()), `string is not a valid Date`, {
-    code: ErrorCode.DATE
-  })
-)
+export const date = createDateDecoder(TextDecoder.date)
+export const datetime = createDateDecoder(TextDecoder.datetime)
+export const native = createDateDecoder(TextDecoder.string)
 
 export const min = (minDate: Date | (() => Date)) =>
   Decoder.parse((input: Date) => {

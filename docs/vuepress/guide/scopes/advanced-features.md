@@ -5,11 +5,11 @@
 Sometimes, we may want to dynamically switch between multiple implementations based on another injectable:
 
 ```ts
-const $fileProvider = Injectable.define($env, (env) => {
+const $fileProvider = Injectable.define([$env], (env) => {
   const provider = env.FILE_PROVIDER
-  if (provider === 'aws') return $s3FileProvider
-  if (provider === 'azure') return $azureFileProvider 
-  throw new Error(`Unimplemented file provider ${JSON.stringify(provider)}`)
+  if (provider === 's3') return $s3FileProvider
+  if (provider === 'local') return $localFileProvider 
+  throw new Error(`Unsupported file provider ${JSON.stringify(provider)}`)
 })
 ```
 

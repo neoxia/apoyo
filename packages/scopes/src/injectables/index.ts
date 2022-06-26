@@ -1,38 +1,27 @@
-import type { Dict } from '@apoyo/std'
+import { Injectable } from './injectable'
+import * as fns from './functions'
 
-import { Injectable as InjectableTmp } from './types'
-import { create, override, isInjectable, getReference, getFactory, getLoader } from './core'
-import { lazy } from './lazy'
-import { empty, of } from './constants'
-import { all, sequence, tuple } from './array'
-import { struct } from './struct'
-import { abstract, isAbstract } from './abstract'
-import { define } from './define'
-
-export type Injectable<A = any> = InjectableTmp<A>
-
-export namespace Injectable {
-  export type Loader<T = any> = InjectableTmp.Loader<T>
-  export type Factory<T, Fun> = InjectableTmp.Factory<T, Fun>
-  export type Struct<T extends Dict<Injectable>> = InjectableTmp.Struct<T>
-  export type Abstract<T = any> = InjectableTmp.Abstract<T>
+declare module './injectable' {
+  namespace Injectable {
+    const create: typeof fns.create
+    const define: typeof fns.define
+    const of: typeof fns.of
+    const lazy: typeof fns.lazy
+    const array: typeof fns.array
+    const abstract: typeof fns.abstract
+  }
 }
 
-export const Injectable = {
-  define,
-  getReference,
-  getFactory,
-  getLoader,
-  isInjectable,
-  isAbstract,
-  empty,
-  create,
-  override,
-  of,
-  lazy,
-  all,
-  sequence,
-  struct,
-  tuple,
-  abstract
-}
+// Side-effects: augment Injectable class to include static functions
+Object.assign(Injectable, {
+  create: fns.create,
+  define: fns.define,
+  of: fns.of,
+  lazy: fns.lazy,
+  array: fns.array,
+  abstract: fns.abstract
+})
+
+export { Injectable } from './injectable'
+export { Abstract } from './abstract'
+export { Implementation } from './implementation'

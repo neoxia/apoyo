@@ -8,4 +8,4 @@ export interface Logger {
 
 export const $consoleLogger = Injectable.of<Logger>(console)
 
-export const $logger = Injectable.abstract<Logger>('Logger', $consoleLogger)
+export const $logger = Injectable.abstract('Logger', $consoleLogger)

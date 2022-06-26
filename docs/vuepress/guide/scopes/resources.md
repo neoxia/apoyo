@@ -13,7 +13,7 @@ const $app = Injectable.define(() => {
   return app
 })
 
-const $server = Injectable.define($app, $config, (app, config) => {
+const $server = Injectable.define([$app, $config], (app, config) => {
   const server = app.listen(config.port)
   const close = async () => {
     return new Promise((resolve, reject) => {
