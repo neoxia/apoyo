@@ -1,16 +1,16 @@
-import { Scope } from '@apoyo/scopes'
+import { Container } from '@apoyo/scopes'
 
-import { NodeEnvironment, Process } from '../src'
+import { AppEnvironment, Process } from '../src'
 
 describe('Process', () => {
-  let scope: Scope
+  let scope: Container
 
   beforeAll(() => {
-    scope = Scope.create({
+    scope = Container.create({
       bindings: [
         // Bindings
-        Scope.bind(Process.$envDir, __dirname),
-        Scope.bind(Process.$nodeEnv, NodeEnvironment.DEV)
+        Container.bind(Process.$envDir, __dirname),
+        Container.bind(Process.$appEnv, AppEnvironment.DEV)
       ]
     })
   })

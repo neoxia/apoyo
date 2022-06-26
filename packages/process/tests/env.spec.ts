@@ -1,14 +1,14 @@
 import { IntegerDecoder } from '@apoyo/decoders'
-import { Scope } from '@apoyo/scopes'
+import { Container } from '@apoyo/scopes'
 
-import { Env, NodeEnvironment, Process } from '../src'
+import { Env, AppEnvironment, Process } from '../src'
 
 process.env['C'] = '10'
 
 describe('Env.load', () => {
   const env = Env.load({
     path: __dirname,
-    node_env: NodeEnvironment.DEV
+    node_env: AppEnvironment.DEV.name
   })
 
   it('should load env files correctly', () => {
@@ -47,29 +47,29 @@ describe('Env.validate', () => {
   })
 })
 
-describe('Env.rules', () => {
-  let scope: Scope
+describe('Env.define', () => {
+  let container: Container
 
   beforeAll(() => {
-    scope = Scope.create({
+    container = Container.create({
       bindings: [
         // Bindings
-        Scope.bind(Process.$envDir, __dirname),
-        Scope.bind(Process.$nodeEnv, NodeEnvironment.DEV)
+        Container.bind(Process.$envDir, __dirname),
+        Container.bind(Process.$appEnv, AppEnvironment.DEV)
       ]
     })
   })
 
   afterAll(async () => {
-    await scope.close()
+    await container.close()
   })
 
   it('should get the $env injectable', async () => {
-    const $parsed = Env.rules({
+    const $parsed = Env.define({
       C: IntegerDecoder.int
     })
 
-    const parsed = await scope.get($parsed)
+    const parsed = await container.get($parsed)
 
     expect(parsed).toEqual({
       C: 10
