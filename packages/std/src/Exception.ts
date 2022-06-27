@@ -21,5 +21,7 @@ export class Exception extends Error {
     } else {
       this.__proto__ = actualProto
     }
+
+    this.name = this.constructor.name
   }
 }
