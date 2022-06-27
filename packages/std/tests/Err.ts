@@ -1,12 +1,12 @@
-import { Err, Obj, pipe } from '../src'
+import { Err, Exception, Obj, pipe } from '../src'
 
 describe('Err.of', () => {
   it('should create a new error', () => {
     const infos = { id: 'xxxx' }
 
     const err = Err.of('Could not find user {id}', infos)
-    expect(err).toBeInstanceOf(Error)
-    expect(err.name).toBe('Error')
+    expect(err).toBeInstanceOf(Exception)
+    expect(err.name).toBe('Exception')
     expect(err.message).toBe('Could not find user xxxx')
     expect(err.id).toEqual('xxxx')
     expect(pipe(err, Obj.copy)).toEqual(infos)
@@ -16,11 +16,10 @@ describe('Err.of', () => {
     const infos = { id: 'xxxx', name: 'MyError' }
 
     const err = Err.of('Could not find user {id}', infos)
-    expect(err).toBeInstanceOf(Error)
+    expect(err).toBeInstanceOf(Exception)
     expect(err.name).toBe('MyError')
     expect(err.message).toBe('Could not find user xxxx')
     expect(err.id).toEqual('xxxx')
-    expect(pipe(err, Obj.copy)).toEqual(infos)
   })
 })
 
@@ -45,7 +44,7 @@ describe('Err.wrap', () => {
     const source: unknown = new Error('error')
     const err = pipe(source, Err.wrap('Could not find user'))
 
-    expect(err).toBeInstanceOf(Error)
+    expect(err).toBeInstanceOf(Exception)
     expect(err.message).toBe('Could not find user')
     expect(err.cause).toBe(source)
   })
@@ -56,7 +55,7 @@ describe('Err.chain', () => {
     const source: unknown = new Error('error')
     const err = pipe(source, Err.chain('Could not find user'))
 
-    expect(err).toBeInstanceOf(Error)
+    expect(err).toBeInstanceOf(Exception)
     expect(err.message).toBe('Could not find user: error')
     expect(err.cause).toBe(source)
   })
@@ -130,7 +129,6 @@ describe('Err.format', () => {
       message: 'Job xxxx failed: Could not read data: Select query failed: invalid characters at xxxx',
       name: 'JobError',
       info: {
-        name: 'JobError',
         code: 'QueryError',
         jobId: 'xxxx'
       }
@@ -145,7 +143,7 @@ describe('Err.format', () => {
 
     expect(withoutStack).toEqual({
       message: 'Select query failed: invalid characters at xxxx',
-      name: 'Error',
+      name: 'Exception',
       info: {}
     })
   })
