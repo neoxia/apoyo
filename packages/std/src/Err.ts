@@ -6,6 +6,7 @@ import * as D from './Dict'
 import { merge, omit } from './Object'
 import { pipe } from './pipe'
 import { template } from './String'
+import { Exception } from './exception'
 
 export interface FormattedError {
   name: string
@@ -44,8 +45,7 @@ const fullStack = (err: unknown) =>
 export const of = (msg: string, info: Dict<any> = {}, cause?: Err, constructorOpt?: Function): Err => {
   const data = pipe(info, D.filter(isNotReserved))
   const message = pipe(msg, template(data))
-  const e: Err = new Error(message)
-  e.cause = cause
+  const e: Err = new Exception(message, cause)
   Object.assign(e, data)
   Error.captureStackTrace(e, constructorOpt || of)
   return e
