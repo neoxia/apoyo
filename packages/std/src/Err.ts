@@ -6,7 +6,7 @@ import * as D from './Dict'
 import { merge, omit } from './Object'
 import { pipe } from './pipe'
 import { template } from './String'
-import { Exception } from './exception'
+import { Exception } from './Exception'
 
 export interface FormattedError {
   name: string
