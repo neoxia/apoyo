@@ -9,19 +9,30 @@
 export class Exception extends Error {
   [key: string]: unknown
 
-  constructor(message?: string, public readonly cause?: Error) {
+  constructor(message?: string, cause?: Error) {
     // 'Error' breaks prototype chain here
     super(message)
 
-    // restore prototype chain
-    const actualProto = new.target.prototype
-
+    // Restore prototype chain
+    const proto = new.target.prototype
     if (Object.setPrototypeOf) {
-      Object.setPrototypeOf(this, actualProto)
+      Object.setPrototypeOf(this, proto)
     } else {
-      this.__proto__ = actualProto
+      this.__proto__ = proto
     }
 
-    this.name = this.constructor.name
+    Object.defineProperty(this, 'name', {
+      configurable: true,
+      enumerable: false,
+      value: this.constructor.name,
+      writable: true
+    })
+
+    Object.defineProperty(this, 'cause', {
+      configurable: true,
+      enumerable: false,
+      value: cause,
+      writable: true
+    })
   }
 }
