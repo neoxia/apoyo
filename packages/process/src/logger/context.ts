@@ -10,7 +10,7 @@ export class LoggerContext {
     return this._storage.run(logger, fn)
   }
 
-  public getLogger() {
+  public get() {
     return this._storage.getStore()
   }
 }

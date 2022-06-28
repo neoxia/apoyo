@@ -1,5 +1,7 @@
 import { $context } from './context'
-import { $config, $logger, child, forContext } from './logger'
+import { $options, $logger, $out, child, forContext, $env } from './logger'
+
+export { LogLevel, LoggerOptions, LoggerChildOptions } from './config'
 
 export const Logger = {
   /**
@@ -9,7 +11,22 @@ export const Logger = {
    */
   $context,
 
-  $config,
+  /**
+   * Default environment variables used to configure the logger
+   */
+  $env,
+
+  /**
+   * Override this injectable to customize the logger
+   */
+  $options,
+
+  /**
+   * Override this injectable to customize the output stream of the logger.
+   *
+   * Defaults to process.stdout.
+   */
+  $out,
 
   /**
    * The root logger instance.
