@@ -6,8 +6,12 @@ import { Injectable } from '@apoyo/scopes'
 export class LoggerContext {
   private _storage = new AsyncLocalStorage<Logger>()
 
-  public run<T>(logger: Logger, fn: () => Promise<T>) {
+  public run(logger: Logger, fn: () => void) {
     return this._storage.run(logger, fn)
+  }
+
+  public runAsync<T>(logger: Logger, fn: () => Promise<T>) {
+    return new Promise<T>((resolve) => this._storage.run(logger, () => fn().then(resolve)))
   }
 
   public get() {

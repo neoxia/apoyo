@@ -42,25 +42,21 @@ export const $logger: Injectable<Logger> = Injectable.define(
         })
       : out
 
-    const options: PinoOptions = {
-      enabled: config.enabled ?? env.LOG_ENABLED,
-      level: config.level ?? env.LOG_LEVEL,
-      redact: config.redact
+    const mixin: PinoOptions['mixin'] = () => {
+      const bindings = context.get()?.bindings()
+      return {
+        ...bindings
+      }
     }
 
-    const logger = pino(
-      {
-        ...options,
-        mixin() {
-          return {
-            ...context.get()?.bindings()
-          }
-        }
-      },
-      stream
-    )
+    const options: PinoOptions = {
+      ...config,
+      enabled: config.enabled ?? env.LOG_ENABLED,
+      level: config.level ?? env.LOG_LEVEL,
+      mixin
+    }
 
-    return logger
+    return pino(options, stream)
   }
 )
 

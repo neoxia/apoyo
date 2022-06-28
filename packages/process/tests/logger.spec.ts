@@ -211,3 +211,83 @@ describe('Logger.forContext', () => {
     await scope.close()
   })
 })
+
+describe('Logger.$context', () => {
+  it('should add additional information to each log', async () => {
+    const { stdout, passthrough } = mockStdout((str) => JSON.parse(str))
+
+    const scope = Container.create({
+      bindings: [
+        // Bindings
+        Container.bind(Logger.$out, passthrough)
+      ]
+    })
+
+    const logger = await scope.get(Logger.$logger)
+
+    const context = await scope.get(Logger.$context)
+
+    const reqLogger = logger.child({
+      req: {
+        id: 'xxxx-xxxx-xxxx',
+        method: 'GET',
+        ip: '192.168.0.0'
+      }
+    })
+
+    await context.runAsync(reqLogger, async () => {
+      const contextLogger = context.get()
+
+      expect(contextLogger).toBeDefined()
+      expect(contextLogger?.bindings()).toEqual({
+        req: expect.objectContaining({
+          id: expect.anything()
+        })
+      })
+
+      logger.info(
+        {
+          foo: 'bar'
+        },
+        'Info'
+      )
+
+      expect(stdout).toBeCalledTimes(1)
+
+      const log = stdout.mock.calls[0][0]
+      expect(log).toEqual(
+        expect.objectContaining({
+          level: logger.levels.values[LogLevel.INFO],
+          msg: 'Info',
+          foo: 'bar',
+          req: expect.objectContaining({
+            id: expect.anything()
+          })
+        })
+      )
+    })
+
+    stdout.mockReset()
+
+    logger.info(
+      {
+        foo: 'bar'
+      },
+      'Info'
+    )
+
+    expect(stdout).toBeCalledTimes(1)
+
+    const log = stdout.mock.calls[0][0]
+    expect(log.req).toBe(undefined)
+    expect(log).toEqual(
+      expect.objectContaining({
+        level: logger.levels.values[LogLevel.INFO],
+        msg: 'Info',
+        foo: 'bar'
+      })
+    )
+
+    await scope.close()
+  })
+})

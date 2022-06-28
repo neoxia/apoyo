@@ -2,6 +2,7 @@ import { $context } from './context'
 import { $options, $logger, $out, child, forContext, $env } from './logger'
 
 export { LogLevel, LoggerOptions, LoggerChildOptions } from './config'
+export { LoggerContext } from './context'
 
 export const Logger = {
   /**
