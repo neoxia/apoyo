@@ -225,7 +225,7 @@ describe('Logger.$context', () => {
 
     const logger = await scope.get(Logger.$logger)
 
-    const context = await scope.get(Logger.$context)
+    const als = await scope.get(Logger.$als)
 
     const reqLogger = logger.child({
       req: {
@@ -235,8 +235,8 @@ describe('Logger.$context', () => {
       }
     })
 
-    await context.runAsync(reqLogger.bindings(), async () => {
-      const contextBindings = context.bindings()
+    await als.runAsync(reqLogger.bindings(), async () => {
+      const contextBindings = als.bindings()
 
       expect(contextBindings).toEqual({
         req: expect.objectContaining({

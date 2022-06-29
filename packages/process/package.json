@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/process",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Utils focused around the current process",
   "main": "lib/index.js",
   "module": "es6/index.js",

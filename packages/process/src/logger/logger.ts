@@ -6,7 +6,7 @@ import { Injectable } from '@apoyo/scopes'
 import { pipe, run } from '@apoyo/std'
 
 import { Env } from '../process'
-import { $context } from './context'
+import { $als } from './als'
 import { Writable } from 'stream'
 import { LoggerChildOptions, LoggerOptions, LogLevel } from './config'
 
@@ -21,8 +21,8 @@ export const $options = Injectable.of<LoggerOptions>({})
 export const $out = Injectable.of<Writable>(process.stdout)
 
 export const $logger: Injectable<Logger> = Injectable.define(
-  [$env, $options, $context, $out],
-  (env, config, context, out): Logger => {
+  [$env, $options, $als, $out],
+  (env, config, als, out): Logger => {
     const prettyEnabled = run(() => {
       if (config.prettyPrint === false) {
         return false
@@ -43,7 +43,7 @@ export const $logger: Injectable<Logger> = Injectable.define(
       : out
 
     const mixin: PinoOptions['mixin'] = () => {
-      const bindings = context.bindings()
+      const bindings = als.bindings()
       return {
         ...bindings
       }

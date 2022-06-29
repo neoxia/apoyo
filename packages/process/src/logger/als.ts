@@ -3,7 +3,7 @@ import { Bindings } from 'pino'
 
 import { Injectable } from '@apoyo/scopes'
 
-export class LoggerContext {
+export class LoggerALS {
   private _storage = new AsyncLocalStorage<Bindings>()
 
   public run(bindings: Bindings, fn: () => void) {
@@ -26,4 +26,4 @@ export class LoggerContext {
   }
 }
 
-export const $context = Injectable.define(() => new LoggerContext())
+export const $als = Injectable.define(() => new LoggerALS())

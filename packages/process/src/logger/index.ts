@@ -1,16 +1,16 @@
-import { $context } from './context'
+import { $als } from './als'
 import { $options, $logger, $out, child, forContext, $env } from './logger'
 
 export { LogLevel, LoggerOptions, LoggerChildOptions } from './config'
-export { LoggerContext } from './context'
+export { Bindings } from 'pino'
 
 export const Logger = {
   /**
-   * This uses `async_hooks`, and more precisely `AsyncLocalStorage` under the hood, to allow adding additional logger information for a given scope.
+   * Async local storage instane that can be used to add additional bindings / properties to all logger in a given asynchroneous scope.
    *
-   * Example: adding request information to all your logs.
+   * Example: adding http request information to all your logs.
    */
-  $context,
+  $als,
 
   /**
    * Default environment variables used to configure the logger
