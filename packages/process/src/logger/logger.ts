@@ -43,7 +43,7 @@ export const $logger: Injectable<Logger> = Injectable.define(
       : out
 
     const mixin: PinoOptions['mixin'] = () => {
-      const bindings = context.get()?.bindings()
+      const bindings = context.bindings()
       return {
         ...bindings
       }

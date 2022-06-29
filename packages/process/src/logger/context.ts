@@ -1,20 +1,27 @@
 import { AsyncLocalStorage } from 'async_hooks'
-import { Logger } from 'pino'
+import { Bindings } from 'pino'
 
 import { Injectable } from '@apoyo/scopes'
 
 export class LoggerContext {
-  private _storage = new AsyncLocalStorage<Logger>()
+  private _storage = new AsyncLocalStorage<Bindings>()
 
-  public run(logger: Logger, fn: () => void) {
-    return this._storage.run(logger, fn)
+  public run(bindings: Bindings, fn: () => void) {
+    const parent = this.bindings()
+    return this._storage.run(
+      {
+        ...parent,
+        ...bindings
+      },
+      fn
+    )
   }
 
-  public runAsync<T>(logger: Logger, fn: () => Promise<T>) {
-    return new Promise<T>((resolve) => this._storage.run(logger, () => fn().then(resolve)))
+  public runAsync<T>(bindings: Bindings, fn: () => Promise<T>) {
+    return new Promise<T>((resolve) => this.run(bindings, () => fn().then(resolve)))
   }
 
-  public get() {
+  public bindings() {
     return this._storage.getStore()
   }
 }

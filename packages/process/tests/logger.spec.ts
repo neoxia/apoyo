@@ -235,11 +235,10 @@ describe('Logger.$context', () => {
       }
     })
 
-    await context.runAsync(reqLogger, async () => {
-      const contextLogger = context.get()
+    await context.runAsync(reqLogger.bindings(), async () => {
+      const contextBindings = context.bindings()
 
-      expect(contextLogger).toBeDefined()
-      expect(contextLogger?.bindings()).toEqual({
+      expect(contextBindings).toEqual({
         req: expect.objectContaining({
           id: expect.anything()
         })

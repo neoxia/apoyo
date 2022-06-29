@@ -8,6 +8,9 @@
   "sideEffects": false,
   "author": "Sascha Braun",
   "license": "MIT",
+  "engines": {
+    "node": ">= 14.0.0"
+  },
   "tags": [
     "utils",
     "process",
