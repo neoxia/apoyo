@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/process",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Utils focused around the current process",
   "main": "lib/index.js",
   "module": "es6/index.js",
@@ -8,6 +8,9 @@
   "sideEffects": false,
   "author": "Sascha Braun",
   "license": "MIT",
+  "engines": {
+    "node": ">= 14.0.0"
+  },
   "tags": [
     "utils",
     "process",
@@ -32,9 +35,9 @@
     "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
   },
   "devDependencies": {
-    "@apoyo/decoders": "^0.0.13",
+    "@apoyo/decoders": "^0.0.15",
     "@apoyo/scopes": "^0.3.0",
-    "@apoyo/std": "^0.0.12",
+    "@apoyo/std": "^0.0.14",
     "@types/jest": "^26.0.23",
     "@types/node": "^12.6.8",
     "jest": "^26.4.2",
@@ -44,9 +47,9 @@
     "typescript": "^4.1.2"
   },
   "peerDependencies": {
-    "@apoyo/decoders": "^0.0.13",
+    "@apoyo/decoders": "^0.0.15",
     "@apoyo/scopes": "^0.3.0",
-    "@apoyo/std": "^0.0.12"
+    "@apoyo/std": "^0.0.14"
   },
   "publishConfig": {
     "access": "public"
@@ -54,6 +57,8 @@
   "dependencies": {
     "@types/dotenv-flow": "^3.2.0",
     "dotenv-expand": "^8.0.3",
-    "dotenv-flow": "^3.2.0"
+    "dotenv-flow": "^3.2.0",
+    "pino": "^8.1.0",
+    "pino-pretty": "^8.1.0"
   }
 }
