@@ -2,9 +2,9 @@
   "name": "@apoyo/scopes",
   "version": "0.3.0",
   "description": "Functional dependency injection",
-  "main": "lib/index.js",
-  "module": "es6/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "dist/lib/index.js",
+  "module": "dist/es6/index.js",
+  "typings": "dist/lib/index.d.ts",
   "sideEffects": false,
   "author": "Sascha Braun",
   "license": "MIT",
@@ -29,12 +29,12 @@
     "test": "jest --verbose --runInBand",
     "clean": "npx rimraf ./dist",
     "prebuild": "npm run clean",
-    "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
+    "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json"
   },
   "devDependencies": {
-    "@apoyo/std": "^0.0.12",
+    "@apoyo/std": "^0.0.14",
     "@types/jest": "^26.0.23",
-    "@types/node": "^12.6.8",
+    "@types/node": "^14.18.21",
     "jest": "^26.4.2",
     "rimraf": "2.6.2",
     "ts-jest": "^26.3.0",

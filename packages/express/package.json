@@ -2,9 +2,9 @@
   "name": "@apoyo/express",
   "version": "0.2.0",
   "description": "Express utils",
-  "main": "lib/index.js",
-  "module": "es6/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "dist/lib/index.js",
+  "module": "dist/es6/index.js",
+  "typings": "dist/lib/index.d.ts",
   "sideEffects": false,
   "author": "Sascha Braun",
   "license": "MIT",
@@ -25,15 +25,15 @@
     "test": "jest --verbose --runInBand",
     "clean": "npx rimraf ./dist",
     "prebuild": "npm run clean",
-    "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
+    "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json"
   },
   "devDependencies": {
-    "@apoyo/decoders": "^0.0.12",
+    "@apoyo/decoders": "^0.0.15",
     "@apoyo/scopes": "0.3.0",
-    "@apoyo/std": "^0.0.12",
+    "@apoyo/std": "^0.0.14",
     "@types/express": "^4.17.13",
     "@types/jest": "^26.0.23",
-    "@types/node": "^12.6.8",
+    "@types/node": "^14.18.21",
     "@types/supertest": "^2.0.11",
     "body-parser": "^1.19.2",
     "express": "^4.17.3",
@@ -48,9 +48,9 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@apoyo/std": "^0.0.12",
     "@apoyo/decoders": "^0.0.13",
     "@apoyo/scopes": "0.3.0",
+    "@apoyo/std": "^0.0.12",
     "@types/express": "^4.17.13",
     "express": "^4.17.3"
   },

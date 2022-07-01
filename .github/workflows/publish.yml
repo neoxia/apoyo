@@ -9,24 +9,24 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [14.x]
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: yarn --frozen-lockfile
-    - run: yarn build
-    - run: yarn test
-    - run: |
-        npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
-        yarn pub:ci
-      env:
-        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - uses: actions/checkout@v3.0.2
+
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v3.3.0
+        with:
+          node-version: 14
+          cache: yarn
+
+      - run: yarn install --immutable
+
+      - run: yarn build
+
+      - run: yarn test
+
+      - name: Publish
+        run: yarn workspaces foreach --no-private npm publish --tolerate-republish
+        env:
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
