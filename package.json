@@ -26,10 +26,10 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^5.0.9",
-    "lint-staged": "^10.5.4",
+    "lint-staged": "^13.0.3",
     "prettier": "~2.2.1",
     "ts-node": "^8.0.2",
-    "typescript": "^4.1.2"
+    "typescript": "^4.7.4"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
