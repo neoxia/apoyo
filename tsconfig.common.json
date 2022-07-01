@@ -1,24 +1,9 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "target": "es2017",
     "module": "commonjs",
     "moduleResolution": "node",
-    "esModuleInterop": true,
-    "lib": ["es2017", "dom"],
-    "sourceMap": false,
-    "declaration": true,
-    "strict": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true,
-    "downlevelIteration": false,
-    "stripInternal": true,
-    "baseUrl": ".",
-    "paths": {
-      "@apoyo/*": ["packages/*/dist"]
-    }
-  },
-  "exclude": ["node_modules", "dist"]
+    "lib": ["es2017"]
+  }
 }

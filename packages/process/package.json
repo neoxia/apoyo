@@ -2,9 +2,9 @@
   "name": "@apoyo/process",
   "version": "0.0.2",
   "description": "Utils focused around the current process",
-  "main": "lib/index.js",
-  "module": "es6/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "dist/lib/index.js",
+  "module": "dist/es6/index.js",
+  "typings": "dist/lib/index.d.ts",
   "sideEffects": false,
   "author": "Sascha Braun",
   "license": "MIT",
@@ -31,8 +31,7 @@
   "scripts": {
     "test": "jest --verbose --runInBand",
     "clean": "npx rimraf ./dist",
-    "prebuild": "npm run clean",
-    "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
+    "build": "npm run clean && npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json"
   },
   "devDependencies": {
     "@apoyo/decoders": "^0.0.15",

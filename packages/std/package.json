@@ -2,9 +2,9 @@
   "name": "@apoyo/std",
   "version": "0.0.14",
   "description": "Typescript utility library",
-  "main": "lib/index.js",
-  "module": "es6/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "dist/lib/index.js",
+  "module": "dist/es6/index.js",
+  "typings": "dist/lib/index.d.ts",
   "sideEffects": false,
   "author": "Sascha Braun",
   "license": "MIT",
@@ -31,9 +31,8 @@
     "test": "jest --verbose --runInBand",
     "clean": "npx rimraf ./dist",
     "prebuild": "npm run clean",
-    "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json && npx ts-node ../../scripts/build"
+    "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/jest": "^26.0.23",
     "@types/node": "^12.6.8",

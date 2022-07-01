@@ -1,12 +1,7 @@
 {
-  "extends": "./tsconfig.common.json",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "module": "es6",
-    "target": "es6",
-    "downlevelIteration": false,
-    "baseUrl": ".",
-    "paths": {
-      "@apoyo/*": ["packages/*/dist"]
-    }
+    "target": "es6"
   }
 }
