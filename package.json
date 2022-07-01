@@ -5,7 +5,7 @@
   "workspaces": [
     "packages/*"
   ],
-  "packageManager": "yarn@3.2.0",
+  "packageManager": "yarn@3.2.1",
   "engines": {
     "node": ">=14.0.0",
     "npm": "Please use yarn instead of NPM to install dependencies"
