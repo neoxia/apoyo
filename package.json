@@ -33,7 +33,7 @@
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
-      "yarn run eslint --fix"
+      "yarn run eslint --fix --quiet"
     ]
   },
   "resolutions": {

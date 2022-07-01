@@ -1,14 +1,16 @@
 import { Injectable } from './injectable'
 import * as fns from './functions'
 
-declare module './injectable' {
+const Fns = fns
+
+declare module '.' {
   namespace Injectable {
-    const create: typeof fns.create
-    const define: typeof fns.define
-    const of: typeof fns.of
-    const lazy: typeof fns.lazy
-    const array: typeof fns.array
-    const abstract: typeof fns.abstract
+    const create: typeof Fns.create
+    const define: typeof Fns.define
+    const of: typeof Fns.of
+    const lazy: typeof Fns.lazy
+    const array: typeof Fns.array
+    const abstract: typeof Fns.abstract
   }
 }
 
