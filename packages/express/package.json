@@ -1,10 +1,16 @@
 {
   "name": "@apoyo/express",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Express utils",
-  "main": "dist/lib/index.js",
-  "module": "dist/es6/index.js",
-  "typings": "dist/lib/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
   "sideEffects": false,
   "author": "Sascha Braun",
   "license": "MIT",
@@ -23,14 +29,12 @@
   "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/express",
   "scripts": {
     "test": "jest --verbose --runInBand",
-    "clean": "npx rimraf ./dist",
-    "prebuild": "npm run clean",
-    "build": "npx tsc -p ./tsconfig.common.json && npx tsc -p ./tsconfig.es.json"
+    "build": "tsup"
   },
   "devDependencies": {
-    "@apoyo/decoders": "^0.0.15",
-    "@apoyo/scopes": "0.3.0",
-    "@apoyo/std": "^0.0.14",
+    "@apoyo/decoders": "^0.0.16",
+    "@apoyo/scopes": "0.3.1",
+    "@apoyo/std": "^0.0.15",
     "@types/express": "^4.17.13",
     "@types/jest": "^26.0.23",
     "@types/node": "^14.18.21",
@@ -38,23 +42,23 @@
     "body-parser": "^1.19.2",
     "express": "^4.17.3",
     "jest": "^26.4.2",
-    "rimraf": "2.6.2",
     "supertest": "^6.2.2",
     "ts-jest": "^26.3.0",
     "ts-node": "^8.0.2",
-    "typescript": "^4.1.2"
+    "tsup": "^6.1.2",
+    "typescript": "^4.7.4"
   },
   "publishConfig": {
     "access": "public"
   },
   "peerDependencies": {
-    "@apoyo/decoders": "^0.0.13",
-    "@apoyo/scopes": "0.3.0",
-    "@apoyo/std": "^0.0.12",
+    "@apoyo/decoders": "^0.0.16",
+    "@apoyo/scopes": "0.3.1",
+    "@apoyo/std": "^0.0.15",
     "@types/express": "^4.17.13",
     "express": "^4.17.3"
   },
   "dependencies": {
-    "@apoyo/http": "^0.0.5"
+    "@apoyo/http": "^0.0.6"
   }
 }
