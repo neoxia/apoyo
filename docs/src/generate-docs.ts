@@ -8,7 +8,7 @@ import { run } from './run'
 
 export const generateStdDocs = async (rootPath: string, docsPath: string) => {
   const config: ProjectOptions = {
-    tsConfigFilePath: path.join(rootPath, 'tsconfig.common.json')
+    tsConfigFilePath: path.join(rootPath, 'tsconfig.json')
   }
   const project = pipe(
     Result.tryCatch(() => new Project(config)),
@@ -149,7 +149,7 @@ export const generateStdDocs = async (rootPath: string, docsPath: string) => {
 
 export const generateDecodersDocs = async (rootPath: string, docsPath: string) => {
   const config: ProjectOptions = {
-    tsConfigFilePath: path.join(rootPath, 'tsconfig.common.json')
+    tsConfigFilePath: path.join(rootPath, 'tsconfig.json')
   }
   const project = pipe(
     Result.tryCatch(() => new Project(config)),
@@ -228,7 +228,7 @@ export const generateDecodersDocs = async (rootPath: string, docsPath: string) =
 
 export const generateHttpDocs = async (rootPath: string, docsPath: string) => {
   const config: ProjectOptions = {
-    tsConfigFilePath: path.join(rootPath, 'tsconfig.common.json')
+    tsConfigFilePath: path.join(rootPath, 'tsconfig.json')
   }
   const project = pipe(
     Result.tryCatch(() => new Project(config)),
