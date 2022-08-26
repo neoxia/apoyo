@@ -1,5 +1,5 @@
 import { pipe, Prom, Result, Option } from '@apoyo/std'
-import { Container, Injectable, Resource } from '../src'
+import { Abstract, Container, Implementation, Injectable, Resource } from '../src'
 
 describe('Container.create', () => {
   it('should build and return container', () => {
@@ -14,7 +14,7 @@ describe('Container.bind', () => {
   it('should bind a Injectable to a constant value', async () => {
     const fn = jest.fn()
 
-    const $a = Injectable.define(() => {
+    const $a = Implementation.create(() => {
       fn('a')
       return 1
     })
@@ -34,11 +34,11 @@ describe('Container.bind', () => {
   it('should bind a Injectable to another Injectable', async () => {
     const fn = jest.fn()
 
-    const $a = Injectable.define(() => {
+    const $a = Implementation.create(() => {
       fn('a')
       return 1
     })
-    const $b = Injectable.define(() => {
+    const $b = Implementation.create(() => {
       fn('b')
       return 2
     })
@@ -61,15 +61,15 @@ describe('Container.bind', () => {
   it('should resolve deeply', async () => {
     const fn = jest.fn()
 
-    const $a = Injectable.define(() => {
+    const $a = Implementation.create(() => {
       fn('a')
       return 1
     })
-    const $b = Injectable.define(() => {
+    const $b = Implementation.create(() => {
       fn('b')
       return 2
     })
-    const $c = Injectable.define(() => {
+    const $c = Implementation.create(() => {
       fn('c')
       return 3
     })
@@ -94,11 +94,11 @@ describe('Container.bind', () => {
   it('should resolve correctly with injectables and constants', async () => {
     const fn = jest.fn()
 
-    const $a = Injectable.define(() => {
+    const $a = Implementation.create(() => {
       fn('a')
       return 1
     })
-    const $b = Injectable.define(() => {
+    const $b = Implementation.create(() => {
       fn('b')
       return 2
     })
@@ -129,9 +129,9 @@ describe('Container.bind', () => {
 
     interface ITodoRepository extends IRepository<Todo> {}
 
-    const $todoRepository = Injectable.abstract<ITodoRepository>('ITodoRepository')
+    const $todoRepository = Abstract.create<ITodoRepository>('ITodoRepository')
 
-    const $findAll = Injectable.define([$todoRepository], (repo) => repo.findAll)
+    const $findAll = Implementation.create([$todoRepository], (repo) => repo.findAll)
 
     const mockRepository: ITodoRepository = {
       findAll: () => [
@@ -163,7 +163,7 @@ describe('Container.get', () => {
   it('should load and get the variable once', async () => {
     let calls = 0
 
-    const $a = Injectable.define(() => {
+    const $a = Implementation.create(() => {
       ++calls
       return calls
     })
@@ -181,11 +181,11 @@ describe('Container.get', () => {
   it('should work with injectables having dependencies', async () => {
     let calls = 0
 
-    const $a = Injectable.define(() => {
+    const $a = Implementation.create(() => {
       ++calls
       return calls
     })
-    const $b = Injectable.define([$a], (nb) => nb * 10)
+    const $b = Implementation.create([$a], (nb) => nb * 10)
 
     const scope = Container.create()
 
@@ -200,7 +200,7 @@ describe('Container.get', () => {
   it('should not mount more than once when loaded in concurrency', async () => {
     let calls = 0
 
-    const $a = Injectable.define(async () => {
+    const $a = Implementation.create(async () => {
       ++calls
       await Prom.sleep(200)
       return calls
@@ -224,7 +224,7 @@ describe('Container.close', () => {
   it('should close correctly', async () => {
     let calls = 0
 
-    const $a = Injectable.define(() => {
+    const $a = Implementation.create(() => {
       return Resource.of(10, () => {
         ++calls
       })

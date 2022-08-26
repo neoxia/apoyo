@@ -5,10 +5,10 @@ import { Ref } from './refs'
 import { Resource } from './resources'
 
 const override = <T>(from: Injectable, to: Injectable<T> | T): Injectable<T> => {
-  if (to instanceof Injectable) {
-    return new Injectable(async (container) => container.get(to), from.ref)
+  if (Injectable.is(to)) {
+    return Injectable.create(async (container) => container.get(to), from.ref)
   }
-  return new Injectable(async () => to, from.ref)
+  return Injectable.create(async () => to, from.ref)
 }
 
 export namespace Container {

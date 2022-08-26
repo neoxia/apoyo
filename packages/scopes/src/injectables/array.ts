@@ -1,8 +1,10 @@
 import { Tuple } from '../types'
-import { Injectable } from './injectable'
+import { create } from './create'
+
+import type { Injectable } from './injectable'
 
 export const array = <A>(deps: Injectable<A>[]): Injectable<A[]> => {
-  return new Injectable(async (container) => {
+  return create(async (container) => {
     const args: A[] = []
     for (const dep of deps) {
       args.push(await container.get(dep))
