@@ -2,7 +2,7 @@ import pino, { Logger, LoggerOptions as PinoOptions } from 'pino'
 import pinoPretty from 'pino-pretty'
 
 import { BooleanDecoder, Decoder, EnumDecoder } from '@apoyo/decoders'
-import { Injectable } from '@apoyo/scopes'
+import { Injectable, Implementation } from '@apoyo/scopes'
 import { pipe, run } from '@apoyo/std'
 
 import { Env } from '../process'
@@ -20,7 +20,7 @@ export const $options = Injectable.of<LoggerOptions>({})
 
 export const $out = Injectable.of<Writable>(process.stdout)
 
-export const $logger: Injectable<Logger> = Injectable.define(
+export const $logger: Injectable<Logger> = Implementation.create(
   [$env, $options, $als, $out],
   (env, config, als, out): Logger => {
     const prettyEnabled = run(() => {
@@ -61,8 +61,8 @@ export const $logger: Injectable<Logger> = Injectable.define(
 )
 
 export const child = (options: LoggerChildOptions | Injectable<LoggerChildOptions>): Injectable<Logger> => {
-  const $options = options instanceof Injectable ? options : Injectable.of(options)
-  return Injectable.define([$logger, $options], (logger, options) => {
+  const $options = Injectable.is(options) ? options : Injectable.of(options)
+  return Implementation.create([$logger, $options], (logger, options) => {
     return logger.child(
       {
         name: options.name,

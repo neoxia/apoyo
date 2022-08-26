@@ -1,5 +1,5 @@
-import { Injectable } from '../../src'
+import { Implementation } from '../../src'
 
-export const $lazy = Injectable.define(() => {
+export const $lazy = Implementation.create(() => {
   return 'lazy'
 })

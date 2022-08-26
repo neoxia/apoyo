@@ -1,5 +1,5 @@
 import { DecodeError, Decoder, ObjectDecoder } from '@apoyo/decoders'
-import { Injectable } from '@apoyo/scopes'
+import { Implementation } from '@apoyo/scopes'
 import { Dict, Err, pipe, Result } from '@apoyo/std'
 
 import { $env } from './env'
@@ -24,5 +24,5 @@ export const validate = <T extends Dict>(env: Dict<unknown>, schema: Schema<T>) 
 }
 
 export const define = <T extends Dict>(schema: Schema<T>) => {
-  return Injectable.define([$env], (env) => validate(env, schema))
+  return Implementation.create([$env], (env) => validate(env, schema))
 }

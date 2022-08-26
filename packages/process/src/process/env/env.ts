@@ -2,7 +2,7 @@ import dotenvExpand from 'dotenv-expand'
 import dotenv from 'dotenv-flow'
 import fs from 'fs'
 
-import { Injectable } from '@apoyo/scopes'
+import { Implementation } from '@apoyo/scopes'
 import { Dict, Err, pipe } from '@apoyo/std'
 
 import { $appEnv } from './app-env'
@@ -30,9 +30,9 @@ export const load = (options: dotenv.DotenvConfigOptions = {}): Dict<string> => 
   return env.parsed
 }
 
-export const $envDir = Injectable.define([$rootDir], (rootDir) => rootDir)
+export const $envDir = Implementation.create([$rootDir], (rootDir) => rootDir)
 
-export const $env = Injectable.define([$appEnv, $envDir], (appEnv, path) =>
+export const $env = Implementation.create([$appEnv, $envDir], (appEnv, path) =>
   load({
     node_env: appEnv.name,
     path

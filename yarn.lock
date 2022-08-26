@@ -58,7 +58,7 @@ __metadata:
   dependencies:
     "@apoyo/decoders": ^0.0.16
     "@apoyo/http": ^0.0.6
-    "@apoyo/scopes": 0.3.1
+    "@apoyo/scopes": 0.4.0
     "@apoyo/std": ^0.0.15
     "@types/express": ^4.17.13
     "@types/jest": ^26.0.23
@@ -74,7 +74,7 @@ __metadata:
     typescript: ^4.7.4
   peerDependencies:
     "@apoyo/decoders": ^0.0.16
-    "@apoyo/scopes": 0.3.1
+    "@apoyo/scopes": 0.4.0
     "@apoyo/std": ^0.0.15
     "@types/express": ^4.17.13
     express: ^4.17.3
@@ -103,7 +103,7 @@ __metadata:
   resolution: "@apoyo/process@workspace:packages/process"
   dependencies:
     "@apoyo/decoders": ^0.0.16
-    "@apoyo/scopes": ^0.3.1
+    "@apoyo/scopes": 0.4.0
     "@apoyo/std": ^0.0.15
     "@types/dotenv-flow": ^3.2.0
     "@types/jest": ^26.0.23
@@ -119,12 +119,12 @@ __metadata:
     typescript: ^4.7.4
   peerDependencies:
     "@apoyo/decoders": ^0.0.16
-    "@apoyo/scopes": ^0.3.1
+    "@apoyo/scopes": 0.4.0
     "@apoyo/std": ^0.0.15
   languageName: unknown
   linkType: soft
 
-"@apoyo/scopes@0.3.1, @apoyo/scopes@^0.3.1, @apoyo/scopes@workspace:packages/scopes":
+"@apoyo/scopes@0.4.0, @apoyo/scopes@workspace:packages/scopes":
   version: 0.0.0-use.local
   resolution: "@apoyo/scopes@workspace:packages/scopes"
   dependencies:

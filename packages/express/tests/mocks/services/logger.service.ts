@@ -1,4 +1,4 @@
-import { Injectable } from '@apoyo/scopes'
+import { Injectable, Abstract } from '@apoyo/scopes'
 
 export interface Logger {
   info(msg: string, data?: any): void
@@ -8,4 +8,4 @@ export interface Logger {
 
 export const $consoleLogger = Injectable.of<Logger>(console)
 
-export const $logger = Injectable.abstract('Logger', $consoleLogger)
+export const $logger = Abstract.create('Logger', $consoleLogger)

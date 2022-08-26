@@ -2,7 +2,7 @@ import fs from 'fs'
 import { join } from 'path'
 
 import { DecodeError, Decoder, ObjectDecoder, TextDecoder } from '@apoyo/decoders'
-import { Injectable } from '@apoyo/scopes'
+import { Implementation } from '@apoyo/scopes'
 import { Err, pipe, Result } from '@apoyo/std'
 
 import { $rootDir } from './root'
@@ -45,6 +45,6 @@ export const readPkg = async (rootDir: string) => {
   )
 }
 
-export const $pkg = Injectable.define([$rootDir], (rootDir) => readPkg(rootDir))
+export const $pkg = Implementation.create([$rootDir], (rootDir) => readPkg(rootDir))
 
-export const $version = Injectable.define([$pkg], (pkg) => pkg.version)
+export const $version = Implementation.create([$pkg], (pkg) => pkg.version)

@@ -1,4 +1,4 @@
-import { Injectable } from '@apoyo/scopes'
+import { Injectable, Implementation } from '@apoyo/scopes'
 
 export interface HealthReport {
   name: string
@@ -34,6 +34,6 @@ export class HealthReporter {
 
 export const $healthChecks = Injectable.of<HealthCheck[]>([])
 
-export const $healthReporter = Injectable.define([$healthChecks], (checks) => {
+export const $healthReporter = Implementation.create([$healthChecks], (checks) => {
   return new HealthReporter(checks)
 })
