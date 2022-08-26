@@ -1,4 +1,4 @@
-import { Injectable } from '@apoyo/scopes'
+import { Implementation, Injectable } from '@apoyo/scopes'
 import { Err } from '@apoyo/std'
 
 export class AppEnvironment {
@@ -26,7 +26,7 @@ export const $supportedEnvs = Injectable.of([
   AppEnvironment.TEST
 ])
 
-export const $appEnv = Injectable.define(
+export const $appEnv = Implementation.create(
   [$supportedEnvs],
   (supportedEnvs): AppEnvironment => {
     const nodeEnv = process.env.NODE_ENV

@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from 'async_hooks'
 import { Bindings } from 'pino'
 
-import { Injectable } from '@apoyo/scopes'
+import { Implementation } from '@apoyo/scopes'
 
 export class LoggerALS {
   private _storage = new AsyncLocalStorage<Bindings>()
@@ -26,4 +26,4 @@ export class LoggerALS {
   }
 }
 
-export const $als = Injectable.define(() => new LoggerALS())
+export const $als = Implementation.create(() => new LoggerALS())

@@ -47,7 +47,7 @@ export const Logger = {
    *   name: 'myFeature'
    * })
    *
-   * const $myFeature = Injectable.define([$myFeatureLogger], (logger) => {
+   * const $myFeature = Implementation.create([$myFeatureLogger], (logger) => {
    *   return () => {
    *     logger.info('execute my feature')
    *   }
@@ -65,7 +65,7 @@ export const Logger = {
    * ```ts
    * const $myFeatureLogger = Logger.forContext('myFeature')
    *
-   * const $myFeature = Injectable.define([$myFeatureLogger], (logger) => {
+   * const $myFeature = Implementation.create([$myFeatureLogger], (logger) => {
    *   return () => {
    *     logger.info('execute my feature')
    *   }

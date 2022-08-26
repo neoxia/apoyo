@@ -1,7 +1,7 @@
 import { Application, Router, Express as ExpressType } from 'express'
 import { Server } from 'http'
 
-import { Injectable, Resource } from '@apoyo/scopes'
+import { Implementation, Injectable, Resource } from '@apoyo/scopes'
 
 import { Request } from './request'
 import { Route } from './route'
@@ -81,7 +81,7 @@ export const close = (server: Server) => {
 }
 
 export const createServer = ($app: Injectable<Application>, $config: Injectable<Express.Config>): Injectable<Server> =>
-  Injectable.define([$app, $config], async (app, config) => {
+  Implementation.create([$app, $config], async (app, config) => {
     const server = await Express.listen(app, config.port)
     const close = () => Express.close(server)
     return Resource.of(server, close)

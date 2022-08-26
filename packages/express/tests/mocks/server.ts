@@ -4,6 +4,7 @@ import { Injectable } from '@apoyo/scopes'
 
 import { Express } from '../../src'
 import { routes } from './routes/index.route'
+import { Implementation } from '@apoyo/scopes'
 
 export const $config = Injectable.of({
   port: 3000
@@ -11,7 +12,7 @@ export const $config = Injectable.of({
 
 export const $router = Express.createRouter(routes)
 
-export const $app = Injectable.define(
+export const $app = Implementation.create(
   [$router],
   (router): Application => {
     const app = express()

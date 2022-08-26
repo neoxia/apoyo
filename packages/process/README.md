@@ -54,7 +54,7 @@ const $dbEnv = Env.define({
   DB_PORT: IntegerDecoder.int
 })
 
-const $dbConfig = Injectable.define([$dbEnv], (env) => {
+const $dbConfig = Implementation.create([$dbEnv], (env) => {
   return {
     host: env.DB_HOST,
     port: env.DB_PORT

@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/process",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "Utils focused around the current process",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@apoyo/decoders": "^0.0.16",
-    "@apoyo/scopes": "0.3.1",
+    "@apoyo/scopes": "0.4.0",
     "@apoyo/std": "^0.0.15",
     "@types/jest": "^26.0.23",
     "@types/node": "^14.18.21",
@@ -52,7 +52,7 @@
   },
   "peerDependencies": {
     "@apoyo/decoders": "^0.0.16",
-    "@apoyo/scopes": "0.3.1",
+    "@apoyo/scopes": "0.4.0",
     "@apoyo/std": "^0.0.15"
   },
   "publishConfig": {
