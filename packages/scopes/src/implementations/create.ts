@@ -26,11 +26,13 @@ export function create(optionsOrDepsOrFactory: any, factory?: any) {
 }
 
 function _create<Deps extends Tuple, T>(options: Implementation.Options<Deps, T>): Implementation<Deps, T> {
-  return {
-    ...Injectable.create((container) => _initialize<T>(container, options)),
-    inject: options.inject,
-    factory: options.factory
-  }
+  return Object.assign(
+    Injectable.create((container) => _initialize<T>(container, options)),
+    {
+      inject: options.inject,
+      factory: options.factory
+    }
+  )
 }
 
 async function _initialize<T>(

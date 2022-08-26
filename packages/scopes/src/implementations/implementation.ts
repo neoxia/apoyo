@@ -1,6 +1,6 @@
 import { Tuple, Fn } from '../types'
 import { Injectable } from '../injectables'
-import { create } from './define'
+import { create } from './create'
 import { Resource } from '../resources'
 
 export interface Implementation<Args extends Tuple, T> extends Injectable<Implementation.ReturnType<T>> {
