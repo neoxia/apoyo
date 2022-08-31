@@ -1,0 +1,61 @@
+{
+  "name": "@apoyo/files-azure",
+  "version": "0.0.1",
+  "description": "File driver for Azure Storage",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
+  "sideEffects": false,
+  "author": "Sascha Braun",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 14.0.0"
+  },
+  "tags": [
+    "utils",
+    "files",
+    "drive",
+    "azure"
+  ],
+  "keywords": [
+    "utils",
+    "files",
+    "drive",
+    "azure"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neoxia/apoyo"
+  },
+  "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/files-azure",
+  "scripts": {
+    "test": "jest --verbose --runInBand",
+    "build": "tsup"
+  },
+  "devDependencies": {
+    "@apoyo/files": "0.0.1",
+    "@types/jest": "^26.0.23",
+    "@types/node": "^14.18.21",
+    "jest": "^26.4.2",
+    "ts-jest": "^26.3.0",
+    "ts-node": "^8.0.2",
+    "tsup": "^6.1.2",
+    "typescript": "^4.7.4"
+  },
+  "peerDependencies": {
+    "@apoyo/files": "0.0.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@azure/identity": "^2.1.0",
+    "@azure/storage-blob": "^12.11.0"
+  }
+}

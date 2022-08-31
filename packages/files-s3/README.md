@@ -12,7 +12,7 @@ Install package:
 
 ## Introduction
 
-This library is a standalone & framework agnostic version of [Adonisjs S3 Drive](https://github.com/adonisjs/drive-s3).
+This library is a simplified framework agnostic version of [Adonisjs S3 Drive](https://github.com/adonisjs/drive-s3).
 
 Please check out [@apoyo/files](https://github.com/neoxia/apoyo/tree/master/packages/files) for more information.
 
