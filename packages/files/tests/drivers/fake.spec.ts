@@ -1,7 +1,5 @@
-import { tmpdir } from 'os'
 import path from 'path'
 import { Readable } from 'stream'
-import rimraf from 'rimraf'
 
 import { pipe, Str } from '@apoyo/std'
 
@@ -11,24 +9,14 @@ import {
   CannotMoveFileException,
   CannotReadFileException,
   FileException,
-  LocalDriver,
-  LocalDriverConfig
+  FakeDriver,
+  FakeDriverConfig
 } from '../../src'
 
-const TEST_ROOT = path.resolve(tmpdir(), 'tests')
-
-const cleanup = async () => {
-  return new Promise<void>((resolve, reject) => rimraf(TEST_ROOT, {}, (err) => (err ? reject(err) : resolve())))
-}
-
 describe('Local driver | put', () => {
-  afterEach(async () => {
-    await cleanup()
-  })
-
   it('write file to the destination', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.put('foo.txt', 'hello world')
 
@@ -38,8 +26,8 @@ describe('Local driver | put', () => {
   })
 
   it('create intermediate directories when missing', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.put('bar/baz/foo.txt', 'hello world')
 
@@ -49,8 +37,8 @@ describe('Local driver | put', () => {
   })
 
   it('overwrite destination when file already exists', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.put('foo.txt', 'hi world')
     await driver.put('foo.txt', 'hello world')
@@ -62,13 +50,9 @@ describe('Local driver | put', () => {
 })
 
 describe('Local driver | putStream', () => {
-  afterEach(async () => {
-    await cleanup()
-  })
-
   it('write stream to a file', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     const stream = new Readable({
       read() {
@@ -86,8 +70,8 @@ describe('Local driver | putStream', () => {
   })
 
   it('create intermediate directories when writing a stream to a file', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     const stream = new Readable({
       read() {
@@ -105,8 +89,8 @@ describe('Local driver | putStream', () => {
   })
 
   it('overwrite existing file when stream to a file', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     const stream = new Readable({
       read() {
@@ -126,41 +110,33 @@ describe('Local driver | putStream', () => {
 })
 
 describe('Local driver | exists', () => {
-  afterEach(async () => {
-    await cleanup()
-  })
-
   it('return true when a file exists', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.put('bar/baz/foo.txt', 'bar')
     expect(await driver.exists('bar/baz/foo.txt')).toBe(true)
   })
 
   it("return false when a file doesn't exists", async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     expect(await driver.exists('foo.txt')).toBe(false)
   })
 
   it("return false when a file parent directory doesn't exists", async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     expect(await driver.exists('bar/baz/foo.txt')).toBe(false)
   })
 })
 
 describe('Local driver | delete', () => {
-  afterEach(async () => {
-    await cleanup()
-  })
-
   it('remove file', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.put('bar/baz/foo.txt', 'bar')
     await driver.delete('bar/baz/foo.txt')
@@ -169,16 +145,16 @@ describe('Local driver | delete', () => {
   })
 
   it('do not error when trying to remove a non-existing file', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.delete('foo.txt')
     expect(await driver.exists('foo.txt')).toBe(false)
   })
 
   it("do not error when file parent directory doesn't exists", async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.delete('bar/baz/foo.txt')
     expect(await driver.exists('bar/baz/foo.txt')).toBe(false)
@@ -186,13 +162,9 @@ describe('Local driver | delete', () => {
 })
 
 describe('Local driver | copy', () => {
-  afterEach(async () => {
-    await cleanup()
-  })
-
   it('copy file from within the disk root', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.put('foo.txt', 'hello world')
     await driver.copy('foo.txt', 'bar.txt')
@@ -202,8 +174,8 @@ describe('Local driver | copy', () => {
   })
 
   it('create intermediate directories when copying a file', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.put('foo.txt', 'hello world')
     await driver.copy('foo.txt', 'baz/bar.txt')
@@ -213,8 +185,8 @@ describe('Local driver | copy', () => {
   })
 
   it("return error when source doesn't exists", async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     try {
       await driver.copy('foo.txt', 'bar.txt')
@@ -226,8 +198,8 @@ describe('Local driver | copy', () => {
   })
 
   it('overwrite destination when already exists', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.put('foo.txt', 'hello world')
     await driver.put('bar.txt', 'hi world')
@@ -239,13 +211,9 @@ describe('Local driver | copy', () => {
 })
 
 describe('Local driver | move', () => {
-  afterEach(async () => {
-    await cleanup()
-  })
-
   it('move file from within the disk root', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.put('foo.txt', 'hello world')
     await driver.move('foo.txt', 'bar.txt')
@@ -256,8 +224,8 @@ describe('Local driver | move', () => {
   })
 
   it('create intermediate directories when moving a file', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.put('foo.txt', 'hello world')
     await driver.move('foo.txt', 'baz/bar.txt')
@@ -268,8 +236,8 @@ describe('Local driver | move', () => {
   })
 
   it("return error when source doesn't exists", async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     try {
       await driver.move('foo.txt', 'baz/bar.txt')
@@ -281,8 +249,8 @@ describe('Local driver | move', () => {
   })
 
   it('overwrite destination when already exists', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.put('foo.txt', 'hello world')
     await driver.put('baz/bar.txt', 'hi world')
@@ -295,13 +263,9 @@ describe('Local driver | move', () => {
 })
 
 describe('Local driver | get', () => {
-  afterEach(async () => {
-    await cleanup()
-  })
-
   it('get file contents', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.put('foo.txt', 'hello world')
 
@@ -310,8 +274,8 @@ describe('Local driver | get', () => {
   })
 
   it('get file contents as a stream', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.put('foo.txt', 'hello world')
 
@@ -326,8 +290,8 @@ describe('Local driver | get', () => {
   })
 
   it("return error when file doesn't exists", async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     try {
       await driver.get('foo.txt')
@@ -340,13 +304,9 @@ describe('Local driver | get', () => {
 })
 
 describe('Local driver | getStats', () => {
-  afterEach(async () => {
-    await cleanup()
-  })
-
   it('get file stats', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     await driver.put('foo.txt', 'hello world')
 
@@ -356,8 +316,8 @@ describe('Local driver | getStats', () => {
   })
 
   it('return error when file is missing', async () => {
-    const config: LocalDriverConfig = { root: TEST_ROOT }
-    const driver = new LocalDriver(config)
+    const config: FakeDriverConfig = {}
+    const driver = new FakeDriver(config)
 
     try {
       await driver.getStats('foo.txt')
@@ -370,13 +330,8 @@ describe('Local driver | getStats', () => {
 })
 
 describe('Local driver | getUrl', () => {
-  afterEach(async () => {
-    await cleanup()
-  })
-
   it('get url to a given file', async () => {
-    const config: LocalDriverConfig = {
-      root: TEST_ROOT,
+    const config: FakeDriverConfig = {
       serveFiles: {
         makeUrl(location) {
           return (
@@ -401,7 +356,7 @@ describe('Local driver | getUrl', () => {
         }
       }
     }
-    const driver = new LocalDriver(config)
+    const driver = new FakeDriver(config)
 
     const url = await driver.getUrl('foo.txt')
     expect(url).toBe('/uploads/foo.txt')
@@ -409,13 +364,8 @@ describe('Local driver | getUrl', () => {
 })
 
 describe('Local driver | getSignedUrl', () => {
-  afterEach(async () => {
-    await cleanup()
-  })
-
   it('get signed url to a given file', async () => {
-    const config: LocalDriverConfig = {
-      root: TEST_ROOT,
+    const config: FakeDriverConfig = {
       serveFiles: {
         makeUrl(location) {
           return (
@@ -440,7 +390,7 @@ describe('Local driver | getSignedUrl', () => {
         }
       }
     }
-    const driver = new LocalDriver(config)
+    const driver = new FakeDriver(config)
 
     const url = await driver.getSignedUrl('foo.txt')
     expect(url).toMatch(/\/uploads\/foo\.txt\?sign=.*/)
