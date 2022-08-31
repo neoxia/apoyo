@@ -14,17 +14,21 @@ Install package:
 
 This library is a simplified framework agnostic version of [Adonisjs Drive](https://github.com/adonisjs/drive).
 
-As such, it will provide the users of this library a multitude of pre-made file drivers for existing file providers:
+The following file drivers are provided by default:
 
-- Local file driver
-- Memory driver
-- AWS S3 driver
+- Local file driver (included in `@apoyo/files`)
+- Memory / Fake driver (included in `@apoyo/files`)
+- AWS S3 driver (included in `@apoyo/files-s3`)
+- GCS driver (included in `@apoyo/files-gcs`)
+- Azure storage driver (included in `@apoyo/files-azure`)
 
-Other providers may be added if required. Please create a Github issue in that case.
+Custom providers can also be created by implementing the `DriverContract` interface available in `@apoyo/files`.
 
 ## Documentation
 
 TODO
+
+Look up the [DriverContract](https://github.com/neoxia/apoyo/tree/master/packages/files/src/driver.ts) interface until the documentation has been written.
 
 ## License
 
