@@ -106,7 +106,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@apoyo/files@workspace:packages/files"
   dependencies:
-    "@apoyo/std": "workspace:^"
+    "@apoyo/std": 0.0.15
     "@types/etag": ^1.8.1
     "@types/fs-extra": ^9.0.13
     "@types/jest": ^26.0.23
@@ -120,7 +120,7 @@ __metadata:
     tsup: ^6.1.2
     typescript: ^4.7.4
   peerDependencies:
-    "@apoyo/std": "workspace:^"
+    "@apoyo/std": 0.0.15
   languageName: unknown
   linkType: soft
 
@@ -184,7 +184,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@apoyo/std@^0.0.15, @apoyo/std@workspace:^, @apoyo/std@workspace:packages/std":
+"@apoyo/std@0.0.15, @apoyo/std@^0.0.15, @apoyo/std@workspace:packages/std":
   version: 0.0.0-use.local
   resolution: "@apoyo/std@workspace:packages/std"
   dependencies:
