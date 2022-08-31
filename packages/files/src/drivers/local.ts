@@ -97,7 +97,7 @@ export class LocalDriver implements DriverContract {
     try {
       const stats = await this.adapter.stat(this.makePath(location))
       return {
-        modified: stats.mtime,
+        modified: new Date(stats.mtime),
         size: stats.size,
         isFile: stats.isFile(),
         etag: etag(stats)

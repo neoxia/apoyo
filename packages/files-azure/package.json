@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/files-azure",
   "scripts": {
-    "test": "jest --verbose --runInBand",
+    "test": "jest --verbose --runInBand --passWithNoTests",
     "build": "tsup"
   },
   "devDependencies": {
