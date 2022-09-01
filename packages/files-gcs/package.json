@@ -1,0 +1,60 @@
+{
+  "name": "@apoyo/files-gcs",
+  "version": "0.0.1",
+  "description": "File driver for GCS",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
+  "sideEffects": false,
+  "author": "Sascha Braun",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 14.0.0"
+  },
+  "tags": [
+    "utils",
+    "files",
+    "drive",
+    "gcs"
+  ],
+  "keywords": [
+    "utils",
+    "files",
+    "drive",
+    "gcs"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neoxia/apoyo"
+  },
+  "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/files-gcs",
+  "scripts": {
+    "test": "jest --verbose --runInBand --passWithNoTests",
+    "build": "tsup"
+  },
+  "devDependencies": {
+    "@apoyo/files": "0.0.1",
+    "@types/jest": "^26.0.23",
+    "@types/node": "^14.18.21",
+    "jest": "^26.4.2",
+    "ts-jest": "^26.3.0",
+    "ts-node": "^8.0.2",
+    "tsup": "^6.1.2",
+    "typescript": "^4.7.4"
+  },
+  "peerDependencies": {
+    "@apoyo/files": "0.0.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^6.4.1"
+  }
+}

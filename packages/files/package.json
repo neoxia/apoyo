@@ -1,0 +1,64 @@
+{
+  "name": "@apoyo/files",
+  "version": "0.0.1",
+  "description": "Utils focused around files management",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
+  "sideEffects": false,
+  "author": "Sascha Braun",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 14.0.0"
+  },
+  "tags": [
+    "utils",
+    "files",
+    "drive"
+  ],
+  "keywords": [
+    "utils",
+    "files",
+    "drive"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neoxia/apoyo"
+  },
+  "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/files",
+  "scripts": {
+    "test": "jest --verbose --runInBand --passWithNoTests",
+    "build": "tsup"
+  },
+  "devDependencies": {
+    "@apoyo/std": "0.0.15",
+    "@types/etag": "^1.8.1",
+    "@types/fs-extra": "^9.0.13",
+    "@types/jest": "^26.0.23",
+    "@types/node": "^14.18.21",
+    "@types/rimraf": "^3",
+    "jest": "^26.4.2",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^26.3.0",
+    "ts-node": "^8.0.2",
+    "tsup": "^6.1.2",
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "etag": "^1.8.1",
+    "fs-extra": "^10.1.0",
+    "memfs": "^3.4.7"
+  },
+  "peerDependencies": {
+    "@apoyo/std": "0.0.15"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

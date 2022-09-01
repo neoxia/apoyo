@@ -16,9 +16,16 @@ The goal was having:
 
 - [Decoders](packages/decoders) (`@apoyo/decoders`): Contains type decoders and validators.
 
+- [Files](packages/files) (`@apoyo/files`): Contains file drivers for most commonly used providers.
+
+<!--
+Packages that are not ready yet:
+
 - [Scopes](packages/scopes) (`@apoyo/scopes`): A simple functional dependency injector.
 
-- [Http](packages/process) (`@apoyo/process`): Contains Nodejs process utils, such as auto-loading .env files, validating and parsing environment variables, a zero-config logger (using pino), etc...
+- [Process](packages/process) (`@apoyo/process`): Contains Nodejs process utils, such as auto-loading .env files, validating and parsing environment variables, a zero-config logger (using pino), etc...
+
+-->
 
 ## Setup
 
