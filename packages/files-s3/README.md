@@ -10,11 +10,9 @@ Install peer dependencies:
 Install package:
 `npm install @apoyo/files-s3`
 
-## Introduction
+## Documentation
 
-This library is a simplified framework agnostic version of [Adonisjs S3 Drive](https://github.com/adonisjs/drive-s3).
-
-Please check out [@apoyo/files](https://github.com/neoxia/apoyo/tree/master/packages/files) for more information.
+Please visit the [documentation](https://nx-apoyo.netlify.app/guide/files/getting-started.html) for more information.
 
 ## License
 
