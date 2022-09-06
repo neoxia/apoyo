@@ -75,33 +75,42 @@ module.exports = {
         ]
       },
       {
-        title: 'Scopes',
+        title: 'Files',
         collapsable: true,
+        sidebarDepth: 3,
         children: [
-          '/guide/scopes/getting-started.md',
-          '/guide/scopes/injectables.md',
-          '/guide/scopes/resources.md',
-          '/guide/scopes/scopes.md',
-          '/guide/scopes/advanced-features.md',
+          '/guide/files/getting-started.md',
+          '/guide/files/driver-contract.md'
         ]
       },
-      {
-        title: 'Http',
-        collapsable: true,
-        children: [
-          '/guide/http/getting-started.md',
-          {
-            title: 'API',
-            collapsable: true,
-            sidebarDepth: 0,
-            children: [
-              ['/guide/http/api/Http.md', 'Http'],
-              ['/guide/http/api/HttpCode.md', 'HttpCode'],
-              ['/guide/http/api/Response.md', 'Response']
-            ]
-          }
-        ]
-      },
+      // {
+      //   title: 'Scopes',
+      //   collapsable: true,
+      //   children: [
+      //     '/guide/scopes/getting-started.md',
+      //     '/guide/scopes/injectables.md',
+      //     '/guide/scopes/resources.md',
+      //     '/guide/scopes/scopes.md',
+      //     '/guide/scopes/advanced-features.md',
+      //   ]
+      // },
+      // {
+      //   title: 'Http',
+      //   collapsable: true,
+      //   children: [
+      //     '/guide/http/getting-started.md',
+      //     {
+      //       title: 'API',
+      //       collapsable: true,
+      //       sidebarDepth: 0,
+      //       children: [
+      //         ['/guide/http/api/Http.md', 'Http'],
+      //         ['/guide/http/api/HttpCode.md', 'HttpCode'],
+      //         ['/guide/http/api/Response.md', 'Response']
+      //       ]
+      //     }
+      //   ]
+      // },
     ],
     sidebarDepth: 1
   }

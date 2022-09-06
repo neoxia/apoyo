@@ -10,11 +10,9 @@ Install peer dependencies:
 Install package:
 `npm install @apoyo/files-gcs`
 
-## Introduction
+## Documentation
 
-This library is a simplfied framework agnostic version of [Adonisjs GCS Drive](https://github.com/adonisjs/drive-gcs).
-
-Please check out [@apoyo/files](https://github.com/neoxia/apoyo/tree/master/packages/files) for more information.
+Please visit the [documentation](https://nx-apoyo.netlify.app/guide/files/getting-started.html) for more information.
 
 ## License
 

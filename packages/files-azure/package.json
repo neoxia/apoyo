@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/files-azure",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "File driver for Azure Storage",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -39,7 +39,7 @@
     "build": "tsup"
   },
   "devDependencies": {
-    "@apoyo/files": "0.0.1",
+    "@apoyo/files": "~0.0.2",
     "@types/jest": "^26.0.23",
     "@types/node": "^14.18.21",
     "jest": "^26.4.2",
@@ -49,7 +49,7 @@
     "typescript": "^4.7.4"
   },
   "peerDependencies": {
-    "@apoyo/files": "0.0.1"
+    "@apoyo/files": "~0.0.2"
   },
   "publishConfig": {
     "access": "public"
