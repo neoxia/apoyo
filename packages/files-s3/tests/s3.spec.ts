@@ -18,7 +18,7 @@ describe('S3 Driver', () => {
     const config: S3DriverConfig = {
       bucket: 'test',
       region: 'us-east-1',
-      endpoint: 'http://localhost:4569',
+      endpoint: process.env.AWS_S3_SERVER || 'http://localhost:4569',
       forcePathStyle: true
     }
 

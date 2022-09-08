@@ -30,6 +30,8 @@ jobs:
       - run: yarn build
 
       - run: yarn test
+        env:
+          AWS_S3_SERVER: http://fake_s3:4569
 
     services:
       fake_s3:
