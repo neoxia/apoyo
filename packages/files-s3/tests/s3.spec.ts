@@ -19,7 +19,9 @@ describe('S3 Driver', () => {
       bucket: 'test',
       region: 'us-east-1',
       endpoint: process.env.AWS_S3_SERVER || 'http://localhost:4569',
-      forcePathStyle: true
+      forcePathStyle: true,
+      key: '<aws_access_key>',
+      secret: '<aws_secret_key>'
     }
 
     driver = new S3Driver(config)
