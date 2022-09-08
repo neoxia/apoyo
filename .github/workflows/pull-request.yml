@@ -30,3 +30,9 @@ jobs:
       - run: yarn build
 
       - run: yarn test
+
+    services:
+      fake_s3:
+        image: lphoward/fake-s3
+        ports:
+          - 4569:4569

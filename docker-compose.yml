@@ -1,0 +1,8 @@
+version: "3.1"
+
+services:
+  fake_s3:
+    image: lphoward/fake-s3
+    ports:
+      - 4569:4569
+
