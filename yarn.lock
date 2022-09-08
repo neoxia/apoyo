@@ -123,6 +123,8 @@ __metadata:
   resolution: "@apoyo/files-s3@workspace:packages/files-s3"
   dependencies:
     "@apoyo/files": ~0.0.2
+    "@apoyo/std": 0.0.15
+    "@aws-sdk/abort-controller": ^3.162.0
     "@aws-sdk/client-s3": ^3.161.0
     "@aws-sdk/lib-storage": ^3.161.0
     "@aws-sdk/s3-request-presigner": ^3.161.0
@@ -136,6 +138,7 @@ __metadata:
     typescript: ^4.7.4
   peerDependencies:
     "@apoyo/files": ~0.0.2
+    "@apoyo/std": 0.0.15
   languageName: unknown
   linkType: soft
 
@@ -347,6 +350,16 @@ __metadata:
     "@aws-sdk/types": 3.160.0
     tslib: ^2.3.1
   checksum: 6ea2d7ab2daa40f252d4aa5178b30536f2c3fcf4ba30e03025df50350b52388bf343e870d5581d44e0af52933906f3b9f57c05d63eb379621825d53752b19c6d
+  languageName: node
+  linkType: hard
+
+"@aws-sdk/abort-controller@npm:^3.162.0":
+  version: 3.162.0
+  resolution: "@aws-sdk/abort-controller@npm:3.162.0"
+  dependencies:
+    "@aws-sdk/types": 3.162.0
+    tslib: ^2.3.1
+  checksum: 2292b6673ed7b7d139219a1f2170b2958417dd511929ba4d765f0641adfc8a7247af1b8ee66e30f6e9f4df9b172cc85edde347f55811df60715d52f5ea575d75
   languageName: node
   linkType: hard
 
@@ -1099,6 +1112,13 @@ __metadata:
   version: 3.160.0
   resolution: "@aws-sdk/types@npm:3.160.0"
   checksum: f33abfdcd08745cfb9e0bd050f9c85228e9f0bea938c01b86875e232798473cb03394dd2846f37c5ddd087a1595613591722fa240c21bbfa1b3e8c1772d24d28
+  languageName: node
+  linkType: hard
+
+"@aws-sdk/types@npm:3.162.0":
+  version: 3.162.0
+  resolution: "@aws-sdk/types@npm:3.162.0"
+  checksum: 32ce742f060556f7f607b50ef4bf3d79d45a26e298b58c54dcca4f3cd4e8da72b521333c6408fcf09208928b158917b73b885438eef4a151f3d193a1cf74878c
   languageName: node
   linkType: hard
 

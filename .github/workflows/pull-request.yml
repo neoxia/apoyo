@@ -16,6 +16,12 @@ jobs:
       matrix:
         node-version: [14.x]
 
+    services:
+      fake_s3:
+        image: lphoward/fake-s3
+        ports:
+          - 4569:4569
+
     steps:
       - uses: actions/checkout@v3.0.2
 
@@ -30,3 +36,5 @@ jobs:
       - run: yarn build
 
       - run: yarn test
+        env:
+          AWS_S3_SERVER: http://localhost:4569

@@ -309,14 +309,16 @@ export class S3Driver implements DriverContract {
         return
       }
 
-      await this.adapter.send(
-        new PutObjectCommand({
+      const upload = new Upload({
+        params: {
           Key: location,
           Body: contents,
           Bucket: this._config.bucket,
           ...this._transformWriteOptions(options)
-        })
-      )
+        },
+        client: this.adapter
+      })
+      await upload.done()
     } catch (error) {
       throw new CannotWriteFileException(location, error)
     }

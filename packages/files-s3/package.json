@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/files-s3",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "File driver for S3",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@apoyo/files": "~0.0.2",
+    "@apoyo/std": "0.0.15",
     "@types/jest": "^26.0.23",
     "@types/node": "^14.18.21",
     "jest": "^26.4.2",
@@ -49,9 +50,11 @@
     "typescript": "^4.7.4"
   },
   "peerDependencies": {
-    "@apoyo/files": "~0.0.2"
+    "@apoyo/files": "~0.0.2",
+    "@apoyo/std": "0.0.15"
   },
   "dependencies": {
+    "@aws-sdk/abort-controller": "^3.162.0",
     "@aws-sdk/client-s3": "^3.161.0",
     "@aws-sdk/lib-storage": "^3.161.0",
     "@aws-sdk/s3-request-presigner": "^3.161.0",
