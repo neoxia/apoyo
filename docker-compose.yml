@@ -6,3 +6,9 @@ services:
     ports:
       - 4569:4569
 
+  # https://hub.docker.com/_/microsoft-azure-storage-azurite
+  fake_azure:
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports:
+      - 10000:10000
+
