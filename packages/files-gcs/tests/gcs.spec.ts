@@ -17,13 +17,14 @@ describe('GCS Driver', () => {
   beforeEach(async () => {
     const config: GcsDriverConfig = {
       apiEndpoint: 'http://localhost:4443',
-      bucket: 'test'
+      bucket: 'test',
+      projectId: 'test'
     }
 
     const gcs = new GcsDriver(config)
 
-    const bucket = gcs.adapter.bucket('test')
-    const exists = await bucket.exists()
+    const [buckets] = await gcs.adapter.getBuckets()
+    const exists = buckets.find((bucket) => bucket.name === 'test') !== undefined
     if (!exists) {
       await gcs.adapter.createBucket('test')
     }
