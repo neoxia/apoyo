@@ -11,21 +11,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      fake_s3:
-        image: lphoward/fake-s3
-        ports:
-          - 4569:4569
-      fake_azure:
-        image: mcr.microsoft.com/azure-storage/azurite
-        ports:
-          - 10000:10000
-      fake_gcs:
-        image: fsouza/fake-gcs-server
-        ports:
-          - 4443:4443
-        # command: ["-scheme", "http", "-port", "4443", "-external-url", "http://localhost:4443", "-backend", "memory"]
-
     steps:
       - uses: actions/checkout@v3.0.2
 
@@ -39,9 +24,9 @@ jobs:
 
       - run: yarn build
 
+      - run: docker-compose up -d
       - run: yarn test
-        env:
-          AWS_S3_SERVER: http://localhost:4569
+      - run: docker-compose down
 
       - name: Publish
         run: yarn workspaces foreach --no-private npm publish --tolerate-republish
