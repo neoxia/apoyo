@@ -14,12 +14,11 @@ describe('Azure Driver', () => {
   let driver: AzureDriver
 
   beforeEach(async () => {
+    // Check https://github.com/Azure/Azurite#usage-with-azure-storage-sdks-or-tools for more information.
     const config: AzureDriverConfig = {
-      // connectionString: 'UseDevelopmentStorage=true',
       container: 'test',
       name: 'devstoreaccount1',
       key: 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==',
-      // localAddress: 'https://127.0.0.1:10000/devstoreaccount1'
       localAddress: 'http://devstoreaccount1.blob.localhost:10000'
     }
 
