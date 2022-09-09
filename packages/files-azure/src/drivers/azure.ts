@@ -26,9 +26,10 @@ import {
   BlockBlobClient,
   CommonOptions
 } from '@azure/storage-blob'
-import { ReadStream } from 'fs'
+import { Readable } from 'stream'
 
 export type AzureDriverConfig = CommonOptions & {
+  container: string
   connectionString?: string
   azureTenantId?: string
   azureClientId?: string
@@ -36,7 +37,6 @@ export type AzureDriverConfig = CommonOptions & {
   name?: string
   key?: string
   localAddress?: string
-  container?: string
 }
 
 export class AzureDriver implements DriverContract {
@@ -77,7 +77,7 @@ export class AzureDriver implements DriverContract {
   }
 
   public getBlockBlobClient(location: string) {
-    const container = this._config.container as string
+    const container = this._config.container
 
     const containerClient = this.adapter.getContainerClient(container)
     return containerClient.getBlockBlobClient(location)
@@ -147,9 +147,9 @@ export class AzureDriver implements DriverContract {
    */
   public async getSignedUrl(location: string, options?: BlobSASSignatureValues): Promise<string> {
     options = options || {
-      containerName: this._config.container as string
+      containerName: this._config.container
     }
-    options.containerName = options.containerName || (this._config.container as string)
+    options.containerName = options.containerName || this._config.container
 
     try {
       const blockBlobClient = this.getBlockBlobClient(location)
@@ -192,13 +192,13 @@ export class AzureDriver implements DriverContract {
    */
   public async putStream(
     location: string,
-    contents: ReadStream,
+    contents: NodeJS.ReadableStream,
     options?: BlockBlobUploadStreamOptions
   ): Promise<void> {
     const blockBlobClient = this.getBlockBlobClient(location)
 
     try {
-      await blockBlobClient.uploadStream(contents, undefined, undefined, options)
+      await blockBlobClient.uploadStream(contents as Readable, undefined, undefined, options)
     } catch (error) {
       throw new CannotWriteFileException(location, error)
     }
@@ -212,9 +212,9 @@ export class AzureDriver implements DriverContract {
    */
   public async copy(source: string, destination: string, options?: BlobSASSignatureValues): Promise<void> {
     options = options || {
-      containerName: this._config.container as string
+      containerName: this._config.container
     }
-    options.containerName = options.containerName || (this._config.container as string)
+    options.containerName = options.containerName || this._config.container
 
     const sourceBlockBlobClient = this.getBlockBlobClient(source)
     const destinationBlockBlobClient = this.getBlockBlobClient(destination)
@@ -235,7 +235,7 @@ export class AzureDriver implements DriverContract {
    */
   public async delete(location: string): Promise<void> {
     try {
-      await this.getBlockBlobClient(location).delete()
+      await this.getBlockBlobClient(location).deleteIfExists()
     } catch (error) {
       throw new CannotDeleteFileException(location, error)
     }

@@ -86,6 +86,7 @@ __metadata:
   resolution: "@apoyo/files-azure@workspace:packages/files-azure"
   dependencies:
     "@apoyo/files": ~0.0.2
+    "@apoyo/std": 0.0.15
     "@azure/identity": ^2.1.0
     "@azure/storage-blob": ^12.11.0
     "@types/jest": ^26.0.23
@@ -97,6 +98,7 @@ __metadata:
     typescript: ^4.7.4
   peerDependencies:
     "@apoyo/files": ~0.0.2
+    "@apoyo/std": 0.0.15
   languageName: unknown
   linkType: soft
 
