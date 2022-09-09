@@ -20,6 +20,11 @@ jobs:
         image: mcr.microsoft.com/azure-storage/azurite
         ports:
           - 10000:10000
+      fake_gcs:
+        image: fsouza/fake-gcs-server
+        ports:
+          - 4443:4443
+        # command: ["-scheme", "http", "-port", "4443", "-external-url", "http://localhost:4443", "-backend", "memory"]
 
     steps:
       - uses: actions/checkout@v3.0.2

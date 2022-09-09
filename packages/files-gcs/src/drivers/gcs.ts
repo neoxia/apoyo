@@ -152,7 +152,7 @@ export class GcsDriver implements DriverContract {
 
       return {
         modified: new Date(metaData.updated),
-        size: metaData.size!,
+        size: parseInt(metaData.size, 10),
         isFile: true,
         etag: metaData.etag
       }

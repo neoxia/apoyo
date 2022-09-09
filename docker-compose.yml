@@ -12,3 +12,9 @@ services:
     ports:
       - 10000:10000
 
+  # https://github.com/fsouza/fake-gcs-server
+  fake_gcs:
+    image: fsouza/fake-gcs-server
+    ports:
+      - 4443:4443
+    command: ["-scheme", "http", "-port", "4443", "-external-url", "http://localhost:4443", "-backend", "memory"]
