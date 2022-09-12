@@ -107,6 +107,7 @@ __metadata:
   resolution: "@apoyo/files-gcs@workspace:packages/files-gcs"
   dependencies:
     "@apoyo/files": ~0.0.2
+    "@apoyo/std": 0.0.15
     "@google-cloud/storage": ^6.4.1
     "@types/jest": ^26.0.23
     "@types/node": ^14.18.21
@@ -117,6 +118,7 @@ __metadata:
     typescript: ^4.7.4
   peerDependencies:
     "@apoyo/files": ~0.0.2
+    "@apoyo/std": 0.0.15
   languageName: unknown
   linkType: soft
 
