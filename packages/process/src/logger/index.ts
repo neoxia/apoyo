@@ -1,8 +1,11 @@
 import { $als } from './als'
 import { $options, $logger, $out, child, forContext, $env } from './logger'
+import { Logger as PinoLogger } from 'pino'
 
 export { LogLevel, LoggerOptions, LoggerChildOptions } from './config'
 export { Bindings } from 'pino'
+
+export type Logger = PinoLogger
 
 export const Logger = {
   /**

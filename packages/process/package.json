@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/process",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Utils focused around the current process",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
