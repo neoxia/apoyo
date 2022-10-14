@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/express",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Express utils",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@apoyo/decoders": "^0.0.16",
-    "@apoyo/scopes": "0.4.0",
+    "@apoyo/ioc": "0.5.0",
     "@apoyo/std": "^0.0.15",
     "@types/express": "^4.17.13",
     "@types/jest": "^26.0.23",
@@ -53,7 +53,7 @@
   },
   "peerDependencies": {
     "@apoyo/decoders": "^0.0.16",
-    "@apoyo/scopes": "0.4.0",
+    "@apoyo/ioc": "0.5.0",
     "@apoyo/std": "^0.0.15",
     "@types/express": "^4.17.13",
     "express": "^4.17.3"

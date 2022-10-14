@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from 'async_hooks'
 import { Bindings } from 'pino'
 
-import { Implementation } from '@apoyo/scopes'
+import { Implementation } from '@apoyo/ioc'
 
 export class LoggerALS {
   private _storage = new AsyncLocalStorage<Bindings>()

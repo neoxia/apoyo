@@ -1,5 +1,5 @@
 import { DecodeError, Decoder, ObjectDecoder } from '@apoyo/decoders'
-import { Implementation } from '@apoyo/scopes'
+import { Implementation } from '@apoyo/ioc'
 import { Dict, Err, pipe, Result } from '@apoyo/std'
 
 import { $env } from './env'

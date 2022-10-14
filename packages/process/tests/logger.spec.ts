@@ -1,4 +1,4 @@
-import { Container } from '@apoyo/scopes'
+import { Container } from '@apoyo/ioc'
 import { PassThrough } from 'stream'
 import { Logger, LoggerOptions, LogLevel, Process } from '../src'
 

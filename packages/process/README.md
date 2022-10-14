@@ -5,7 +5,7 @@
 ## Installation
 
 Install peer dependencies:
-`npm install @apoyo/std @apoyo/decoders @apoyo/scopes`
+`npm install @apoyo/std @apoyo/decoders @apoyo/ioc`
 
 Install package:
 `npm install @apoyo/process`

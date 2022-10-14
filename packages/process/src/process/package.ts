@@ -2,7 +2,7 @@ import fs from 'fs'
 import { join } from 'path'
 
 import { DecodeError, Decoder, ObjectDecoder, TextDecoder } from '@apoyo/decoders'
-import { Implementation } from '@apoyo/scopes'
+import { Implementation } from '@apoyo/ioc'
 import { Err, pipe, Result } from '@apoyo/std'
 
 import { $rootDir } from './root'

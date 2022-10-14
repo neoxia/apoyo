@@ -6,7 +6,7 @@ Install peer dependencies:
 `npm install @apoyo/std`
 
 Install package:
-`npm install @apoyo/scopes`
+`npm install @apoyo/ioc`
 
 ## Motivation
 
@@ -24,7 +24,7 @@ Here a few unique features of this library:
 1/ Everything is fully typed by default:
 
 ```ts
-import { Injectable } from '@apoyo/scopes'
+import { Injectable } from '@apoyo/ioc'
 
 // Define an injectable without dependencies
 export const $env = Injectable.define(async () => {

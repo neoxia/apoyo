@@ -1,8 +1,8 @@
 # Apoyo - Scopes
 
-[![npm version](https://badgen.net/npm/v/@apoyo/scopes)](https://www.npmjs.com/package/@apoyo/scopes)
-[![build size](https://badgen.net/bundlephobia/min/@apoyo/scopes)](https://bundlephobia.com/result?p=@apoyo/scopes)
-[![three shaking](https://badgen.net/bundlephobia/tree-shaking/@apoyo/scopes)](https://bundlephobia.com/result?p=@apoyo/scopes)
+[![npm version](https://badgen.net/npm/v/@apoyo/ioc)](https://www.npmjs.com/package/@apoyo/ioc)
+[![build size](https://badgen.net/bundlephobia/min/@apoyo/ioc)](https://bundlephobia.com/result?p=@apoyo/ioc)
+[![three shaking](https://badgen.net/bundlephobia/tree-shaking/@apoyo/ioc)](https://bundlephobia.com/result?p=@apoyo/ioc)
 
 **Warning**: This package is still in development and features may still change, be renamed or removed.
 
@@ -12,7 +12,7 @@ Install peer dependencies:
 `npm install @apoyo/std`
 
 Install package:
-`npm install @apoyo/scopes`
+`npm install @apoyo/ioc`
 
 ## Documentation
 

@@ -1,4 +1,4 @@
-import { Container } from '@apoyo/scopes'
+import { Container } from '@apoyo/ioc'
 import { $app, $logger } from './mocks'
 
 import request from 'supertest'

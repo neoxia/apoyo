@@ -2,6 +2,8 @@
 
 HTTP server utilities for express.
 
+**THIS PACKAGE IS NOT READY TO BE USED!**
+
 ## Features
 
 - Better async support for handlers
@@ -14,7 +16,7 @@ const getHealth = Request.reply(async () => {
 })
 ```
 
-- Dependency injection integration with `@apoyo/scopes`
+- Dependency injection integration with `@apoyo/ioc`
 
 ```ts
 const listTodos = Request.reply(
@@ -180,7 +182,7 @@ Install express:
 `npm install express @types/express`
 
 Install peer dependencies:
-`npm install @apoyo/std @apoyo/decoders @apoyo/scopes`
+`npm install @apoyo/std @apoyo/decoders @apoyo/ioc`
 
 Install package:
 `npm install @apoyo/express`
