@@ -2,7 +2,7 @@ import dotenvExpand from 'dotenv-expand'
 import dotenv from 'dotenv-flow'
 import fs from 'fs'
 
-import { Implementation } from '@apoyo/scopes'
+import { Implementation } from '@apoyo/ioc'
 import { Dict, Err, pipe } from '@apoyo/std'
 
 import { $appEnv } from './app-env'

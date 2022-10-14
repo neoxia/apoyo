@@ -1,4 +1,4 @@
-import { Implementation } from '@apoyo/scopes'
+import { Implementation } from '@apoyo/ioc'
 
 /**
  * Returns by default the current working directory

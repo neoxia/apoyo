@@ -1,4 +1,4 @@
-import { Injectable, Abstract } from '@apoyo/scopes'
+import { Injectable, Abstract } from '@apoyo/ioc'
 
 export interface Logger {
   info(msg: string, data?: any): void

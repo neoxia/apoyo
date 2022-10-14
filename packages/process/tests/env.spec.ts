@@ -1,5 +1,5 @@
 import { IntegerDecoder } from '@apoyo/decoders'
-import { Container } from '@apoyo/scopes'
+import { Container } from '@apoyo/ioc'
 
 import { Env, AppEnvironment, Process } from '../src'
 

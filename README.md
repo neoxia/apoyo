@@ -21,7 +21,7 @@ The goal was having:
 <!--
 Packages that are not ready yet:
 
-- [Scopes](packages/scopes) (`@apoyo/scopes`): A simple functional dependency injector.
+- [IOC](packages/ioc) (`@apoyo/ioc`): A simple functional dependency injector.
 
 - [Process](packages/process) (`@apoyo/process`): Contains Nodejs process utils, such as auto-loading .env files, validating and parsing environment variables, a zero-config logger (using pino), etc...
 

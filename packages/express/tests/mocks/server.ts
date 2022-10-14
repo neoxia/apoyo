@@ -1,10 +1,10 @@
 import express, { Application } from 'express'
 
-import { Injectable } from '@apoyo/scopes'
+import { Injectable } from '@apoyo/ioc'
 
 import { Express } from '../../src'
 import { routes } from './routes/index.route'
-import { Implementation } from '@apoyo/scopes'
+import { Implementation } from '@apoyo/ioc'
 
 export const $config = Injectable.of({
   port: 3000

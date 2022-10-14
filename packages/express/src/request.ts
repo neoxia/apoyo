@@ -9,7 +9,7 @@ import { pipeline } from 'stream'
 
 import { DecodeError, Decoder } from '@apoyo/decoders'
 import { Http, Response } from '@apoyo/http'
-import { Injectable } from '@apoyo/scopes'
+import { Injectable } from '@apoyo/ioc'
 import { pipe, Prom, Result } from '@apoyo/std'
 
 export type Request = ExpressRequest

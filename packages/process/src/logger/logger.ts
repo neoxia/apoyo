@@ -2,7 +2,7 @@ import pino, { Logger, LoggerOptions as PinoOptions } from 'pino'
 import pinoPretty from 'pino-pretty'
 
 import { BooleanDecoder, Decoder, EnumDecoder } from '@apoyo/decoders'
-import { Injectable, Implementation } from '@apoyo/scopes'
+import { Injectable, Implementation } from '@apoyo/ioc'
 import { pipe, run } from '@apoyo/std'
 
 import { Env } from '../process'

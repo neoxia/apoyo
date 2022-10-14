@@ -1,4 +1,4 @@
-import { Injectable, Implementation } from '@apoyo/scopes'
+import { Injectable, Implementation } from '@apoyo/ioc'
 
 export interface HealthReport {
   name: string

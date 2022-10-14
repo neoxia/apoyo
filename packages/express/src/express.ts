@@ -1,7 +1,7 @@
 import { Application, Router, Express as ExpressType } from 'express'
 import { Server } from 'http'
 
-import { Implementation, Injectable, Resource } from '@apoyo/scopes'
+import { Implementation, Injectable, Resource } from '@apoyo/ioc'
 
 import { Request } from './request'
 import { Route } from './route'

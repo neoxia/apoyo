@@ -1,4 +1,4 @@
-import { Implementation, Injectable } from '@apoyo/scopes'
+import { Implementation, Injectable } from '@apoyo/ioc'
 import { Err } from '@apoyo/std'
 
 export class AppEnvironment {
