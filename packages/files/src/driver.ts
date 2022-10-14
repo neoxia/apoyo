@@ -25,6 +25,32 @@ export type SignedUrlOptions = ContentHeaders & {
 }
 
 /**
+ * Options for listing files
+ */
+export type ListOptions = {
+  /**
+   * Directory that should be listed
+   */
+  prefix?: string
+
+  /**
+   * Directory delimiter.
+   * Defaults to "/".
+   */
+  delimiter?: string
+
+  /**
+   * Number of files listed per page
+   */
+  limit?: number
+
+  /**
+   * Cursor used to fetch the next page
+   */
+  next?: string
+}
+
+/**
  * Stats returned by the drive drivers
  */
 export type DriveFileStats = {
@@ -34,15 +60,20 @@ export type DriveFileStats = {
   etag?: string
 }
 
+export type DriveFile = {
+  name: string
+  isFile: boolean
+}
+
+export type DriveFilePage = {
+  items: DriveFile[]
+  next?: string
+}
+
 /**
  * Shape of the generic driver
  */
 export interface DriverContract {
-  /**
-   * Name of the driver
-   */
-  name: string
-
   /**
    * A boolean to find if the location path exists or not
    */
@@ -101,4 +132,19 @@ export interface DriverContract {
    * The missing intermediate directories will be created (if required)
    */
   move(source: string, destination: string, options?: WriteOptions): Promise<void>
+
+  /**
+   * List files for a given directory.
+   *
+   * A continuation token will be made available to fetch the next page.
+   *
+   * @example
+   * ```ts
+   * const page = await driver.list()
+   * const { items, next } = page
+   *
+   * const nextPage = await driver.list({ next })
+   * ```
+   */
+  list(options?: ListOptions): Promise<DriveFilePage>
 }

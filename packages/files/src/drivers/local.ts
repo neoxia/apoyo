@@ -2,7 +2,7 @@ import etag from 'etag'
 import * as fsExtra from 'fs-extra'
 import path, { dirname } from 'path'
 
-import { DriveFileStats, DriverContract, SignedUrlOptions } from '../driver'
+import { DriveFilePage, DriveFileStats, DriverContract, ListOptions, SignedUrlOptions } from '../driver'
 
 import { pipelinePromise } from '../utils'
 
@@ -13,8 +13,10 @@ import {
   CannotWriteFileException,
   CannotGenerateUrlException,
   CannotDeleteFileException,
-  CannotGetMetaDataException
+  CannotGetMetaDataException,
+  CannotListFilesException
 } from '../exceptions'
+import { Arr, pipe, Str } from '@apoyo/std'
 
 export interface LocalDriverConfig {
   /**
@@ -206,6 +208,52 @@ export class LocalDriver implements DriverContract {
       })
     } catch (error) {
       throw new CannotMoveFileException(source, destination, error)
+    }
+  }
+
+  /**
+   * List files for a given directory.
+   *
+   * A continuation token will be made available to fetch the next page.
+   *
+   * @example
+   * ```ts
+   * const page = await driver.list()
+   * const { items, next } = page
+   *
+   * const nextPage = await driver.list({ next })
+   * ```
+   */
+  public async list(options: ListOptions = {}): Promise<DriveFilePage> {
+    const trimSlash = Str.trimWhile((c) => c === '/')
+    const location = pipe(options.prefix ?? '', trimSlash, Str.concat('/'))
+
+    try {
+      const results = await this.adapter.readdir(this.makePath(location), {
+        withFileTypes: true
+      })
+
+      const files = pipe(
+        results,
+        Arr.filter((ent) => ent.isFile() || ent.isDirectory()),
+        Arr.map((ent) => {
+          return {
+            name: trimSlash(`${location}${ent.name}`),
+            isFile: ent.isFile()
+          }
+        })
+      )
+
+      return {
+        items: files
+      }
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        return {
+          items: []
+        }
+      }
+      throw new CannotListFilesException(location, err)
     }
   }
 }

@@ -446,3 +446,83 @@ describe('Local driver | getSignedUrl', () => {
     expect(url).toMatch(/\/uploads\/foo\.txt\?sign=.*/)
   })
 })
+
+describe('Local driver | list', () => {
+  it('get file list from root directory', async () => {
+    const root = path.join(process.cwd(), 'src')
+    const config: LocalDriverConfig = { root }
+    const driver = new LocalDriver(config)
+
+    const result = await driver.list()
+
+    expect(result.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'driver.ts',
+          isFile: true
+        }),
+        expect.objectContaining({
+          name: 'exceptions.ts',
+          isFile: true
+        }),
+        expect.objectContaining({
+          name: 'index.ts',
+          isFile: true
+        }),
+        expect.objectContaining({
+          name: 'utils.ts',
+          isFile: true
+        }),
+        expect.objectContaining({
+          name: 'drivers',
+          isFile: false
+        })
+      ])
+    )
+    expect(result.items.length).toBe(5)
+    expect(result.next).toBeUndefined()
+  })
+
+  it('get file list from sub-directory', async () => {
+    const root = path.join(process.cwd(), 'src')
+    const config: LocalDriverConfig = { root }
+    const driver = new LocalDriver(config)
+
+    const result = await driver.list({
+      prefix: 'drivers/'
+    })
+
+    expect(result.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'drivers/fake.ts',
+          isFile: true
+        })
+      ])
+    )
+    expect(result.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'drivers/local.ts',
+          isFile: true
+        })
+      ])
+    )
+    expect(result.items.length).toBe(2)
+    expect(result.next).toBeUndefined()
+  })
+
+  it('should return empty file list if directory does not exist', async () => {
+    const root = path.join(process.cwd(), 'src')
+    const config: LocalDriverConfig = { root }
+    const driver = new LocalDriver(config)
+
+    const result = await driver.list({
+      prefix: 'unknown/'
+    })
+
+    expect(result.items).toBeInstanceOf(Array)
+    expect(result.items.length).toBe(0)
+    expect(result.next).toBeUndefined()
+  })
+})

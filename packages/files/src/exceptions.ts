@@ -71,3 +71,12 @@ export class CannotGenerateUrlException extends FileException {
     super(`Cannot generate URL for location "${location}".`, undefined, 'E_CANNOT_GENERATE_URL')
   }
 }
+
+/**
+ * Unable to list files
+ */
+export class CannotListFilesException extends FileException {
+  constructor(public readonly location: string, cause: Error) {
+    super(`Cannot list files at location "${location}".`, cause, 'E_CANNOT_LIST_FILES')
+  }
+}

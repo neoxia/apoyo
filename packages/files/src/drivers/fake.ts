@@ -2,7 +2,7 @@ import etag from 'etag'
 import { Volume } from 'memfs'
 import { dirname } from 'path'
 
-import { DriveFileStats, DriverContract, SignedUrlOptions } from '../driver'
+import { DriveFilePage, DriveFileStats, DriverContract, ListOptions, SignedUrlOptions } from '../driver'
 
 import { pipelinePromise } from '../utils'
 
@@ -13,8 +13,11 @@ import {
   CannotWriteFileException,
   CannotDeleteFileException,
   CannotGetMetaDataException,
-  CannotGenerateUrlException
+  CannotGenerateUrlException,
+  CannotListFilesException
 } from '../exceptions'
+import { Arr, pipe, Str } from '@apoyo/std'
+import { Dirent } from 'fs'
 
 export interface FakeDriverConfig {
   /**
@@ -40,13 +43,13 @@ export class FakeDriver implements DriverContract {
    */
   public name: 'fake' = 'fake'
 
-  constructor(private _config: FakeDriverConfig) {}
+  constructor(private _config: FakeDriverConfig = {}) {}
 
   /**
    * Make absolute path to a given location
    */
   public makePath(location: string) {
-    return location
+    return 'volume/' + location
   }
 
   /**
@@ -243,5 +246,44 @@ export class FakeDriver implements DriverContract {
         }
       })
     }).then(() => this.delete(source))
+  }
+
+  public async list(options: ListOptions = {}): Promise<DriveFilePage> {
+    const trimSlash = Str.trimWhile((c) => c === '/')
+    const location = pipe(options.prefix ?? '', trimSlash, Str.concat('/'))
+
+    try {
+      const results = await new Promise<Dirent[]>((resolve, reject) => {
+        this.adapter.readdir(
+          this.makePath(location),
+          {
+            withFileTypes: true
+          },
+          (err, dirent: any[]) => (err ? reject(err) : resolve(dirent))
+        )
+      })
+
+      const files = pipe(
+        results,
+        Arr.filter((ent) => ent.isFile() || ent.isDirectory()),
+        Arr.map((ent) => {
+          return {
+            name: trimSlash(`${location}${ent.name}`),
+            isFile: ent.isFile()
+          }
+        })
+      )
+
+      return {
+        items: files
+      }
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        return {
+          items: []
+        }
+      }
+      throw new CannotListFilesException(location, err)
+    }
   }
 }

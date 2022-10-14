@@ -396,3 +396,81 @@ describe('Local driver | getSignedUrl', () => {
     expect(url).toMatch(/\/uploads\/foo\.txt\?sign=.*/)
   })
 })
+
+describe('Fake driver | list', () => {
+  const setup = async () => {
+    const driver = new FakeDriver()
+
+    await driver.put('foo.txt', '')
+    await driver.put('bar.txt', '')
+    await driver.put('foobar.txt', '')
+    await driver.put('sub/foo.txt', '')
+    await driver.put('sub/bar.txt', '')
+
+    return { driver }
+  }
+
+  it('get file list from root directory', async () => {
+    const { driver } = await setup()
+
+    const result = await driver.list()
+
+    expect(result.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'foo.txt',
+          isFile: true
+        }),
+        expect.objectContaining({
+          name: 'bar.txt',
+          isFile: true
+        }),
+        expect.objectContaining({
+          name: 'foobar.txt',
+          isFile: true
+        }),
+        expect.objectContaining({
+          name: 'sub',
+          isFile: false
+        })
+      ])
+    )
+    expect(result.items.length).toBe(4)
+    expect(result.next).toBeUndefined()
+  })
+
+  it('get file list from sub-directory', async () => {
+    const { driver } = await setup()
+
+    const result = await driver.list({
+      prefix: 'sub/'
+    })
+
+    expect(result.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'sub/foo.txt',
+          isFile: true
+        }),
+        expect.objectContaining({
+          name: 'sub/bar.txt',
+          isFile: true
+        })
+      ])
+    )
+    expect(result.items.length).toBe(2)
+    expect(result.next).toBeUndefined()
+  })
+
+  it('should return empty file list if directory does not exist', async () => {
+    const { driver } = await setup()
+
+    const result = await driver.list({
+      prefix: 'unknown/'
+    })
+
+    expect(result.items).toBeInstanceOf(Array)
+    expect(result.items.length).toBe(0)
+    expect(result.next).toBeUndefined()
+  })
+})
