@@ -1,5 +1,6 @@
 import { PolicyContext } from './policy-context'
 import { Policy } from './policy'
+import { NotAuthorizedException } from './exceptions'
 
 type UserType<T extends PolicyContext<unknown>> = PolicyContext.UserType<T>
 
@@ -15,7 +16,10 @@ export class Authorizer<ContextType extends PolicyContext<unknown>> {
 
   public async authorize<Args extends any[]>(policy: Policy<ContextType, Args>, ...args: Args): Promise<void> {
     // TODO: handle before middlewares
-    await policy.execute(this._context, ...args)
+    const res = await policy.execute(this._context, ...args)
+    if (!res) {
+      throw new NotAuthorizedException(policy.name)
+    }
     // TODO: handle after middlewares
   }
 

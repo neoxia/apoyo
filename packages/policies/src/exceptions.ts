@@ -8,8 +8,8 @@ export class NotAuthenticatedException extends Exception {
 }
 
 export class NotAuthorizedException extends Exception {
-  public readonly code = 'E_NOT_AUTHENTICATED'
+  public readonly code = 'E_NOT_AUTHORIZED'
   constructor(public readonly action: string) {
-    super(`User is not authorized to execute "${action}"`)
+    super(`User is not authorized to continue the action "${action}"`)
   }
 }
