@@ -1,6 +1,5 @@
 {
   "name": "@apoyo/policies",
-  "private": true,
   "version": "0.0.1",
   "description": "Utils focused around authorization logic and policies",
   "main": "dist/index.js",
