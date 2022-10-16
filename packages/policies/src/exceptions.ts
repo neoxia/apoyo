@@ -9,7 +9,7 @@ export class NotAuthenticatedException extends Exception {
 
 export class NotAuthorizedException extends Exception {
   public readonly code = 'E_NOT_AUTHORIZED'
-  constructor(public readonly action: string) {
-    super(`User is not authorized to continue the action "${action}"`)
+  constructor(message?: string) {
+    super(message ?? `User is not authorized to continue the given action`)
   }
 }

@@ -2,13 +2,13 @@ import { AsyncLocalStorage } from 'async_hooks'
 import { NotAuthenticatedException } from './exceptions'
 
 export class UserContext<User> {
-  private readonly _als = new AsyncLocalStorage<User>()
+  private readonly _als = new AsyncLocalStorage<User | null>()
 
-  public run(user: User, fn: () => void) {
+  public run(user: User | null, fn: () => void) {
     return this._als.run(user, fn)
   }
 
-  public runAsync<T>(user: User, fn: () => Promise<T>) {
+  public runAsync<T>(user: User | null, fn: () => Promise<T>) {
     return new Promise<T>((resolve) => this.run(user, () => fn().then(resolve)))
   }
 

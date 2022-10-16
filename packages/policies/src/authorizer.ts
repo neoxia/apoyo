@@ -4,8 +4,15 @@ import { NotAuthorizedException } from './exceptions'
 
 type UserType<T extends PolicyContext<unknown>> = PolicyContext.UserType<T>
 
+export interface AuthorizerOptions<ContextType extends PolicyContext<unknown>> {
+  /**
+   * Policies to execute before executing the policy that we wish to authorize
+   */
+  before?: Array<Policy<ContextType, []>>
+}
+
 export class Authorizer<ContextType extends PolicyContext<unknown>> {
-  constructor(private readonly _context: ContextType) {}
+  constructor(private readonly _context: ContextType, private readonly _options: AuthorizerOptions<ContextType> = {}) {}
 
   public getCurrentUser(): UserType<ContextType>
   public getCurrentUser(options: { allowGuest: false }): UserType<ContextType>
@@ -15,12 +22,21 @@ export class Authorizer<ContextType extends PolicyContext<unknown>> {
   }
 
   public async authorize<Args extends any[]>(policy: Policy<ContextType, Args>, ...args: Args): Promise<void> {
-    // TODO: handle before middlewares
-    const res = await policy.execute(this._context, ...args)
-    if (!res) {
-      throw new NotAuthorizedException(policy.name)
+    const beforePolicies = this._options.before ?? []
+    for (const beforePolicy of beforePolicies) {
+      const res = await beforePolicy.execute(this._context)
+      if (res === false) {
+        throw new NotAuthorizedException()
+      }
+      if (res === true) {
+        return
+      }
     }
-    // TODO: handle after middlewares
+
+    const res = await policy.execute(this._context, ...args)
+    if (res === false) {
+      throw new NotAuthorizedException()
+    }
   }
 
   public async allows<Args extends any[]>(policy: Policy<ContextType, Args>, ...args: Args): Promise<boolean> {
