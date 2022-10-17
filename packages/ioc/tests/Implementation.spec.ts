@@ -150,3 +150,29 @@ describe('Implementation.create', () => {
     expect(d).toEqual('azure_storage')
   })
 })
+
+describe('Implementation.create', () => {
+  class MyClass1 {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    constructor() {}
+  }
+  class MyClass2 {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    constructor(_param: number) {}
+  }
+
+  it('should work with classes', async () => {
+    const $myClass1 = Implementation.fromClass(MyClass1, [])
+
+    const $param = Injectable.of(1)
+    const $myClass2 = Implementation.fromClass(MyClass2, [$param])
+
+    const container = new Container()
+
+    const myClass1 = await container.get($myClass1)
+    const myClass2 = await container.get($myClass2)
+
+    expect(myClass1).toBeInstanceOf(MyClass1)
+    expect(myClass2).toBeInstanceOf(MyClass2)
+  })
+})

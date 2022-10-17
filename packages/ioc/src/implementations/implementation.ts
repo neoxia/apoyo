@@ -1,6 +1,7 @@
 import { Tuple, Fn } from '../types'
 import { Injectable } from '../injectables'
 import { create } from './create'
+import { fromClass } from './from-class'
 import { Resource } from '../resources'
 
 export interface Implementation<Args extends Tuple, T> extends Injectable<Implementation.ReturnType<T>> {
@@ -24,5 +25,6 @@ export namespace Implementation {
 }
 
 export const Implementation = {
-  create
+  create,
+  fromClass
 }
