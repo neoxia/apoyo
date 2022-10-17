@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/files",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Utils focused around files management",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -39,7 +39,6 @@
   "devDependencies": {
     "@apoyo/std": "0.0.15",
     "@types/etag": "^1.8.1",
-    "@types/fs-extra": "^9.0.13",
     "@types/jest": "^26.0.23",
     "@types/node": "^14.18.21",
     "@types/rimraf": "^3",
@@ -51,6 +50,7 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
+    "@types/fs-extra": "^9.0.13",
     "etag": "^1.8.1",
     "fs-extra": "^10.1.0",
     "memfs": "^3.4.7"
