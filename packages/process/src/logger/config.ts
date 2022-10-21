@@ -1,4 +1,5 @@
-import { Bindings, ChildLoggerOptions as PinoChildOptions, LoggerOptions as PinoOptions, PrettyOptions } from 'pino'
+import { Bindings, ChildLoggerOptions as PinoChildOptions, LoggerOptions as PinoOptions } from 'pino'
+import { PrettyOptions } from 'pino-pretty'
 
 export enum LogLevel {
   FATAL = 'fatal',
