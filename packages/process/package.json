@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/process",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Utils focused around the current process",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -62,7 +62,7 @@
     "@types/dotenv-flow": "^3.2.0",
     "dotenv-expand": "^8.0.3",
     "dotenv-flow": "^3.2.0",
-    "pino": "^8.1.0",
-    "pino-pretty": "^8.1.0"
+    "pino": "^8.7.0",
+    "pino-pretty": "^9.1.1"
   }
 }
