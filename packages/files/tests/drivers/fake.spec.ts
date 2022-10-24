@@ -26,7 +26,7 @@ function makeUrl(location: string) {
   )
 }
 
-function makeSignedUrl(location: string, options: SignedUrlOptions) {
+function makeSignedUrl(location: string, _options?: SignedUrlOptions) {
   return (
     '/uploads/' +
     pipe(
@@ -34,7 +34,7 @@ function makeSignedUrl(location: string, options: SignedUrlOptions) {
       Str.replace(path.sep, '/'),
       Str.trimWhile((c) => c === '/')
     ) +
-    `?sign=xxxx&expires_at=${options.expiresIn ?? 3600}`
+    `?sign=xxxx`
   )
 }
 
