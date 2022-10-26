@@ -83,6 +83,14 @@ module.exports = {
           '/guide/files/driver-contract.md'
         ]
       },
+      {
+        title: 'Policies',
+        collapsable: true,
+        sidebarDepth: 3,
+        children: [
+          '/guide/policies/getting-started.md'
+        ]
+      },
       // {
       //   title: 'Scopes',
       //   collapsable: true,

@@ -10,14 +10,9 @@ Install peer dependencies:
 Install package:
 `npm install @apoyo/policies`
 
-## Introduction
-
-This library has been inspired by [Adonisjs Bouncer](https://docs.adonisjs.com/guides/authorization).
-This library however is framework agnostic and can easily be used with any framework of your choice.
-
 ## Documentation
 
-TODO
+Please visit the [documentation](https://nx-apoyo.netlify.app/guide/policies/getting-started.html) for more information.
 
 ## License
 
