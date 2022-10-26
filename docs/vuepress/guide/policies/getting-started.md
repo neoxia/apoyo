@@ -153,7 +153,9 @@ async function main() {
     const userContext = new UserContext<User>()
     const policyContext = new CommonPolicyContext(userContext)
     const authorizer = new Authorizer(policyContext, {
+      // Policy middlewares
       before: [
+        // Check if user is an admin and skip remaining checks if true
         GlobalPolicy.isAdmin
       ]
     })
