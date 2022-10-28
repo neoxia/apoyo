@@ -15,6 +15,7 @@ import {
   CannotGetMetaDataException,
   CannotGenerateUrlException
 } from '../exceptions'
+import { Exception } from '@apoyo/std'
 
 export interface FakeDriverConfig {
   /**
@@ -54,7 +55,7 @@ export class FakeDriver implements DriverContract {
    */
   private _ensureDir(location: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.adapter.mkdirp(dirname(location), (error: Error) => {
+      this.adapter.mkdirp(dirname(location), (error) => {
         if (error) {
           reject(error)
         } else {
@@ -71,11 +72,13 @@ export class FakeDriver implements DriverContract {
    */
   public async get(location: string): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      this.adapter.readFile(this.makePath(location), (error: Error, data: Buffer) => {
+      this.adapter.readFile(this.makePath(location), (error, data) => {
         if (error) {
           reject(new CannotReadFileException(location, error))
+        } else if (!data) {
+          reject(new CannotReadFileException(location, new Exception('Undefined data')))
         } else {
-          resolve(data)
+          resolve(typeof data === 'string' ? Buffer.from(data) : data)
         }
       })
     })
