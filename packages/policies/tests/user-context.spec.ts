@@ -11,7 +11,7 @@ describe('UserContext', () => {
       role: 'admin'
     }
 
-    await userContext.runAsync(user, async () => {
+    await userContext.forUser(user, async () => {
       expect(userContext.getCurrentUser()).toEqual(user)
     })
   })
@@ -25,7 +25,7 @@ describe('UserContext', () => {
   it('should throw when no user is stored in context', async () => {
     const userContext = new UserContext<User>()
 
-    await userContext.runAsync(null, async () => {
+    await userContext.forUser(null, async () => {
       expect(() => userContext.getCurrentUser()).toThrowError(NotAuthenticatedException)
     })
   })
@@ -33,7 +33,7 @@ describe('UserContext', () => {
   it('should not throw when allowing guests', async () => {
     const userContext = new UserContext<User>()
 
-    await userContext.runAsync(null, async () => {
+    await userContext.forUser(null, async () => {
       expect(userContext.getCurrentUser({ allowGuest: true })).toEqual(null)
     })
   })
