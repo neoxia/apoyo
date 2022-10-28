@@ -100,33 +100,16 @@ export class CommonPolicyContext extends PolicyContext<User> {
 
 ### Declare policies
 
+*src/policies/common.policy.ts*:
+
 ```ts
-// src/policies/common.policy.ts
-
-const isAdmin = (ctx: CommonPolicyContext) => {
-  const user = ctx.getCurrentUser({ allowGuest: true })
-  if (user?.role === 'admin') {
-    return true
-  }
-  // Continue with next policy
-  return undefined
-}
-
 // Create base policy that can serve as a base to all other policies
-export const commonPolicy = pipe(
-  Policy.base(),
-  Policy.before(isAdmin)
-)
+export const CommonPolicyBuilder = Policy.base<CommonPolicyContext>()
+```
 
-// src/policies/post.policy.ts
+*src/policies/post.policy.ts*:
 
-const isPostModerator = async (ctx: CommonPolicyContext) => {
-  const user = ctx.getCurrentUser({ allowGuest: true })
-  if (user && user.role === 'moderator') {
-    return ctx.hasAccess(user, 'moderate:posts')
-  }
-}
-
+```ts
 const viewPost = (ctx: CommonPolicyContext, post: Post) => {
   // Allow guests (unauthenticated users)
   const user = ctx.getCurrentUser({ allowGuest: true })
@@ -145,15 +128,11 @@ const editPost = (ctx: CommonPolicyContext, post: Post) => {
   return user.id === post.userId
 }
 
-const postPolicy = pipe(
-  commonPolicy,
-  Policy.namespace('PostPolicy'),
-  Policy.before(isPostModerator)
-)
+const PostPolicyBuilder = pipe(CommonPolicyBuilder, Policy.namespace('PostPolicy'))
 
 export const PostPolicy = {
-  viewPost: pipe(postPolicy, Policy.define('viewPost', viewPost)),
-  editPost: pipe(postPolicy, Policy.define('editPost', editPost))
+  viewPost: pipe(PostPolicyBuilder, Policy.define('viewPost', viewPost)),
+  editPost: pipe(PostPolicyBuilder, Policy.define('editPost', editPost))
 }
 ```
 
@@ -186,17 +165,7 @@ async function main() {
 
     const userContext = new UserContext<User>()
     const policyContext = new CommonPolicyContext(userContext, aclRepository)
-    const authorizer = new Authorizer(policyContext, {
-      async interceptor(user, action, authorize) {
-        try {
-          await authorize()
-          console.log(`${action} was authorized for ${user?.email ?? 'Guest' }`)
-        } catch (err) {
-          console.log(`${action} denied for ${user?.email ?? 'Guest' }`, err)
-          throw err
-        }
-      }
-    })
+    const authorizer = new Authorizer(policyContext)
 
     const viewPostUseCase = new ViewPostUseCase(authorizer, postRepository)
 
@@ -208,7 +177,7 @@ async function main() {
       const user: User | null = {
         id: 'xxxx',
         email: 'test@example.com',
-        role: 'admin'
+        role: 'member'
       }
       // Register user in the current user context
       userContext.run(user, next)

@@ -88,7 +88,9 @@ module.exports = {
         collapsable: true,
         sidebarDepth: 3,
         children: [
-          '/guide/policies/getting-started.md'
+          '/guide/policies/getting-started.md',
+          '/guide/policies/middlewares.md',
+          '/guide/policies/interceptors.md'
         ]
       },
       // {

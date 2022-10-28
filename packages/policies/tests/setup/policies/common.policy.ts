@@ -8,4 +8,4 @@ const isAdmin = (ctx: CommonPolicyContext) => {
   }
 }
 
-export const commonPolicy = pipe(Policy.base(), Policy.before(isAdmin))
+export const CommonPolicyBuilder = pipe(Policy.base(), Policy.before(isAdmin))

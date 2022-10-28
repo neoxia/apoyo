@@ -2,7 +2,7 @@ import { pipe } from '@apoyo/std'
 import { Policy } from '../../../src'
 import { PostPolicyContext } from '../context'
 import { Post } from '../types'
-import { commonPolicy } from './common.policy'
+import { CommonPolicyBuilder } from './common.policy'
 
 const isModerator = async (ctx: PostPolicyContext, _post: Post) => {
   if (await ctx.isPostModerator()) {
@@ -24,9 +24,9 @@ const editPost = async (ctx: PostPolicyContext, post: Post) => {
   return user?.id === post.userId
 }
 
-const postPolicy = pipe(commonPolicy, Policy.namespace('PostPolicy'), Policy.before(isModerator))
+const PostPolicyBuilder = pipe(CommonPolicyBuilder, Policy.namespace('PostPolicy'), Policy.before(isModerator))
 
 export const PostPolicy = {
-  viewPost: pipe(postPolicy, Policy.define('viewPost', viewPost)),
-  editPost: pipe(postPolicy, Policy.define('editPost', editPost))
+  viewPost: pipe(PostPolicyBuilder, Policy.define('viewPost', viewPost)),
+  editPost: pipe(PostPolicyBuilder, Policy.define('editPost', editPost))
 }

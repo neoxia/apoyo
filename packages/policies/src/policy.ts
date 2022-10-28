@@ -11,7 +11,7 @@ export type PolicyFn<ContextType extends PolicyContext<unknown>, Args extends an
   ...args: Args
 ) => boolean | Promise<boolean>
 
-export interface BeforePolicy<ContextType extends PolicyContext<unknown>, Args extends any[] = any[]> {
+export interface PolicyBuilder<ContextType extends PolicyContext<unknown>, Args extends any[] = any[]> {
   namespace?: string
   authorize?: BeforePolicyFn<ContextType, Args>
 }
@@ -22,13 +22,13 @@ export interface Policy<ContextType extends PolicyContext<unknown>, Args extends
 }
 
 export namespace Policy {
-  export const base = <ContextType extends PolicyContext<unknown>>(): BeforePolicy<ContextType, []> => {
+  export const base = <ContextType extends PolicyContext<unknown>>(): PolicyBuilder<ContextType, []> => {
     return {}
   }
 
   export const namespace = <ContextType extends PolicyContext<unknown>>(namespace: string) => (
-    policy: BeforePolicy<ContextType>
-  ): BeforePolicy<ContextType> => {
+    policy: PolicyBuilder<ContextType>
+  ): PolicyBuilder<ContextType> => {
     return {
       namespace: policy.namespace ? `${policy.namespace}.${namespace}` : namespace,
       authorize: policy.authorize
@@ -37,28 +37,28 @@ export namespace Policy {
 
   export function before<T1 extends PolicyContext<unknown>, T2 extends T1, Args extends any[]>(
     before: BeforePolicyFn<T2, []>
-  ): (policy: BeforePolicy<T1, Args>) => BeforePolicy<T2, Args>
+  ): (policy: PolicyBuilder<T1, Args>) => PolicyBuilder<T2, Args>
   export function before<T1 extends PolicyContext<unknown>, T2 extends T1, Args extends any[]>(
     before: BeforePolicyFn<T2, [Args[0]]>
-  ): (policy: BeforePolicy<T1, Args>) => BeforePolicy<T2, Args>
+  ): (policy: PolicyBuilder<T1, Args>) => PolicyBuilder<T2, Args>
   export function before<T1 extends PolicyContext<unknown>, T2 extends T1, Args extends any[]>(
     before: BeforePolicyFn<T2, [Args[0], Args[1]]>
-  ): (policy: BeforePolicy<T1, Args>) => BeforePolicy<T2, Args>
+  ): (policy: PolicyBuilder<T1, Args>) => PolicyBuilder<T2, Args>
   export function before<T1 extends PolicyContext<unknown>, T2 extends T1, Args extends any[]>(
     before: BeforePolicyFn<T2, [Args[0], Args[1], Args[2]]>
-  ): (policy: BeforePolicy<T1, Args>) => BeforePolicy<T2, Args>
+  ): (policy: PolicyBuilder<T1, Args>) => PolicyBuilder<T2, Args>
   export function before<T1 extends PolicyContext<unknown>, T2 extends T1, Args extends any[]>(
     before: BeforePolicyFn<T2, [Args[0], Args[1], Args[2], Args[3]]>
-  ): (policy: BeforePolicy<T1, Args>) => BeforePolicy<T2, Args>
+  ): (policy: PolicyBuilder<T1, Args>) => PolicyBuilder<T2, Args>
   export function before<
     T1 extends PolicyContext<unknown>,
     T2 extends T1,
     Args1 extends any[],
     Args2 extends [...Args1, ...any[]]
-  >(before: BeforePolicyFn<T2, Args2>): (policy: BeforePolicy<T1, Args1>) => BeforePolicy<T2, Args2>
+  >(before: BeforePolicyFn<T2, Args2>): (policy: PolicyBuilder<T1, Args1>) => PolicyBuilder<T2, Args2>
   export function before<T1 extends PolicyContext<unknown>, T2 extends T1>(
     before: BeforePolicyFn<T2, any[]>
-  ): (policy: BeforePolicy<T1, any[]>) => BeforePolicy<T2, any[]> {
+  ): (policy: PolicyBuilder<T1, any[]>) => PolicyBuilder<T2, any[]> {
     return (policy) => {
       const authorize = policy.authorize
       return {
@@ -79,7 +79,7 @@ export namespace Policy {
   export function define<T1 extends PolicyContext<unknown>, T2 extends T1, Args extends any[]>(
     name: string,
     authorize: PolicyFn<T2, Args>
-  ): (policy: BeforePolicy<T1, Args>) => Policy<T2, Args> {
+  ): (policy: PolicyBuilder<T1, Args>) => Policy<T2, Args> {
     return (policy) => {
       const before = policy.authorize
       return {
