@@ -65,12 +65,9 @@ export namespace Policy {
         namespace: policy.namespace,
         authorize: authorize
           ? async (ctx, ...args) => {
-              const res = await authorize(ctx, ...args)
-              if (res === false) {
-                throw new NotAuthorizedException()
-              }
-              if (res === true) {
-                return true
+              const result = await authorize(ctx, ...args)
+              if (result === false || result === true) {
+                return result
               }
               return before(ctx, ...args)
             }
