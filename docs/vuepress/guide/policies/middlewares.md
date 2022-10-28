@@ -4,6 +4,8 @@ Sometimes, you may want to add additional operations before your policy is execu
 
 *Example: If an user has an "admin" role, always authorize the user.*
 
+## Usage
+
 By adding the following code to the existing code snippets from the `Getting started` page, we can bypass authorization for admin users.
 
 *src/policies/common.policy.ts*:
@@ -12,9 +14,10 @@ By adding the following code to the existing code snippets from the `Getting sta
 const isAdmin = (ctx: CommonPolicyContext) => {
   const user = ctx.getCurrentUser({ allowGuest: true })
   if (user?.role === 'admin') {
+    // If user is admin, preemptively succeed the authorization
     return true
   }
-  // Continue with next policy
+  // Continue with next middleware or policy
   return undefined
 }
 
@@ -34,7 +37,11 @@ It is also possible to add a middleware that only affects a few given policies:
 const isPostModerator = async (ctx: CommonPolicyContext) => {
   const user = ctx.getCurrentUser({ allowGuest: true })
   if (user && user.role === 'moderator') {
-    return ctx.hasAccess(user, 'moderate:posts')
+    const hasAccess = await ctx.hasAccess(user, 'moderate:posts')
+    // If has access, preemptively succeed the authorization, if not, we continue
+    if (hasAccess) {
+      return true
+    }
   }
 }
 
