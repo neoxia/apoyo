@@ -1,18 +1,39 @@
 import { PolicyContext } from './policy-context'
 import { Policy } from './policy'
-import { NotAuthorizedException } from './exceptions'
 
 type UserType<T extends PolicyContext<unknown>> = PolicyContext.UserType<T>
 
-export interface AuthorizerOptions<ContextType extends PolicyContext<unknown>> {
+export interface AuthorizerOptions<User> {
   /**
-   * Policies to execute before executing the policy that we wish to authorize
+   * Interceptor to execute when authorizing a policy.
+   *
+   * @param user - The current user
+   * @param action - The name of the executed policy
+   * @param authorize - The function to execute the policy
+   *
+   * @example
+   * ```ts
+   * const authorizer = new Authorizer(myPolicyContext, {
+   *   async interceptor(user, action, authorize) {
+   *     try {
+   *       await authorize()
+   *       console.log(`${action} was authorized for ${user?.email ?? 'Guest' }`)
+   *     } catch (err) {
+   *       console.log(`${action} denied for ${user?.email ?? 'Guest' }`, err)
+   *       throw err
+   *     }
+   *   }
+   * })
+   * ```
    */
-  before?: Array<Policy<ContextType, []>>
+  interceptor?(user: User | null, action: string, authorize: () => Promise<void>): Promise<void>
 }
 
 export class Authorizer<ContextType extends PolicyContext<unknown>> {
-  constructor(private readonly _context: ContextType, private readonly _options: AuthorizerOptions<ContextType> = {}) {}
+  constructor(
+    private readonly _context: ContextType,
+    private readonly _options: AuthorizerOptions<UserType<ContextType>> = {}
+  ) {}
 
   public getCurrentUser(): UserType<ContextType>
   public getCurrentUser(options: { allowGuest: false }): UserType<ContextType>
@@ -22,21 +43,13 @@ export class Authorizer<ContextType extends PolicyContext<unknown>> {
   }
 
   public async authorize<Args extends any[]>(policy: Policy<ContextType, Args>, ...args: Args): Promise<void> {
-    const beforePolicies = this._options.before ?? []
-    for (const beforePolicy of beforePolicies) {
-      const res = await beforePolicy.execute(this._context)
-      if (res === false) {
-        throw new NotAuthorizedException()
-      }
-      if (res === true) {
-        return
-      }
+    if (this._options.interceptor) {
+      await this._options.interceptor(this.getCurrentUser({ allowGuest: true }), policy.name, () =>
+        policy.authorize(this._context, ...args)
+      )
+      return
     }
-
-    const res = await policy.execute(this._context, ...args)
-    if (res === false) {
-      throw new NotAuthorizedException()
-    }
+    await policy.authorize(this._context, ...args)
   }
 
   public async allows<Args extends any[]>(policy: Policy<ContextType, Args>, ...args: Args): Promise<boolean> {

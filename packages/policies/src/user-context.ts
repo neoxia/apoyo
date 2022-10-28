@@ -4,12 +4,8 @@ import { NotAuthenticatedException } from './exceptions'
 export class UserContext<User> {
   private readonly _als = new AsyncLocalStorage<User | null>()
 
-  public run(user: User | null, fn: () => void) {
+  public forUser<T>(user: User | null, fn: () => T) {
     return this._als.run(user, fn)
-  }
-
-  public runAsync<T>(user: User | null, fn: () => Promise<T>) {
-    return new Promise<T>((resolve) => this.run(user, () => fn().then(resolve)))
   }
 
   public getCurrentUser(): User

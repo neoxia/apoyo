@@ -1,19 +1,36 @@
 import { PolicyContext, UserContext } from '../../src'
 import { User } from './types'
 
-export class AclRepository {
-  public async hasAcl(_userId: string, _acl: string): Promise<boolean> {
+export class CommonPolicyContext extends PolicyContext<User> {
+  constructor(userContext: UserContext<User>) {
+    super(userContext)
+  }
+
+  public hasRole(role: string) {
+    return this.getCurrentUser().role === role
+  }
+}
+
+export enum Acl {
+  MODERATE_POSTS = 'moderate:posts'
+}
+
+export class AccessRepository {
+  public async hasAccess(_userId: string, _acl: Acl): Promise<boolean> {
     return true
   }
 }
 
-export class AppPolicyContext extends PolicyContext<User> {
-  constructor(userContext: UserContext<User>, private readonly _aclRepository: AclRepository) {
+export class PostPolicyContext extends CommonPolicyContext {
+  constructor(userContext: UserContext<User>, private readonly _aclRepository: AccessRepository) {
     super(userContext)
   }
 
-  public async hasAcl(acl: string) {
+  public async isPostModerator() {
     const user = this.getCurrentUser()
-    return this._aclRepository.hasAcl(user.id, acl)
+    if (user.role === 'moderator') {
+      return this._aclRepository.hasAccess(user.id, Acl.MODERATE_POSTS)
+    }
+    return false
   }
 }
