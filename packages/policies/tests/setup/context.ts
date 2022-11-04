@@ -26,9 +26,8 @@ export class PostPolicyContext extends CommonPolicyContext {
     super(userContext)
   }
 
-  public async isPostModerator() {
-    const user = this.getCurrentUser()
-    if (user.role === 'moderator') {
+  public async isPostModerator(user: User | null) {
+    if (user && user.role === 'moderator') {
       return this._aclRepository.hasAccess(user.id, Acl.MODERATE_POSTS)
     }
     return false

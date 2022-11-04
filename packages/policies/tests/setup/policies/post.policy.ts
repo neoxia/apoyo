@@ -2,31 +2,34 @@ import { pipe } from '@apoyo/std'
 import { Policy } from '../../../src'
 import { PostPolicyContext } from '../context'
 import { Post } from '../types'
-import { CommonPolicyBuilder } from './common.policy'
+import { CommonPolicy } from './common.policy'
 
-const isModerator = async (ctx: PostPolicyContext, _post: Post) => {
-  if (await ctx.isPostModerator()) {
-    return true
+export namespace PostPolicy {
+  async function isModerator(ctx: PostPolicyContext, _post: Post) {
+    const user = ctx.getCurrentUser({ allowGuest: true })
+    if (await ctx.isPostModerator(user)) {
+      return true
+    }
   }
-}
 
-const viewPost = async (ctx: PostPolicyContext, post: Post) => {
-  const user = ctx.getCurrentUser({ allowGuest: true })
+  const base = pipe(CommonPolicy.base, Policy.namespace('PostPolicy'), Policy.use(isModerator))
 
-  if (post.status === 'draft') {
-    return user?.id === post.userId
-  }
-  return true
-}
+  export const viewPost = pipe(
+    base,
+    Policy.define('viewPost', async (ctx: PostPolicyContext, post: Post) => {
+      const user = ctx.getCurrentUser({ allowGuest: true })
+      if (post.status === 'draft') {
+        return user?.id === post.userId
+      }
+      return true
+    })
+  )
 
-const editPost = async (ctx: PostPolicyContext, post: Post) => {
-  const user = ctx.getCurrentUser()
-  return user?.id === post.userId
-}
-
-const PostPolicyBuilder = pipe(CommonPolicyBuilder, Policy.namespace('PostPolicy'), Policy.before(isModerator))
-
-export const PostPolicy = {
-  viewPost: pipe(PostPolicyBuilder, Policy.define('viewPost', viewPost)),
-  editPost: pipe(PostPolicyBuilder, Policy.define('editPost', editPost))
+  export const editPost = pipe(
+    base,
+    Policy.define('editPost', async (ctx: PostPolicyContext, post: Post) => {
+      const user = ctx.getCurrentUser()
+      return user?.id === post.userId
+    })
+  )
 }
