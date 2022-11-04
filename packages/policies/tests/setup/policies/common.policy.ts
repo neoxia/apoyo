@@ -2,10 +2,12 @@ import { pipe } from '@apoyo/std'
 import { Policy } from '../../../src'
 import { CommonPolicyContext } from '../context'
 
-const isAdmin = (ctx: CommonPolicyContext) => {
+function isAdmin(ctx: CommonPolicyContext) {
   if (ctx.getCurrentUser().role === 'admin') {
     return true
   }
 }
 
-export const CommonPolicyBuilder = pipe(Policy.base(), Policy.before(isAdmin))
+export namespace CommonPolicy {
+  export const base = pipe(Policy.base(), Policy.use(isAdmin))
+}

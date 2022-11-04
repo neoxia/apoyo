@@ -89,6 +89,7 @@ module.exports = {
         sidebarDepth: 3,
         children: [
           '/guide/policies/getting-started.md',
+          '/guide/policies/policies.md',
           '/guide/policies/middlewares.md',
           '/guide/policies/interceptors.md'
         ]
