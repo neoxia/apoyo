@@ -29,6 +29,7 @@ export namespace Policy {
   }
 
   /**
+   * @description
    * Prefix all policies using this base with the given namespace
    */
   export const namespace = <ContextType extends PolicyContext<unknown>>(namespace: string) => (
@@ -41,7 +42,8 @@ export namespace Policy {
   }
 
   /**
-   * Middleware to use before executing the given policy:
+   * @description
+   * Register a new middleware to check before executing the given policy:
    * - Succeed authorization attempt if "true" is returned. The next middleware or policy is not executed.
    * - Fails authorization attempts if "false" is returned. An NotAuthorizationException is thrown in this case.
    * - Fails authorization attempts if an exception is thrown.
@@ -77,6 +79,7 @@ export namespace Policy {
   }
 
   /**
+   * @description
    * Define a new policy
    * - Succeed authorization attempt if "true" is returned.
    * - Fails authorization attempts if "false" is returned. An NotAuthorizationException is thrown in this case.

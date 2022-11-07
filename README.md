@@ -18,6 +18,8 @@ The goal was having:
 
 - [Files](packages/files) (`@apoyo/files`): Contains file drivers for most commonly used providers.
 
+- [Policies](packages/policies) (`@apoyo/policies`): Contains utils to better separate and write authorization logic.
+
 <!--
 Packages that are not ready yet:
 
