@@ -1,28 +1,78 @@
 # Error handling
 
-Errors can be sometimes difficult to handle, especially if you are deep in your "domain" code.
-In those cases, if an error is thrown in one of your methods / functions, it becomes difficult to know **why**, and **from where exactly** that error was thrown.
+Apoyo provides functionalities to improve error handling, by providing an `Exception` class.
 
-As such, `@apoyo/std` integrates a solution similar to Joyent's [v-error](https://www.npmjs.com/package/verror) approach.
+## Custom exceptions
 
-I recommend you the following article from Joyent about why this approach is useful:
+This class can be used to easily create new custom errors classes, that can easily be identified by name or `instanceof`:
 
-<https://www.joyent.com/node-js/production/design/errors>
+```ts
+export class EntityNotFoundException extends Exception {
+  constructor(message: string, public readonly code: string) {
+    super(message)
+  }
+}
 
-## Error module
+export class PostNotFoundException extends EntityNotFoundException {
+  constructor() {
+    super('Post not found', undefined, 'E_POST_NOT_FOUND')
+  }
+}
+```
 
-In `@apoyo/std`, the `Err` module provides functions similar to those available in `v-error`, but with mustache-styled messages and more easily chainable errors.
+This makes it very easy for the developers using your features to identify, understand and catch the appropriate errors.
 
-TODO: utils + examples
+## Error causes
 
-## Result module
+Most of the time, you may want to transform an error thrown by a third-party library into a custom error that you can more easily work with.
 
-Sometimes, you don't want to throw errors, but accumulate them.
+In those cases however, it is recommended to keep the original error cause, to view the entire history on how this error came to be and how to fix it:
 
-In this case, the `Result` module will allow you to do multiple things:
+*exceptions.ts*:
 
-- Catch errors an wrap them in a `Ko` object.
-- Accumulate a list of errors, when executing logic that may throw on a list of elements.
-- Type your errors.
+```ts
+export class FileException extends Exception {
+  constructor(message: string, cause: Error | undefined, public readonly code: string) {
+    super(message, cause)
+  }
+}
 
-TODO: examples
+export class CannotWriteFileException extends FileException {
+  constructor(public readonly location: string, cause: Error) {
+    super(`Cannot write file at location "${location}"`, cause, 'E_CANNOT_WRITE_FILE')
+  }
+}
+```
+
+*feature.ts*:
+
+```ts
+try {
+  await fs.promises.writeFile(path, contents)
+} catch (err) {
+  throw new CannotWriteFileException(path, err)
+}
+```
+
+## Usage example with HTTP
+
+Most frameworks provide you with custom HTTP error classes or factories.
+
+However, some people then throw these HTTP errors inside their application layer / services, which **highly couples** your entire application to the HTTP protocol / transport layer, which is **bad**.
+
+You should instead create and throw your own, **application owned**, exceptions from your application layer. You can then catch these errors on the transport layer and transform them into their appropriate HTTP errors:
+
+```ts
+if (err instanceof NotAuthorizedException) {
+  throw new HttpUnauthorizedException()
+}
+if (err instanceof EntityNotFoundException) {
+  throw new HttpNotFoundException({
+    message: err.message,
+    code: err.code
+  })
+}
+throw new HttpInternalError({
+  message: 'Internal error'
+})
+```
