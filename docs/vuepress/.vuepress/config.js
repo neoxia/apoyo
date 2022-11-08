@@ -15,7 +15,6 @@ module.exports = {
         sidebarDepth: 0,
         children: [
           '/guide/',
-          '/guide/mentions'
         ]
       },
       {
@@ -23,6 +22,7 @@ module.exports = {
         collapsable: true,
         children: [
           '/guide/std/getting-started.md',
+          '/guide/std/mentions',
           '/guide/std/pipe.md',
           '/guide/std/error-handling.md',
           '/guide/std/async-utils.md',

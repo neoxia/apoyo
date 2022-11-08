@@ -13,7 +13,7 @@ As such, while this library may have a few similarities, `@apoyo/std` has been h
 
 A lot of smaller packages were also included:
 
-**pupa**: The `Str` module a small `template` function based on this package.
+**pupa**: The `Str` module contains a small `template` function based on this package.
 
 **escape-goat**: The `Str` module also re-integrates the small `htmlEscape` and `htmlUnescape` functions, which have been <s>copied</s> **inspired** by this package.
 

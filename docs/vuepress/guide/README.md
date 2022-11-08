@@ -1,32 +1,13 @@
 # What is Apoyo?
 
-Apoyo (Spanish for "support") tries to improve Developer Experience, by giving the developer a wide range of utility packages, from framework agnostic utilities to library overlays, to facilitate their usage.
+Apoyo (Spanish for "support") tries to improve Developer Experience, by giving the developer a wide range of utility packages, from framework agnostic utilities to library enhancements, to facilitate the development of your applications.
 
-## Motivation
+## Packages
 
-Today, there exists a huge variety of utility libraries in the JS ecosystem: `underscore`, `lodash`, `ramda`, etc...
+- [Std](https://github.com/neoxia/apoyo/tree/master/packages/std) (`@apoyo/std`): Contains general, framework agnostic utilities, such as utilities for errors, promises, async concurrency, and many others!
 
-While these libraries are great, they don't fit certain needs and are missing a lot of utilities required in day by day work.
+- [Decoders](https://github.com/neoxia/apoyo/tree/master/packages/decoders) (`@apoyo/decoders`): Contains type decoders and validators.
 
-**Pipeable**: `underscore` or `lodash` utilities are not pipeable, which means combining multiple operations requires a lot of temporary variables, which harms the code quality.
+- [Files](https://github.com/neoxia/apoyo/tree/master/packages/files) (`@apoyo/files`): Contains file drivers for most commonly used providers.
 
-**Typescript**: None of the above tools have been written specifically for Typescript, which means some functions are hard to type or don't play nicely with Typescript at all.
-
-**Three-shaking**: The above libraries don't have great out-of-the-box Tree-shaking capabilities.
-
-**Content**: These libraries mainly cover utilities for `Array`s and `Record`s, whis means you will have to install other packages to cover missing utilities:
-
-- A package for custom errors / improved error handling.
-- A package for `Promise` utilities, to execute for example Promises in concurrence / in sequence
-- A package to accumulate Results without throwing
-- Etc...
-
-## Goal
-
-This library has a few main goal:
-
-- Avoid dependency hells, by not having to install a multitude of utility packages required to do common tasks.
-
-- Avoid any naming conflicts by putting all utilities related to a data-structure in their respective "barrel" export.
-
-- Ease of usage: While large, the library should be easy to read and learn.
+- [Policies](https://github.com/neoxia/apoyo/tree/master/packages/policies) (`@apoyo/policies`): Contains utils to better separate and write authorization logic.
