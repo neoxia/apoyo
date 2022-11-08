@@ -5,7 +5,7 @@ import {
   CannotWriteFileException,
   CannotDeleteFileException,
   CannotGetMetaDataException,
-  DriverContract
+  Drive
 } from '@apoyo/files'
 
 import { DriveFileStats } from '@apoyo/files'
@@ -28,7 +28,7 @@ import {
 } from '@azure/storage-blob'
 import { Readable } from 'stream'
 
-export type AzureDriverConfig = CommonOptions & {
+export type AzureDriveConfig = CommonOptions & {
   container: string
   connectionString?: string
   azureTenantId?: string
@@ -39,7 +39,7 @@ export type AzureDriverConfig = CommonOptions & {
   localAddress?: string
 }
 
-export class AzureDriver implements DriverContract {
+export class AzureDrive implements Drive {
   /**
    * Reference to the Azure storage instance
    */
@@ -50,7 +50,7 @@ export class AzureDriver implements DriverContract {
    */
   public name: 'azure' = 'azure'
 
-  constructor(private _config: AzureDriverConfig) {
+  constructor(private _config: AzureDriveConfig) {
     if (_config.connectionString) {
       // eslint-disable-next-line
       this.adapter = BlobServiceClient.fromConnectionString(

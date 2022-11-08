@@ -10,7 +10,7 @@ import {
   CannotWriteFileException,
   ContentHeaders,
   DriveFileStats,
-  DriverContract,
+  Drive,
   SignedUrlOptions,
   WriteOptions
 } from '@apoyo/files'
@@ -18,13 +18,13 @@ import { Bucket, GetSignedUrlConfig, Storage, StorageOptions } from '@google-clo
 
 const pipelinePromise = promisify(pipeline)
 
-export type GcsDriverConfig = StorageOptions & {
+export type GcsDriveConfig = StorageOptions & {
   bucket: string
   usingUniformAcl?: boolean
   cdnUrl?: string
 }
 
-export class GcsDriver implements DriverContract {
+export class GcsDrive implements Drive {
   /**
    * Reference to the GCS Bucket
    */
@@ -40,7 +40,7 @@ export class GcsDriver implements DriverContract {
    */
   public name: 'gcs' = 'gcs'
 
-  constructor(private _config: GcsDriverConfig) {
+  constructor(private _config: GcsDriveConfig) {
     this.adapter = new Storage(this._config)
     this._gcsBucket = this.adapter.bucket(this._config.bucket)
   }
@@ -106,8 +106,8 @@ export class GcsDriver implements DriverContract {
    * Returns a new instance of the GCS driver with
    * a custom runtime bucket
    */
-  public bucket(bucket: string): GcsDriver {
-    return new GcsDriver(Object.assign({}, this._config, { bucket }))
+  public bucket(bucket: string): GcsDrive {
+    return new GcsDrive(Object.assign({}, this._config, { bucket }))
   }
 
   /**

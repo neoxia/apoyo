@@ -1,4 +1,4 @@
-export * from './driver'
+export * from './drive'
 export * from './exceptions'
-export { LocalDriver, LocalDriverConfig } from './drivers/local'
-export { FakeDriver, FakeDriverConfig } from './drivers/fake'
+export { LocalDrive, LocalDriveConfig } from './drivers/local'
+export { FakeDrive, FakeDriveConfig as FakeDriverConfig } from './drivers/fake'

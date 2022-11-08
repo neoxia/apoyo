@@ -1,1 +1,1 @@
-export { S3Driver, S3DriverConfig } from './drivers/s3'
+export { S3Drive, S3DriveConfig } from './drivers/s3'

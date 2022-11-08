@@ -2,7 +2,7 @@ import etag from 'etag'
 import * as fsExtra from 'fs-extra'
 import path, { dirname } from 'path'
 
-import { DriveFileStats, DriverContract, SignedUrlOptions } from '../driver'
+import { DriveFileStats, Drive, SignedUrlOptions } from '../drive'
 
 import { pipelinePromise } from '../utils'
 
@@ -16,7 +16,7 @@ import {
   CannotGetMetaDataException
 } from '../exceptions'
 
-export interface LocalDriverConfig {
+export interface LocalDriveConfig {
   /**
    * Root directory in which to search for your files on your local filesystem
    */
@@ -34,7 +34,7 @@ export interface LocalDriverConfig {
 /**
  * Local driver interacts with the local file system
  */
-export class LocalDriver implements DriverContract {
+export class LocalDrive implements Drive {
   /**
    * Reference to the underlying adapter. Which is
    * fs-extra
@@ -46,7 +46,7 @@ export class LocalDriver implements DriverContract {
    */
   public name: 'local' = 'local'
 
-  constructor(private _config: LocalDriverConfig) {}
+  constructor(private _config: LocalDriveConfig) {}
 
   /**
    * Make absolute path to a given location

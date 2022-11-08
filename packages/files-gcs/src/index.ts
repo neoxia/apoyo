@@ -1,1 +1,1 @@
-export { GcsDriver, GcsDriverConfig } from './drivers/gcs'
+export { GcsDrive, GcsDriveConfig } from './drivers/gcs'
