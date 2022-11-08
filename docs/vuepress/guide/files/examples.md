@@ -1,34 +1,33 @@
 # Examples
 
-Create a new driver instance:
+Create a new drive instance:
 
 ```ts
-import { DriverContract, LocalDriver, FakeDriver } from '@apoyo/files'
-import { S3Driver } from '@apoyo/files-s3'
+import { Drive, LocalDrive, FakeDrive } from '@apoyo/files'
+import { S3Drive } from '@apoyo/files-s3'
 
-// Instantiate the driver you want to use (LocalDriver, FakeDriver, S3Driver or any other available driver)
-const driver: DriverContract = new S3Driver({
+// Instantiate the drive you want to use (LocalDrive, FakeDrive, S3Drive or any other available drive)
+const drive: Drive = new S3Drive({
   bucket: 'my-bucket',
   key: '<aws access key>'
   secret: '<aws secret key>'
 })
-
 ```
 
 **Simple usage:**
 
 ```ts
 // Write data to a file
-await driver.put('foo.txt', 'hello world')
+await drive.put('foo.txt', 'hello world')
 
 // Check if file exists
-const exists = await driver.exists('foo.txt') // is now true
+const exists = await drive.exists('foo.txt') // is now true
 
 // Move file
-await driver.move('foo.txt', 'bar.txt')
+await drive.move('foo.txt', 'bar.txt')
 
 // Delete file
-await driver.delete('bar.txt')
+await drive.delete('bar.txt')
 ```
 
 **Get file with stream:**
@@ -41,7 +40,7 @@ import { promisify } from 'util'
 const pipelineAsync = promisify(pipeline);
 
 // Get readable stream
-const readable = await driver.getStream('input.txt')
+const readable = await drive.getStream('input.txt')
 
 // Get writable stream
 const writable = await fs.createWriteStream("output.txt");
@@ -61,7 +60,7 @@ await pipelineAsync(
 ```ts
 const stream = fs.createReadStream('path/to/my-huge-archive.tar.gz').pipe(gunzipStream);
 
-await driver.putStream('my-huge-archive.tar', stream)
+await drive.putStream('my-huge-archive.tar', stream)
 ```
 
 **Note**: If you wish to track the progress of your stream, you will need to use 3rd party libraries, such as <https://www.npmjs.com/package/progress-stream>.
