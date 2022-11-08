@@ -1,1 +1,1 @@
-export { AzureDriver, AzureDriverConfig } from './drivers/azure'
+export { AzureDrive, AzureDriveConfig } from './drivers/azure'

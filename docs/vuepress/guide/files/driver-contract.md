@@ -1,9 +1,9 @@
-# Driver contract
+# Drive contract
 
-All drivers of this library implement the `DriverContract` interface, and as such, have access to all methods specified below by the contract:
+All drives of this library implement the `Drive` interface, and as such, have access to all methods specified below by the contract:
 
 ```ts
-export interface DriverContract {
+export interface Drive {
   /**
    * A boolean to find if the location path exists or not
    */

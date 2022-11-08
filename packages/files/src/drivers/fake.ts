@@ -2,7 +2,7 @@ import etag from 'etag'
 import { Volume } from 'memfs'
 import { dirname } from 'path'
 
-import { DriveFileStats, DriverContract, SignedUrlOptions } from '../driver'
+import { DriveFileStats, Drive, SignedUrlOptions } from '../drive'
 
 import { pipelinePromise } from '../utils'
 
@@ -17,7 +17,7 @@ import {
 } from '../exceptions'
 import { Exception } from '@apoyo/std'
 
-export interface FakeDriverConfig {
+export interface FakeDriveConfig {
   /**
    * Configure how `getUrl` and `getSignedUrl` computes the URL for a given file
    */
@@ -28,9 +28,9 @@ export interface FakeDriverConfig {
 }
 
 /**
- * Memory driver is mainly used for testing
+ * Memory drive is mainly used for testing
  */
-export class FakeDriver implements DriverContract {
+export class FakeDrive implements Drive {
   /**
    * Reference to the underlying adapter. Which is memfs
    */
@@ -41,7 +41,7 @@ export class FakeDriver implements DriverContract {
    */
   public name: 'fake' = 'fake'
 
-  constructor(private _config: FakeDriverConfig) {}
+  constructor(private _config: FakeDriveConfig = {}) {}
 
   /**
    * Make absolute path to a given location

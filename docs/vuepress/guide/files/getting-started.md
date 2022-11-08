@@ -1,29 +1,29 @@
 # Getting started
 
-This library is a simplified and framework agnostic version of [Adonisjs Drive](https://github.com/adonisjs/drive).
+This library is a simplified and framework agnostic version of [Adonis Drive](https://github.com/adonisjs/drive).
 
-As such, the API, as well as the source code, will be (and will probably stay) very similar to the `Drive` object of the `Adonisjs` framework.
+As such, the API, as well as the source code, will be (and will probably stay) similar to the `Drive` object of the `Adonisjs` framework.
 
 However, additional features and methods may be added later if required.
 
 Here a small usage example:
 
 ```ts
-import { FakeDriver } from '@apoyo/files'
+import { FakeDrive } from '@apoyo/files'
 
-const driver = new FakeDriver({})
+const drive = new FakeDrive({})
 
 // Write a file
-await driver.put(filePath, stringOrBuffer)
-await driver.putStream(filePath, readableStream)
+await drive.put(filePath, stringOrBuffer)
+await drive.putStream(filePath, readableStream)
 
 // Read a file
-const contents = await driver.get(filePath)
-const readableStream = await driver.getStream(filePath)
+const contents = await drive.get(filePath)
+const readableStream = await drive.getStream(filePath)
 
 // Find if a file exists
-if (await driver.exists(filePath)) {
-  await driver.get(filePath)
+if (await drive.exists(filePath)) {
+  await drive.get(filePath)
 }
 ```
 
@@ -31,105 +31,105 @@ if (await driver.exists(filePath)) {
 
 The primary goal of this library is to provide a consistent API that works across all the storage providers. So, for example, you can use the local file system during development and switch to S3 in production without changing a single line of code.
 
-To guarantee a consistent API, the drivers cannot work with the specifics of a given storage service.
+To guarantee a consistent API, the drives cannot work with the specifics of a given storage service.
 
-For example, you cannot create symlinks with the supported drivers since symlinks are a Unix-based file systems concept and cannot be replicated with S3 or GCS.
+For example, you cannot create symlinks with the supported drives since symlinks are a Unix-based file systems concept and cannot be replicated with S3 or GCS.
 
-Similarly, the proprietary features of a cloud service that cannot be replicated across drivers are also not supported.
+Similarly, the proprietary features of a cloud service that cannot be replicated across all drives are also not supported.
 
 ## Use cases
 
-The primary use case for these drivers is to help you quickly manage user-uploaded files. These can be user avatars, blog post cover images, or any other runtime managed documents.
+The primary use case for these drives is to help you quickly manage user-uploaded files. These can be user avatars, blog post cover images, or any other runtime managed documents.
 
 ## Installation
 
-All drivers will require the following peer dependencies:
+All drives will require the following peer dependencies:
 
 ```sh
 npm install @apoyo/files @apoyo/std
 ```
 
-## Supported drivers
+## Supported drives
 
-### Local driver
+### Local drive
 
-This driver is directly included in the `@apoyo/files` package. You don't need to install any other package.
+This drive is directly included in the `@apoyo/files` package. You don't need to install any other package.
 
-When using this driver, files are written on the local file system, starting at the given root path.
+When using this drive, files are written on the local file system, starting at the given root path.
 
 ```ts
-import { DriverContract, LocalDriver } from '@apoyo/files'
+import { Drive, LocalDrive } from '@apoyo/files'
 
-const driver: DriverContract = new LocalDriver({
+const drive: Drive = new LocalDrive({
   root: '/path/to/uploads'
 })
 ```
 
-### Fake driver
+### Fake drive
 
-This driver is directly included in the `@apoyo/files` package. You don't need to install any other package.
+This drive is directly included in the `@apoyo/files` package. You don't need to install any other package.
 
-When using this driver, files are written in memory. As such, this driver can be used when written tests, to avoid cluttering your system.
+When using this drive, files are written in memory. As such, this drive can be used when written tests, to avoid cluttering your system.
 
 ```ts
-import { DriverContract, FakeDriver } from '@apoyo/files'
+import { Drive, FakeDrive } from '@apoyo/files'
 
-const driver: DriverContract = new FakeDriver({})
+const drive: Drive = new FakeDrive()
 ```
 
-### S3 driver
+### S3 drive
 
-To use this driver, you will also need to install the `@apoyo/files-s3` package.
+To use this drive, you will also need to install the `@apoyo/files-s3` package.
 
-When using this driver, files are written in AWS S3.
+When using this drive, files are written in AWS S3.
 
 ```ts
-import { DriverContract } from '@apoyo/files'
-import { S3Driver } from '@apoyo/files-s3'
+import { Drive } from '@apoyo/files'
+import { S3Drive } from '@apoyo/files-s3'
 
-const driver: DriverContract = new S3Driver({
+const drive: Drive = new S3Drive({
   bucket: 'my-bucket',
   key: 'aws access key',
   secret: 'aws secret key'
 })
 ```
 
-**Note**: This driver is a framework agnostic version of [Adonisjs S3 Drive](https://github.com/adonisjs/drive-s3).
+**Note**: This drive is a framework agnostic version of [Adonisjs S3 Drive](https://github.com/adonisjs/drive-s3).
 
-### GCS driver
+### GCS drive
 
-To use this driver, you will also need to install the `@apoyo/files-gcs` package.
+To use this drive, you will also need to install the `@apoyo/files-gcs` package.
 
-When using this driver, files are written in AWS S3.
+When using this drive, files are written in AWS S3.
 
 ```ts
-import { DriverContract } from '@apoyo/files'
-import { GCSDriver } from '@apoyo/files-gcs'
+import { Drive } from '@apoyo/files'
+import { GCSDrive } from '@apoyo/files-gcs'
 
-const driver: DriverContract = new GCSDriver({
+const drive: Drive = new GCSDrive({
   // TODO
 })
 ```
 
-**Note**: This driver is a framework agnostic version of [Adonisjs GCS Drive](https://github.com/adonisjs/drive-gcs).
+**Note**: This drive is a framework agnostic version of [Adonisjs GCS Drive](https://github.com/adonisjs/drive-gcs).
 
-### Azure driver
+### Azure drive
 
-To use this driver, you will also need to install the `@apoyo/files-azure` package.
+To use this drive, you will also need to install the `@apoyo/files-azure` package.
 
-When using this driver, files are written in Azure Storage.
+When using this drive, files are written in Azure Storage.
 
 ```ts
-import { DriverContract } from '@apoyo/files'
-import { AzureDriver } from '@apoyo/files-azure'
+import { Drive } from '@apoyo/files'
+import { AzureDrive } from '@apoyo/files-azure'
 
-const driver: DriverContract = new AzureDriver({
+const drive: Drive = new AzureDrive({
   // TODO
 })
 ```
 
-**Note**: This driver is framework agnostic version of [Adonisjs Azure Drive](https://github.com/AlexanderYW/Adonis-Drive-Azure-Storage).
+**Note**: This drive is framework agnostic version of [Adonisjs Azure Drive](https://github.com/AlexanderYW/Adonis-Drive-Azure-Storage).
 
-### Custom drivers
+### Custom drive
 
-Custom providers can also be created by implementing the `DriverContract` interface available in `@apoyo/files`.
+Custom drives can also be created by implementing the `Drive` interface available in `@apoyo/files`.

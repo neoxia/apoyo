@@ -85,7 +85,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@apoyo/files-azure@workspace:packages/files-azure"
   dependencies:
-    "@apoyo/files": ~0.0.2
+    "@apoyo/files": ~0.1.0
     "@apoyo/std": 0.0.15
     "@azure/identity": ^2.1.0
     "@azure/storage-blob": ^12.11.0
@@ -97,7 +97,7 @@ __metadata:
     tsup: ^6.1.2
     typescript: ^4.7.4
   peerDependencies:
-    "@apoyo/files": ~0.0.2
+    "@apoyo/files": ~0.1.0
     "@apoyo/std": 0.0.15
   languageName: unknown
   linkType: soft
@@ -106,7 +106,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@apoyo/files-gcs@workspace:packages/files-gcs"
   dependencies:
-    "@apoyo/files": ~0.0.2
+    "@apoyo/files": ~0.1.0
     "@apoyo/std": 0.0.15
     "@google-cloud/storage": ^6.4.1
     "@types/jest": ^26.0.23
@@ -117,7 +117,7 @@ __metadata:
     tsup: ^6.1.2
     typescript: ^4.7.4
   peerDependencies:
-    "@apoyo/files": ~0.0.2
+    "@apoyo/files": ~0.1.0
     "@apoyo/std": 0.0.15
   languageName: unknown
   linkType: soft
@@ -126,7 +126,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@apoyo/files-s3@workspace:packages/files-s3"
   dependencies:
-    "@apoyo/files": ~0.0.2
+    "@apoyo/files": ~0.1.0
     "@apoyo/std": 0.0.15
     "@aws-sdk/abort-controller": ^3.162.0
     "@aws-sdk/client-s3": ^3.161.0
@@ -141,12 +141,12 @@ __metadata:
     tsup: ^6.1.2
     typescript: ^4.7.4
   peerDependencies:
-    "@apoyo/files": ~0.0.2
+    "@apoyo/files": ~0.1.0
     "@apoyo/std": 0.0.15
   languageName: unknown
   linkType: soft
 
-"@apoyo/files@workspace:packages/files, @apoyo/files@~0.0.2":
+"@apoyo/files@workspace:packages/files, @apoyo/files@~0.1.0":
   version: 0.0.0-use.local
   resolution: "@apoyo/files@workspace:packages/files"
   dependencies:

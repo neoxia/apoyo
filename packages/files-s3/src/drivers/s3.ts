@@ -10,7 +10,7 @@ import {
   CannotWriteFileException,
   ContentHeaders,
   DriveFileStats,
-  DriverContract,
+  Drive,
   SignedUrlOptions,
   WriteOptions
 } from '@apoyo/files'
@@ -28,7 +28,7 @@ import {
 import { Upload } from '@aws-sdk/lib-storage'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
-export type S3DriverConfig = S3ClientConfig & {
+export type S3DriveConfig = S3ClientConfig & {
   bucket: string
   cdnUrl?: string
   key?: string
@@ -38,7 +38,7 @@ export type S3DriverConfig = S3ClientConfig & {
 /**
  * An implementation of the s3 driver for AdonisJS drive
  */
-export class S3Driver implements DriverContract {
+export class S3Drive implements Drive {
   /**
    * Reference to the s3 client
    */
@@ -49,7 +49,7 @@ export class S3Driver implements DriverContract {
    */
   public name: 's3' = 's3'
 
-  constructor(private _config: S3DriverConfig) {
+  constructor(private _config: S3DriveConfig) {
     /**
      * Use the top level key and secret to define AWS credentials
      */
@@ -127,14 +127,6 @@ export class S3Driver implements DriverContract {
     }
 
     return contentHeaders
-  }
-
-  /**
-   * Returns a new instance of the s3 driver with a custom runtime
-   * bucket
-   */
-  public bucket(bucket: string): S3Driver {
-    return new S3Driver(Object.assign({}, this._config, { bucket }))
   }
 
   /**

@@ -5,17 +5,17 @@ import {
   CannotGetMetaDataException,
   CannotMoveFileException,
   CannotReadFileException,
-  DriverContract,
+  Drive,
   FileException
 } from '@apoyo/files'
-import { S3Driver, S3DriverConfig } from '../src'
+import { S3Drive, S3DriveConfig } from '../src'
 import { Arr, Dict, pipe } from '@apoyo/std'
 
-describe('S3 Driver', () => {
-  let driver: DriverContract
+describe('S3 Drive', () => {
+  let drive: Drive
 
   beforeEach(async () => {
-    const config: S3DriverConfig = {
+    const config: S3DriveConfig = {
       bucket: 'test',
       region: 'us-east-1',
       endpoint: process.env.AWS_S3_SERVER || 'http://localhost:4569',
@@ -24,36 +24,36 @@ describe('S3 Driver', () => {
       secret: '<aws_secret_key>'
     }
 
-    driver = new S3Driver(config)
+    drive = new S3Drive(config)
 
-    await driver.delete('foo.txt')
-    await driver.delete('bar.txt')
-    await driver.delete('baz/bar.txt')
-    await driver.delete('bar/baz/foo.txt')
+    await drive.delete('foo.txt')
+    await drive.delete('bar.txt')
+    await drive.delete('baz/bar.txt')
+    await drive.delete('bar/baz/foo.txt')
   })
 
   describe('put', () => {
     it('write file to the destination', async () => {
-      await driver.put('foo.txt', 'hello world')
+      await drive.put('foo.txt', 'hello world')
 
-      const contents = await driver.get('foo.txt')
+      const contents = await drive.get('foo.txt')
 
       expect(contents.toString()).toBe('hello world')
     })
 
     it('create intermediate directories when missing', async () => {
-      await driver.put('bar/baz/foo.txt', 'hello world')
+      await drive.put('bar/baz/foo.txt', 'hello world')
 
-      const contents = await driver.get('bar/baz/foo.txt')
+      const contents = await drive.get('bar/baz/foo.txt')
 
       expect(contents.toString()).toBe('hello world')
     })
 
     it('overwrite destination when file already exists', async () => {
-      await driver.put('foo.txt', 'hi world')
-      await driver.put('foo.txt', 'hello world')
+      await drive.put('foo.txt', 'hi world')
+      await drive.put('foo.txt', 'hello world')
 
-      const contents = await driver.get('foo.txt')
+      const contents = await drive.get('foo.txt')
 
       expect(contents.toString()).toBe('hello world')
     })
@@ -69,10 +69,10 @@ describe('S3 Driver', () => {
       })
 
       expect(stream.readable).toBe(true)
-      await driver.putStream('foo.txt', stream)
+      await drive.putStream('foo.txt', stream)
       expect(stream.readable).toBe(false)
 
-      const contents = await driver.get('foo.txt')
+      const contents = await drive.get('foo.txt')
       expect(contents.toString()).toBe('hello world')
     })
 
@@ -85,10 +85,10 @@ describe('S3 Driver', () => {
       })
 
       expect(stream.readable).toBe(true)
-      await driver.putStream('bar/baz/foo.txt', stream)
+      await drive.putStream('bar/baz/foo.txt', stream)
       expect(stream.readable).toBe(false)
 
-      const contents = await driver.get('bar/baz/foo.txt')
+      const contents = await drive.get('bar/baz/foo.txt')
       expect(contents.toString()).toBe('hello world')
     })
 
@@ -101,69 +101,69 @@ describe('S3 Driver', () => {
       })
 
       expect(stream.readable).toBe(true)
-      await driver.put('foo.txt', 'hi world')
-      await driver.putStream('foo.txt', stream)
+      await drive.put('foo.txt', 'hi world')
+      await drive.putStream('foo.txt', stream)
       expect(stream.readable).toBe(false)
 
-      const contents = await driver.get('foo.txt')
+      const contents = await drive.get('foo.txt')
       expect(contents.toString()).toBe('hello world')
     })
   })
 
   describe('exists', () => {
     it('return true when a file exists', async () => {
-      await driver.put('bar/baz/foo.txt', 'bar')
-      expect(await driver.exists('bar/baz/foo.txt')).toBe(true)
+      await drive.put('bar/baz/foo.txt', 'bar')
+      expect(await drive.exists('bar/baz/foo.txt')).toBe(true)
     })
 
     it("return false when a file doesn't exists", async () => {
-      expect(await driver.exists('foo.txt')).toBe(false)
+      expect(await drive.exists('foo.txt')).toBe(false)
     })
 
     it("return false when a file parent directory doesn't exists", async () => {
-      expect(await driver.exists('bar/baz/foo.txt')).toBe(false)
+      expect(await drive.exists('bar/baz/foo.txt')).toBe(false)
     })
   })
 
   describe('delete', () => {
     it('remove file', async () => {
-      await driver.put('bar/baz/foo.txt', 'bar')
-      await driver.delete('bar/baz/foo.txt')
+      await drive.put('bar/baz/foo.txt', 'bar')
+      await drive.delete('bar/baz/foo.txt')
 
-      expect(await driver.exists('bar/baz/foo.txt')).toBe(false)
+      expect(await drive.exists('bar/baz/foo.txt')).toBe(false)
     })
 
     it('do not error when trying to remove a non-existing file', async () => {
-      await driver.delete('foo.txt')
-      expect(await driver.exists('foo.txt')).toBe(false)
+      await drive.delete('foo.txt')
+      expect(await drive.exists('foo.txt')).toBe(false)
     })
 
     it("do not error when file parent directory doesn't exists", async () => {
-      await driver.delete('bar/baz/foo.txt')
-      expect(await driver.exists('bar/baz/foo.txt')).toBe(false)
+      await drive.delete('bar/baz/foo.txt')
+      expect(await drive.exists('bar/baz/foo.txt')).toBe(false)
     })
   })
 
   describe('copy', () => {
     it('copy file from within the disk root', async () => {
-      await driver.put('foo.txt', 'hello world')
-      await driver.copy('foo.txt', 'bar.txt')
+      await drive.put('foo.txt', 'hello world')
+      await drive.copy('foo.txt', 'bar.txt')
 
-      const contents = await driver.get('bar.txt')
+      const contents = await drive.get('bar.txt')
       expect(contents.toString()).toBe('hello world')
     })
 
     it('create intermediate directories when copying a file', async () => {
-      await driver.put('foo.txt', 'hello world')
-      await driver.copy('foo.txt', 'baz/bar.txt')
+      await drive.put('foo.txt', 'hello world')
+      await drive.copy('foo.txt', 'baz/bar.txt')
 
-      const contents = await driver.get('baz/bar.txt')
+      const contents = await drive.get('baz/bar.txt')
       expect(contents.toString()).toBe('hello world')
     })
 
     it("return error when source doesn't exists", async () => {
       try {
-        await driver.copy('foo.txt', 'bar.txt')
+        await drive.copy('foo.txt', 'bar.txt')
       } catch (error) {
         expect(error).toBeInstanceOf(FileException)
         expect(error).toBeInstanceOf(CannotCopyFileException)
@@ -172,37 +172,37 @@ describe('S3 Driver', () => {
     })
 
     it('overwrite destination when already exists', async () => {
-      await driver.put('foo.txt', 'hello world')
-      await driver.put('bar.txt', 'hi world')
-      await driver.copy('foo.txt', 'bar.txt')
+      await drive.put('foo.txt', 'hello world')
+      await drive.put('bar.txt', 'hi world')
+      await drive.copy('foo.txt', 'bar.txt')
 
-      const contents = await driver.get('bar.txt')
+      const contents = await drive.get('bar.txt')
       expect(contents.toString()).toBe('hello world')
     })
   })
 
   describe('move', () => {
     it('move file from within the disk root', async () => {
-      await driver.put('foo.txt', 'hello world')
-      await driver.move('foo.txt', 'bar.txt')
+      await drive.put('foo.txt', 'hello world')
+      await drive.move('foo.txt', 'bar.txt')
 
-      const contents = await driver.get('bar.txt')
+      const contents = await drive.get('bar.txt')
       expect(contents.toString()).toBe('hello world')
-      expect(await driver.exists('foo.txt')).toBe(false)
+      expect(await drive.exists('foo.txt')).toBe(false)
     })
 
     it('create intermediate directories when moving a file', async () => {
-      await driver.put('foo.txt', 'hello world')
-      await driver.move('foo.txt', 'baz/bar.txt')
+      await drive.put('foo.txt', 'hello world')
+      await drive.move('foo.txt', 'baz/bar.txt')
 
-      const contents = await driver.get('baz/bar.txt')
+      const contents = await drive.get('baz/bar.txt')
       expect(contents.toString()).toBe('hello world')
-      expect(await driver.exists('foo.txt')).toBe(false)
+      expect(await drive.exists('foo.txt')).toBe(false)
     })
 
     it("return error when source doesn't exists", async () => {
       try {
-        await driver.move('foo.txt', 'baz/bar.txt')
+        await drive.move('foo.txt', 'baz/bar.txt')
       } catch (error) {
         expect(error).toBeInstanceOf(FileException)
         expect(error).toBeInstanceOf(CannotMoveFileException)
@@ -211,28 +211,28 @@ describe('S3 Driver', () => {
     })
 
     it('overwrite destination when already exists', async () => {
-      await driver.put('foo.txt', 'hello world')
-      await driver.put('baz/bar.txt', 'hi world')
+      await drive.put('foo.txt', 'hello world')
+      await drive.put('baz/bar.txt', 'hi world')
 
-      await driver.move('foo.txt', 'baz/bar.txt')
+      await drive.move('foo.txt', 'baz/bar.txt')
 
-      const contents = await driver.get('baz/bar.txt')
+      const contents = await drive.get('baz/bar.txt')
       expect(contents.toString()).toBe('hello world')
     })
   })
 
   describe('get', () => {
     it('get file contents', async () => {
-      await driver.put('foo.txt', 'hello world')
+      await drive.put('foo.txt', 'hello world')
 
-      const contents = await driver.get('foo.txt')
+      const contents = await drive.get('foo.txt')
       expect(contents.toString()).toBe('hello world')
     })
 
     it('get file contents as a stream', async () => {
-      await driver.put('foo.txt', 'hello world')
+      await drive.put('foo.txt', 'hello world')
 
-      const stream = await driver.getStream('foo.txt')
+      const stream = await drive.getStream('foo.txt')
 
       await new Promise<void>((resolve) => {
         stream.on('data', (chunk) => {
@@ -244,7 +244,7 @@ describe('S3 Driver', () => {
 
     it("return error when file doesn't exists", async () => {
       try {
-        await driver.get('foo.txt')
+        await drive.get('foo.txt')
       } catch (error) {
         expect(error).toBeInstanceOf(FileException)
         expect(error).toBeInstanceOf(CannotReadFileException)
@@ -255,16 +255,16 @@ describe('S3 Driver', () => {
 
   describe('getStats', () => {
     it('get file stats', async () => {
-      await driver.put('foo.txt', 'hello world')
+      await drive.put('foo.txt', 'hello world')
 
-      const stats = await driver.getStats('foo.txt')
+      const stats = await drive.getStats('foo.txt')
       expect(stats.size).toBe(11)
       expect(stats.modified).toBeInstanceOf(Date)
     })
 
     it('return error when file is missing', async () => {
       try {
-        await driver.getStats('foo.txt')
+        await drive.getStats('foo.txt')
       } catch (error) {
         expect(error).toBeInstanceOf(FileException)
         expect(error).toBeInstanceOf(CannotGetMetaDataException)
@@ -275,14 +275,14 @@ describe('S3 Driver', () => {
 
   describe('getUrl', () => {
     it('get url to a given file', async () => {
-      const url = await driver.getUrl('foo.txt')
+      const url = await drive.getUrl('foo.txt')
       expect(url).toBe('http://localhost:4569/test/foo.txt')
     })
   })
 
   describe('getSignedUrl', () => {
     it('get signed url to a given file', async () => {
-      const url = await driver.getSignedUrl('foo.txt')
+      const url = await drive.getSignedUrl('foo.txt')
       const parsed = new URL(url)
       const queryParams = pipe(parsed.searchParams.entries(), Arr.from, Dict.fromPairs)
       expect(parsed.origin + parsed.pathname).toBe('http://localhost:4569/test/foo.txt')

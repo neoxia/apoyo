@@ -37,7 +37,7 @@ export type DriveFileStats = {
 /**
  * Shape of the generic driver
  */
-export interface DriverContract {
+export interface Drive {
   /**
    * Name of the driver
    */
