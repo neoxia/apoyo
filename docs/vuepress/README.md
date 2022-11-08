@@ -6,8 +6,8 @@ tagline: Typescript utilities
 actionText: Get Started →
 actionLink: /guide/
 features:
-- title: Rich
-  details: We provide numereous utilities that can help you increase your work speed.
+- title: Speed
+  details: We provide concrete utilities to your work speed and quality.
 - title: Framework agnostic
   details: Isn't it nice to know that the tools you use don't need to be changed each time you need to use another framework?
 - title: Typescript first

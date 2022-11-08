@@ -140,7 +140,7 @@ Comparator functions can be used for more than just sorting. In fact, you can al
 
 ```ts
 const minNumber = pipe(
-  [1,5,3,2,6]
+  [1,5,3,2,6],
   Arr.min(Ord.number)
 )
 
@@ -149,7 +149,7 @@ const maxDate = pipe(
     new Date('2000-01-01'),
     new Date('2020-01-01'),
     new Date('2017-01-01')
-  ]
+  ],
   Arr.max(Ord.date)
 )
 ```

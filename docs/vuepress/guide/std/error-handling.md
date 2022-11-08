@@ -1,6 +1,6 @@
 # Error handling
 
-Apoyo provides functionalities to improve error handling, by providing an `Exception` class.
+Apoyo provides an `Exception` class to more easily extend the native `Error` class and improve error handling.
 
 ## Custom exceptions
 
