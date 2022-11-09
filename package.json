@@ -5,9 +5,9 @@
   "workspaces": [
     "packages/*"
   ],
-  "packageManager": "yarn@3.2.1",
+  "packageManager": "yarn@3.2.4",
   "engines": {
-    "node": ">=14.0.0",
+    "node": "^16.0.0",
     "npm": "Please use yarn instead of NPM to install dependencies"
   },
   "scripts": {
@@ -18,7 +18,7 @@
     "postinstall": "husky install"
   },
   "devDependencies": {
-    "@types/node": "^14.18.21",
+    "@types/node": "^16.18.0",
     "@types/prettier": "1.10.0",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "@typescript-eslint/parser": "^5.30.0",
