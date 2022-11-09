@@ -10,7 +10,7 @@ import {
 
 import { DriveFileStats } from '@apoyo/files'
 
-import { DefaultAzureCredential } from '@azure/identity'
+import { DefaultAzureCredential, TokenCredential } from '@azure/identity'
 import {
   newPipeline,
   BlobServiceClient,
@@ -23,21 +23,49 @@ import {
   BlobSASSignatureValues,
   BlockBlobUploadOptions,
   BlockBlobUploadStreamOptions,
-  BlockBlobClient,
-  CommonOptions
+  BlockBlobClient
 } from '@azure/storage-blob'
 import { Readable } from 'stream'
 
-export type AzureDriveConfig = CommonOptions & {
+export type AzureDriveCommonConfig = {
   container: string
-  connectionString?: string
-  azureTenantId?: string
-  azureClientId?: string
-  azureClientSecret?: string
-  name?: string
-  key?: string
+}
+
+export type AzureDriveAuthByConnectionString = {
+  connectionString: string
+}
+
+export type AzureDriveAuthByAccountKeyCredentials = {
+  accountName: string
+  accountKey: string
   localAddress?: string
 }
+
+/**
+ * Use the {@link DefaultAzureCredential} to authenticate your AzureDrive.
+ *
+ * This credential provides a default {@link ChainedTokenCredential} configuration that should
+ * work for most applications that use the Azure SDK.
+ *
+ * The following credential types will be tried, in order:
+ *
+ * - {@link EnvironmentCredential}
+ * - {@link ManagedIdentityCredential}
+ * - {@link VisualStudioCodeCredential}
+ * - {@link AzureCliCredential}
+ * - {@link AzurePowerShellCredential}
+ */
+export type AzureDriveAuthByAzureCredentials = {
+  accountName: string
+  localAddress?: string
+}
+
+export type AzureDriveAuth =
+  | AzureDriveAuthByConnectionString
+  | AzureDriveAuthByAccountKeyCredentials
+  | AzureDriveAuthByAzureCredentials
+
+export type AzureDriveConfig = AzureDriveCommonConfig & AzureDriveAuth
 
 export class AzureDrive implements Drive {
   /**
@@ -51,24 +79,17 @@ export class AzureDrive implements Drive {
   public name: 'azure' = 'azure'
 
   constructor(private _config: AzureDriveConfig) {
-    if (_config.connectionString) {
-      // eslint-disable-next-line
-      this.adapter = BlobServiceClient.fromConnectionString(
-        _config.connectionString
-      )
+    if ('connectionString' in _config) {
+      this.adapter = BlobServiceClient.fromConnectionString(_config.connectionString)
     } else {
-      let credential: any
-      if (_config.azureTenantId && _config.azureClientId && _config.azureClientSecret) {
+      let credential: StorageSharedKeyCredential | TokenCredential
+      if ('accountKey' in _config) {
+        credential = new StorageSharedKeyCredential(_config.accountName, _config.accountKey)
+      } else {
         credential = new DefaultAzureCredential()
-      } else if (_config.name && _config.key) {
-        credential = new StorageSharedKeyCredential(_config.name, _config.key)
       }
 
-      let url = `https://${this._config.name}.blob.core.windows.net`
-
-      if (typeof this._config.localAddress !== 'undefined') {
-        url = this._config.localAddress
-      }
+      const url = _config.localAddress ?? `https://${_config.accountName}.blob.core.windows.net`
 
       const azurePipeline = newPipeline(credential)
 

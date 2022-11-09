@@ -17,7 +17,8 @@ describe('GCS Drive', () => {
     const config: GcsDriveConfig = {
       apiEndpoint: 'http://localhost:4443',
       bucket: 'test',
-      projectId: 'test'
+      projectId: 'test',
+      credentials: {} // your json credentials from google
     }
 
     const gcs = new GcsDrive(config)

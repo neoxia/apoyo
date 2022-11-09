@@ -107,7 +107,9 @@ import { Drive } from '@apoyo/files'
 import { GCSDrive } from '@apoyo/files-gcs'
 
 const drive: Drive = new GCSDrive({
-  // TODO
+  bucket: 'test',
+  projectId: 'test',
+  credentials: {} // your json credentials from google
 })
 ```
 
@@ -124,7 +126,9 @@ import { Drive } from '@apoyo/files'
 import { AzureDrive } from '@apoyo/files-azure'
 
 const drive: Drive = new AzureDrive({
-  // TODO
+  container: 'test',
+  accountName: 'account name',
+  accountKey: 'account secret key',
 })
 ```
 
