@@ -15,6 +15,7 @@ describe('Location', () => {
 
     it('should not contain illegal characters', () => {
       expect(() => Location.normalize('foo\0.txt')).toThrow(LocationIllegalCharsException)
+      expect(() => Location.normalize('foo\\bar.txt')).toThrow(LocationIllegalCharsException)
       expect(() => Location.normalize('><,$*%()')).toThrow(LocationIllegalCharsException)
     })
 
