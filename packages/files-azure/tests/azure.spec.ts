@@ -17,8 +17,8 @@ describe('Azure Drive', () => {
     // Check https://github.com/Azure/Azurite#usage-with-azure-storage-sdks-or-tools for more information.
     const config: AzureDriveConfig = {
       container: 'test',
-      name: 'devstoreaccount1',
-      key: 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==',
+      accountName: 'devstoreaccount1',
+      accountKey: 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==',
       localAddress: 'http://devstoreaccount1.blob.localhost:10000'
     }
 
