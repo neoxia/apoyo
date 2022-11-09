@@ -5,7 +5,8 @@ import {
   CannotWriteFileException,
   CannotDeleteFileException,
   CannotGetMetaDataException,
-  Drive
+  Drive,
+  Location
 } from '@apoyo/files'
 
 import { DriveFileStats } from '@apoyo/files'
@@ -29,6 +30,7 @@ import { Readable } from 'stream'
 
 export type AzureDriveCommonConfig = {
   container: string
+  prefix?: string
 }
 
 export type AzureDriveAuthByConnectionString = {
@@ -97,14 +99,27 @@ export class AzureDrive implements Drive {
     }
   }
 
+  /**
+   * Make absolute path to a given location
+   */
+  public makePath(location: string) {
+    return this._config.prefix
+      ? Location.stripSlashes(this._config.prefix) + '/' + Location.normalize(location)
+      : Location.normalize(location)
+  }
+
   public getBlockBlobClient(location: string) {
+    const absolutePath = this.makePath(location)
     const container = this._config.container
 
     const containerClient = this.adapter.getContainerClient(container)
-    return containerClient.getBlockBlobClient(location)
+    return containerClient.getBlockBlobClient(absolutePath)
   }
 
-  public async generateBlobSASURL(blockBlobClient: BlockBlobClient, options: BlobSASSignatureValues): Promise<string> {
+  private async _generateBlobSASURL(
+    blockBlobClient: BlockBlobClient,
+    options: BlobSASSignatureValues
+  ): Promise<string> {
     options.permissions =
       options.permissions === undefined || typeof options.permissions === 'string'
         ? BlobSASPermissions.parse(options.permissions || 'r')
@@ -174,8 +189,7 @@ export class AzureDrive implements Drive {
 
     try {
       const blockBlobClient = this.getBlockBlobClient(location)
-      const SASUrl = await this.generateBlobSASURL(blockBlobClient, options)
-      return SASUrl
+      return await this._generateBlobSASURL(blockBlobClient, options)
     } catch (error) {
       throw new CannotGetMetaDataException(location, 'signedUrl', error)
     }
@@ -185,7 +199,7 @@ export class AzureDrive implements Drive {
    * Returns URL to a given path
    */
   public async getUrl(location: string): Promise<string> {
-    return unescape(this.getBlockBlobClient(location).url)
+    return this.getBlockBlobClient(location).url
   }
 
   /**
@@ -240,7 +254,7 @@ export class AzureDrive implements Drive {
     const sourceBlockBlobClient = this.getBlockBlobClient(source)
     const destinationBlockBlobClient = this.getBlockBlobClient(destination)
 
-    const url = await this.generateBlobSASURL(sourceBlockBlobClient, options)
+    const url = await this._generateBlobSASURL(sourceBlockBlobClient, options)
 
     try {
       await destinationBlockBlobClient.syncCopyFromURL(url)
