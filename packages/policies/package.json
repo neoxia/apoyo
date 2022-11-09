@@ -14,9 +14,6 @@
   "sideEffects": false,
   "author": "Sascha Braun",
   "license": "MIT",
-  "engines": {
-    "node": ">= 14.0.0"
-  },
   "tags": [
     "utils",
     "authentication",
@@ -41,7 +38,7 @@
   "devDependencies": {
     "@apoyo/std": "0.0.15",
     "@types/jest": "^26.0.23",
-    "@types/node": "^14.18.21",
+    "@types/node": "^16.18.0",
     "@types/rimraf": "^3",
     "jest": "^26.4.2",
     "rimraf": "^3.0.2",

@@ -14,9 +14,6 @@
   "sideEffects": false,
   "author": "Sascha Braun",
   "license": "MIT",
-  "engines": {
-    "node": ">= 14.0.0"
-  },
   "tags": [
     "utils",
     "files",
@@ -42,7 +39,7 @@
     "@apoyo/files": "~0.1.0",
     "@apoyo/std": "0.0.15",
     "@types/jest": "^26.0.23",
-    "@types/node": "^14.18.21",
+    "@types/node": "^16.18.0",
     "jest": "^26.4.2",
     "ts-jest": "^26.3.0",
     "ts-node": "^8.0.2",

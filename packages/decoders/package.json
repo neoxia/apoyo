@@ -38,7 +38,7 @@
   "devDependencies": {
     "@apoyo/std": "^0.0.15",
     "@types/jest": "^26.0.23",
-    "@types/node": "^14.18.21",
+    "@types/node": "^16.18.0",
     "jest": "^26.4.2",
     "ts-jest": "^26.3.0",
     "ts-node": "^8.0.2",
