@@ -14,6 +14,7 @@ import {
   FileException,
   LocalDrive,
   LocalDriveConfig,
+  LocationException,
   SignedUrlOptions
 } from '../../src'
 
@@ -316,6 +317,24 @@ describe('Local drive', () => {
     it('get signed url to a given file', async () => {
       const url = await drive.getSignedUrl('foo.txt')
       expect(url).toMatch(/\/uploads\/foo\.txt\?sign=.*/)
+    })
+  })
+
+  describe('makePath', () => {
+    it('should reject invalid locations', async () => {
+      const invalidLocations = [
+        `foo/../bar.txt`, // Reserved filename
+        `foo\\bar.txt`, // Illegal chars
+        `foo/(bar).txt` // Illegal chars
+      ]
+
+      for (const invalidLocation of invalidLocations) {
+        await expect(drive.get(invalidLocation)).rejects.toThrow(LocationException)
+        await expect(drive.put(invalidLocation, 'Invalid')).rejects.toThrow(LocationException)
+        await expect(drive.delete(invalidLocation)).rejects.toThrow(LocationException)
+        await expect(drive.copy(invalidLocation, invalidLocation)).rejects.toThrow(LocationException)
+        await expect(drive.move(invalidLocation, invalidLocation)).rejects.toThrow(LocationException)
+      }
     })
   })
 })
