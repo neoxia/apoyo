@@ -12,7 +12,9 @@ import {
   DriveFileStats,
   Drive,
   SignedUrlOptions,
-  WriteOptions
+  WriteOptions,
+  Location,
+  LocationException
 } from '@apoyo/files'
 import {
   CopyObjectCommand,
@@ -30,6 +32,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 export type S3DriveConfig = S3ClientConfig & {
   bucket: string
+  prefix?: string
   cdnUrl?: string
   key?: string
   secret?: string
@@ -61,6 +64,15 @@ export class S3Drive implements Drive {
     }
 
     this.adapter = new S3Client(this._config)
+  }
+
+  /**
+   * Make absolute path to a given location
+   */
+  public makePath(location: string) {
+    return this._config.prefix
+      ? Location.stripSlashes(this._config.prefix) + '/' + Location.normalize(location)
+      : Location.normalize(location)
   }
 
   /**
@@ -142,8 +154,14 @@ export class S3Drive implements Drive {
    * Returns the file contents as a stream
    */
   public async getStream(location: string): Promise<NodeJS.ReadableStream> {
+    const absolutePath = this.makePath(location)
     try {
-      const response = await this.adapter.send(new GetObjectCommand({ Key: location, Bucket: this._config.bucket }))
+      const response = await this.adapter.send(
+        new GetObjectCommand({
+          Key: absolutePath,
+          Bucket: this._config.bucket
+        })
+      )
 
       return response.Body
     } catch (error) {
@@ -155,10 +173,11 @@ export class S3Drive implements Drive {
    * A boolean to find if the location path exists or not
    */
   public async exists(location: string): Promise<boolean> {
+    const absolutePath = this.makePath(location)
     try {
       await this.adapter.send(
         new HeadObjectCommand({
-          Key: location,
+          Key: absolutePath,
           Bucket: this._config.bucket
         })
       )
@@ -177,10 +196,11 @@ export class S3Drive implements Drive {
    * Returns the file stats
    */
   public async getStats(location: string): Promise<DriveFileStats> {
+    const absolutePath = this.makePath(location)
     try {
       const stats = await this.adapter.send(
         new HeadObjectCommand({
-          Key: location,
+          Key: absolutePath,
           Bucket: this._config.bucket
         })
       )
@@ -200,11 +220,12 @@ export class S3Drive implements Drive {
    * Returns the signed url for a given path
    */
   public async getSignedUrl(location: string, options?: SignedUrlOptions): Promise<string> {
+    const absolutePath = this.makePath(location)
     try {
       return await getSignedUrl(
         this.adapter,
         new GetObjectCommand({
-          Key: location,
+          Key: absolutePath,
           Bucket: this._config.bucket,
           ...this._transformContentHeaders(options)
         }),
@@ -221,19 +242,21 @@ export class S3Drive implements Drive {
    * Returns URL to a given path
    */
   public async getUrl(location: string): Promise<string> {
+    const absolutePath = this.makePath(location)
+
     /**
      * Use the CDN URL if defined
      */
     if (this._config.cdnUrl) {
-      return `${this._config.cdnUrl}/${location}`
+      return `${this._config.cdnUrl}/${absolutePath}`
     }
 
     const href = format(await this.adapter.config.endpoint())
     if (href.startsWith('https://s3.amazonaws')) {
-      return `https://${this._config.bucket}.s3.amazonaws.com/${location}`
+      return `https://${this._config.bucket}.s3.amazonaws.com/${absolutePath}`
     }
 
-    return `${href}/${this._config.bucket}/${location}`
+    return `${href}/${this._config.bucket}/${absolutePath}`
   }
 
   /**
@@ -241,10 +264,11 @@ export class S3Drive implements Drive {
    * intermediate directories will be created (if required).
    */
   public async put(location: string, contents: Buffer | string, options?: WriteOptions): Promise<void> {
+    const absolutePath = this.makePath(location)
     try {
       await this.adapter.send(
         new PutObjectCommand({
-          Key: location,
+          Key: absolutePath,
           Body: contents,
           Bucket: this._config.bucket,
           ...this._transformWriteOptions(options)
@@ -271,6 +295,7 @@ export class S3Drive implements Drive {
       tap?: (stream: Upload) => void
     }
   ): Promise<void> {
+    const absolutePath = this.makePath(location)
     try {
       options = Object.assign({}, options)
 
@@ -281,7 +306,7 @@ export class S3Drive implements Drive {
         const { tap, queueSize, partSize, leavePartsOnError, tags, ...others } = options
         const upload = new Upload({
           params: {
-            Key: location,
+            Key: absolutePath,
             Body: contents,
             Bucket: this._config.bucket,
             ...this._transformWriteOptions(others)
@@ -303,7 +328,7 @@ export class S3Drive implements Drive {
 
       const upload = new Upload({
         params: {
-          Key: location,
+          Key: absolutePath,
           Body: contents,
           Bucket: this._config.bucket,
           ...this._transformWriteOptions(options)
@@ -320,10 +345,11 @@ export class S3Drive implements Drive {
    * Remove a given location path
    */
   public async delete(location: string): Promise<void> {
+    const absolutePath = this.makePath(location)
     try {
       await this.adapter.send(
         new DeleteObjectCommand({
-          Key: location,
+          Key: absolutePath,
           Bucket: this._config.bucket
         })
       )
@@ -337,13 +363,16 @@ export class S3Drive implements Drive {
    * The missing intermediate directories will be created (if required)
    */
   public async copy(source: string, destination: string, options?: WriteOptions): Promise<void> {
+    const sourcePath = this.makePath(source)
+    const destinationPath = this.makePath(destination)
+
     options = options || {}
 
     try {
       await this.adapter.send(
         new CopyObjectCommand({
-          Key: destination,
-          CopySource: `/${this._config.bucket}/${source}`,
+          Key: destinationPath,
+          CopySource: `/${this._config.bucket}/${sourcePath}`,
           Bucket: this._config.bucket,
           ...this._transformWriteOptions(options)
         })
@@ -362,6 +391,9 @@ export class S3Drive implements Drive {
       await this.copy(source, destination, options)
       await this.delete(source)
     } catch (error) {
+      if (error instanceof LocationException) {
+        throw error
+      }
       throw new CannotMoveFileException(source, destination, error.original || error)
     }
   }

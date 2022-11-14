@@ -12,7 +12,9 @@ import {
   DriveFileStats,
   Drive,
   SignedUrlOptions,
-  WriteOptions
+  WriteOptions,
+  Location,
+  LocationException
 } from '@apoyo/files'
 import { Bucket, GetSignedUrlConfig, Storage, StorageOptions } from '@google-cloud/storage'
 
@@ -20,6 +22,7 @@ const pipelinePromise = promisify(pipeline)
 
 export type GcsDriveConfig = StorageOptions & {
   bucket: string
+  prefix?: string
   usingUniformAcl?: boolean
   cdnUrl?: string
 }
@@ -43,6 +46,15 @@ export class GcsDrive implements Drive {
   constructor(private _config: GcsDriveConfig) {
     this.adapter = new Storage(this._config)
     this._gcsBucket = this.adapter.bucket(this._config.bucket)
+  }
+
+  /**
+   * Make absolute path to a given location
+   */
+  public makePath(location: string) {
+    return this._config.prefix
+      ? Location.stripSlashes(this._config.prefix) + '/' + Location.normalize(location)
+      : Location.normalize(location)
   }
 
   /**
@@ -116,8 +128,9 @@ export class GcsDrive implements Drive {
    * converting the buffer to a string.
    */
   public async get(location: string): Promise<Buffer> {
+    const absolutePath = this.makePath(location)
     try {
-      const [file] = await this._gcsBucket.file(location).download()
+      const [file] = await this._gcsBucket.file(absolutePath).download()
       return file
     } catch (error) {
       throw new CannotReadFileException(location, error)
@@ -128,15 +141,17 @@ export class GcsDrive implements Drive {
    * Returns the file contents as a stream
    */
   public async getStream(location: string): Promise<NodeJS.ReadableStream> {
-    return this._gcsBucket.file(location).createReadStream()
+    const absolutePath = this.makePath(location)
+    return this._gcsBucket.file(absolutePath).createReadStream()
   }
 
   /**
    * A boolean to find if the location path exists or not
    */
   public async exists(location: string): Promise<boolean> {
+    const absolutePath = this.makePath(location)
     try {
-      const [exists] = await this._gcsBucket.file(location).exists()
+      const [exists] = await this._gcsBucket.file(absolutePath).exists()
       return exists
     } catch (error) {
       throw new CannotGetMetaDataException(location, 'exists', error)
@@ -147,8 +162,9 @@ export class GcsDrive implements Drive {
    * Returns the file stats
    */
   public async getStats(location: string): Promise<DriveFileStats> {
+    const absolutePath = this.makePath(location)
     try {
-      const [metaData] = await this._gcsBucket.file(location).getMetadata()
+      const [metaData] = await this._gcsBucket.file(absolutePath).getMetadata()
 
       return {
         modified: new Date(metaData.updated),
@@ -165,9 +181,10 @@ export class GcsDrive implements Drive {
    * Returns the signed url for a given path
    */
   public async getSignedUrl(location: string, options?: SignedUrlOptions): Promise<string> {
+    const absolutePath = this.makePath(location)
     try {
       const sixDays = 6 * 24 * 60 * 60
-      const [url] = await this._gcsBucket.file(location).getSignedUrl({
+      const [url] = await this._gcsBucket.file(absolutePath).getSignedUrl({
         action: 'read',
         /**
          * Using v2 doesn't allow overriding content-type header
@@ -186,7 +203,8 @@ export class GcsDrive implements Drive {
    * Returns URL to a given path
    */
   public async getUrl(location: string): Promise<string> {
-    return this._gcsBucket.file(location).publicUrl()
+    const absolutePath = this.makePath(location)
+    return this._gcsBucket.file(absolutePath).publicUrl()
   }
 
   /**
@@ -194,8 +212,9 @@ export class GcsDrive implements Drive {
    * intermediate directories will be created (if required).
    */
   public async put(location: string, contents: Buffer | string, options?: WriteOptions): Promise<void> {
+    const absolutePath = this.makePath(location)
     try {
-      await this._gcsBucket.file(location).save(contents, {
+      await this._gcsBucket.file(absolutePath).save(contents, {
         resumable: false,
         ...this._transformWriteOptions(options)
       })
@@ -209,8 +228,9 @@ export class GcsDrive implements Drive {
    * directories will be created (if required).
    */
   public async putStream(location: string, contents: NodeJS.ReadableStream, options?: WriteOptions): Promise<void> {
+    const absolutePath = this.makePath(location)
     try {
-      const destination = this._gcsBucket.file(location).createWriteStream({
+      const destination = this._gcsBucket.file(absolutePath).createWriteStream({
         resumable: false,
         ...this._transformWriteOptions(options)
       })
@@ -224,8 +244,9 @@ export class GcsDrive implements Drive {
    * Remove a given location path
    */
   public async delete(location: string): Promise<void> {
+    const absolutePath = this.makePath(location)
     try {
-      await this._gcsBucket.file(location).delete({ ignoreNotFound: true })
+      await this._gcsBucket.file(absolutePath).delete({ ignoreNotFound: true })
     } catch (error) {
       throw new CannotDeleteFileException(location, error)
     }
@@ -236,12 +257,15 @@ export class GcsDrive implements Drive {
    * The missing intermediate directories will be created (if required)
    */
   public async copy(source: string, destination: string, options?: WriteOptions): Promise<void> {
+    const sourcePath = this.makePath(source)
+    const destinationPath = this.makePath(destination)
+
     options = options || {}
 
     try {
-      await this._gcsBucket.file(source).copy(destination, this._transformWriteOptions(options))
+      await this._gcsBucket.file(sourcePath).copy(destinationPath, this._transformWriteOptions(options))
     } catch (error) {
-      throw new CannotCopyFileException(source, destination, error.original || error)
+      throw new CannotCopyFileException(source, destination, error)
     }
   }
 
@@ -254,7 +278,10 @@ export class GcsDrive implements Drive {
       await this.copy(source, destination, options)
       await this.delete(source)
     } catch (error) {
-      throw new CannotMoveFileException(source, destination, error.original || error)
+      if (error instanceof LocationException) {
+        throw error
+      }
+      throw new CannotMoveFileException(source, destination, error.cause || error)
     }
   }
 }

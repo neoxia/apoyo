@@ -270,7 +270,7 @@ export class AzureDrive implements Drive {
       const url = await this._generateBlobSASURL(sourceBlockBlobClient, opts)
       await destinationBlockBlobClient.syncCopyFromURL(url)
     } catch (error) {
-      throw new CannotCopyFileException(source, destination, error.original || error)
+      throw new CannotCopyFileException(source, destination, error)
     }
   }
 
