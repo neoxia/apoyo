@@ -308,7 +308,7 @@ describe('GCS Drive', () => {
       const invalidLocations = [
         `foo/../bar.txt`, // Reserved filename
         `foo\\bar.txt`, // Illegal chars
-        `foo/(bar).txt` // Illegal chars
+        `foo/<bar>.txt` // Illegal chars
       ]
 
       for (const invalidLocation of invalidLocations) {

@@ -7,7 +7,7 @@ import {
 } from './exceptions'
 
 // Restrict allowed characters too avoid illegal characters
-const PATH_REGEXP = /^[a-zA-Z0-9\ _\-\.]+$/
+const PATH_REGEXP = /^[a-zA-Z0-9\ _\-\.\(\)]+$/
 
 // Forbid backtracking and other reserved filenames in usual file-systems
 const PATH_RESERVED = ['.', '..']
@@ -26,7 +26,7 @@ export class Location {
     return location.substring(start, end)
   }
 
-  public static parseFilename(location: string, fileName: string) {
+  public static normalizeFilename(location: string, fileName: string) {
     if (fileName.length === 0) {
       throw new LocationEmptyFilenameException(location, PATH_RESERVED)
     }
@@ -52,7 +52,7 @@ export class Location {
     return pipe(
       Location.stripSlashes(location),
       Str.split('/'),
-      Arr.map((name) => Location.parseFilename(location, name)),
+      Arr.map((name) => Location.normalizeFilename(location, name)),
       Arr.join('/')
     )
   }
