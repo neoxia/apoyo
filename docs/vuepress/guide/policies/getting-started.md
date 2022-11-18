@@ -79,8 +79,6 @@ This library exposes five type of objects:
 
 - a `PolicyContext`, to define the context that is required to execute our policies.
 
-- a `PolicyBase`, that can be used as a common base for other policies.
-
 - a `Policy`, that for a given action defines **who** can access it. These policy will generally contain **all** your authorization logic.
 
 - an `Authorizer`, which can authorize policies for a given user.
@@ -100,7 +98,7 @@ export interface User {
 
 export interface Post {
   id: string
-  userId: string
+  authorId: string
   status: 'draft' | 'published'
 }
 ```
@@ -112,58 +110,97 @@ export interface Post {
 ```ts
 import { PolicyContext } from '@apoyo/policies'
 
-export class CommonPolicyContext extends PolicyContext<User> {}
+export enum Acl {
+  WRITE_POSTS = 'write:posts',
+  MODERATE_POSTS = 'moderate:posts'
+}
+
+export class AclRepository {
+  public async hasAccess(_userId: string, _acl: Acl): Promise<boolean> {
+    return true
+  }
+}
+
+export class CommonPolicyContext implements PolicyContext<User> {
+  constructor(
+    private readonly _userContext: UserContext<User>, 
+    private readonly _aclRepository: AclRepository) {}
+
+  public getCurrentUser(): User
+  public getCurrentUser(options: { allowGuest: false }): User
+  public getCurrentUser(options: { allowGuest: true }): User | null
+  public getCurrentUser(options: { allowGuest: boolean } = { allowGuest: false }): User | null {
+    const allowGuest = options?.allowGuest ?? false
+    const user = this._userContext.getUser()
+    if (!allowGuest && !user) {
+      throw new NotAuthenticatedException()
+    }
+    return user
+  }
+
+  public hasAccess(user: User, acl: Acl) {
+    return this._aclRepository.hasAccess(user.id, acl)
+  }
+}
+
 ```
 
 ### Declare policies
 
+Policies are used to tell us **what** can be done by **who**. As such, they form the cornerstone of our authorization.
+
+Policies use [Generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator) to run their logic. This enables us to early exit the code (and cancelling the remaining verifications) if necessary.
+
+As such, when a boolean is `yield`ed or `return`ed by the policy, the policy finishes and will either succeed or fail (and throw an `NotAuthorizedException`) depending on if the boolean is true or false.
+
+Let's declare some basic helpers:
+
 *src/policies/common.policy.ts*:
 
 ```ts
-import { Policy } from '@apoyo/policies'
 import { CommonPolicyContext } from '../policy-context'
 
 export namespace CommonPolicy {
-  // Create base policy that can serve as a base to all other policies
-  export const base = Policy.base<CommonPolicyContext>()
+  /**
+   * Helper middleware that can be called on demand
+   * Early exit policy if user is admin
+   */
+  export async function* isAdmin(ctx: CommonPolicyContext) {
+    const user = ctx.getCurrentUser({ allowGuest: true })
+    if (user?.role === 'admin') {
+      yield true
+    }
+  }
+
+  /**
+   * It is a good practice to name the middleware that should always be executed by your other middlewares "before".
+   * This allows your policies to stay more consistent, even across different code-bases.
+   */
+  export async function* before(ctx: CommonPolicyContext) {
+    yield* isAdmin(ctx)
+  }
 }
+
 ```
 
-*src/policies/post.policy.ts*:
+*src/policies/posts/view-post.policy.ts*:
 
 ```ts
-import { Policy } from '@apoyo/policies'
+import { BasePolicy } from '@apoyo/policies'
 import { CommonPolicyContext } from '../policy-context'
 import { CommonPolicy } from './common.policy'
 
-export namespace PostPolicy {
+export class ViewPostPolicy implements BasePolicy {
+  public async *authorize(ctx: CommonPolicyContext, post: Post) {
+    yield* CommonPolicy.before(ctx)
 
-  // Create base policy for all post policies
-  const base = pipe(CommonPolicy.base, Policy.namespace('PostPolicy'))
-
-  export const viewPost = pipe(
-    base,
-    Policy.define('viewPost', (ctx: CommonPolicyContext, post: Post) => {
-      // Allow guests (unauthenticated users)
-      const user = ctx.getCurrentUser({ allowGuest: true })
-
-      // If post is still in draft status, the post is only viewable by the author
-      if (post.status === 'draft') {
-        return user?.id === post.userId
-      }
-      // If post has been published, the post is viewable for every-one
+    if (post.status === 'published') {
       return true
-    })
-  )
+    }
 
-  export const editPost = pipe(
-    base,
-    Policy.define('editPost', (ctx: CommonPolicyContext, post: Post) => {
-      // No guests are allowed by default
-      const user = ctx.getCurrentUser()
-      return user.id === post.userId
-    })
-  )
+    const user = ctx.getCurrentUser()
+    return user.id === post.authorId
+  }
 }
 ```
 
@@ -174,6 +211,7 @@ export namespace PostPolicy {
 ```ts
 import { Authorizer } from '@apoyo/policies'
 import { PostRepository } from '../repositories/post.repository'
+import { ViewPostPolicy } from '../policies/posts/view-post.policy'
 
 export class ViewPostUseCase {
   constructor(private readonly authorizer: Authorizer, private readonly postRepository: PostRepository) {}
@@ -183,7 +221,7 @@ export class ViewPostUseCase {
 
     // Authorize the given policy
     // Required parameters are automatically inferred, and typescript will complain on missing parameters
-    await this.authorizer.authorize(PostPolicy.viewPost, post)
+    await this.authorizer.authorize(ViewPostPolicy, post)
 
     return post
   }

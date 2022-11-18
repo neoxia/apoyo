@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'async_hooks'
-import { NotAuthenticatedException, NoUserContextException } from './exceptions'
+import { NoUserContextException } from './exceptions'
 
 export class UserContext<User> {
   private readonly _als = new AsyncLocalStorage<{ user: User | null }>()
@@ -58,15 +58,7 @@ export class UserContext<User> {
     return this._als.run({ user }, fn)
   }
 
-  public getCurrentUser(): User
-  public getCurrentUser(options: { allowGuest: false }): User
-  public getCurrentUser(options: { allowGuest: true }): User | null
-  public getCurrentUser(options?: { allowGuest: boolean }): User | null {
-    const allowGuest = options?.allowGuest ?? false
-    const user = this._als.getStore()?.user ?? null
-    if (!allowGuest && !user) {
-      throw new NotAuthenticatedException()
-    }
-    return user
+  public getUser() {
+    return this._als.getStore()?.user ?? null
   }
 }

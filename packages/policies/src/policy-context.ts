@@ -1,14 +1,5 @@
-import { UserContext } from './user-context'
-
-export class PolicyContext<User> {
-  constructor(private readonly _userContext: UserContext<User>) {}
-
-  public getCurrentUser(): User
-  public getCurrentUser(options: { allowGuest: false }): User
-  public getCurrentUser(options: { allowGuest: true }): User | null
-  public getCurrentUser(options?: any) {
-    return this._userContext.getCurrentUser(options)
-  }
+export interface PolicyContext<User = unknown> {
+  getCurrentUser(options: { allowGuest: boolean }): User | null
 }
 
 export namespace PolicyContext {

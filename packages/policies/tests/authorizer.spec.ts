@@ -1,7 +1,6 @@
-import { pipe } from '@apoyo/std'
-import { Authorizer, NotAuthorizedException, Policy, UserContext } from '../src'
-import { CommonPolicyContext, PostPolicyContext, AccessRepository } from './setup/context'
-import { PostPolicy } from './setup/policies/post.policy'
+import { Authorizer, NotAuthenticatedException, NotAuthorizedException, PolicyContext, UserContext } from '../src'
+import { CommonPolicyContext, AclRepository } from './setup/context'
+import { EditPostPolicy } from './setup/policies'
 import { Post, User } from './setup/types'
 
 const lazy = (_fn: () => any) => {
@@ -9,12 +8,20 @@ const lazy = (_fn: () => any) => {
 }
 
 describe('Authorizer', () => {
+  let userContext: UserContext<User>
+  let policyContext: CommonPolicyContext
+  let authorizer: Authorizer<CommonPolicyContext>
+
+  beforeEach(() => {
+    userContext = new UserContext<User>()
+
+    const aclRepository = new AclRepository()
+    policyContext = new CommonPolicyContext(userContext, aclRepository)
+    authorizer = new Authorizer(policyContext)
+  })
+
   describe('getCurrentUser', () => {
     it('should be able to get current user', async () => {
-      const userContext = new UserContext<User>()
-      const policyContext = new CommonPolicyContext(userContext)
-      const authorizer = new Authorizer(policyContext)
-
       const user: User = {
         id: 'user_id_1',
         email: 'test@example.com',
@@ -29,102 +36,93 @@ describe('Authorizer', () => {
 
   describe('authorize', () => {
     it('should throw typescript error on invalid authorizer policy context', async () => {
-      const userContext = new UserContext<User>()
-      const policyContext = new CommonPolicyContext(userContext)
+      class AnotherPolicyContext implements PolicyContext<User> {
+        getCurrentUser(): User
+        getCurrentUser(options: { allowGuest: false }): User
+        getCurrentUser(options: { allowGuest: true }): User | null
+        getCurrentUser(options: { allowGuest: boolean } = { allowGuest: false }): User | null {
+          if (!options.allowGuest) {
+            throw new NotAuthenticatedException()
+          }
+          return null
+        }
+      }
+
+      const policyContext = new AnotherPolicyContext()
       const authorizer = new Authorizer(policyContext)
 
       const post1: Post = {
         id: 'post_id_1',
-        userId: 'user_id_1',
+        authorId: 'user_id_1',
         status: 'draft'
       }
 
       // @ts-expect-error Invalid context
-      lazy(() => authorizer.authorize(PostPolicy.editPost, post1))
+      lazy(() => authorizer.authorize(EditPostPolicy, post1))
     })
 
     it('should authorize user for a given policy', async () => {
-      const userContext = new UserContext<User>()
-      const policyContext = new PostPolicyContext(userContext, new AccessRepository())
-      const authorizer = new Authorizer(policyContext)
-
-      const user: User = {
+      const member: User = {
         id: 'user_id_1',
         email: 'test@example.com',
         role: 'member'
       }
+      const admin: User = {
+        id: 'user_id_2',
+        email: 'test_2@example.com',
+        role: 'admin'
+      }
 
-      const customPolicy = pipe(
-        Policy.base(),
-        Policy.define('custom', (ctx: CommonPolicyContext, post: Post) => {
-          return ctx.getCurrentUser().id === post.userId
-        })
-      )
-
-      await userContext.forUser(user, async () => {
-        const post1: Post = {
-          id: 'post_id_1',
-          userId: user.id,
-          status: 'draft'
+      const viewSecretStorePolicy = {
+        name: 'viewSecretStorePolicy',
+        authorize: async function* (ctx: CommonPolicyContext) {
+          return ctx.getCurrentUser()?.role === 'admin'
         }
+      }
 
-        await expect(authorizer.authorize(customPolicy, post1)).resolves.toBe(undefined)
+      await userContext.createContext(async () => {
+        userContext.setUser(admin)
 
-        const post2: Post = {
-          id: 'post_id_2',
-          userId: 'user_id_2',
-          status: 'draft'
-        }
+        await expect(authorizer.authorize(viewSecretStorePolicy)).resolves.toBe(undefined)
 
-        await expect(authorizer.authorize(customPolicy, post2)).rejects.toThrowError(NotAuthorizedException)
+        userContext.setUser(member)
+
+        await expect(authorizer.authorize(viewSecretStorePolicy)).rejects.toThrowError(NotAuthorizedException)
       })
     })
 
-    it('should execute before policies before given policy', async () => {
-      const userContext = new UserContext<User>()
-      const policyContext = new PostPolicyContext(userContext, new AccessRepository())
-      const authorizer = new Authorizer(policyContext)
-
+    it('should yield early when middleware yields', async () => {
       const user1: User = {
         id: 'user_id_1',
         email: 'test@example.com',
         role: 'admin'
       }
-
-      await userContext.forUser(user1, async () => {
-        const post: Post = {
-          id: 'post_id_1',
-          userId: 'user_id_2',
-          status: 'draft'
-        }
-
-        await expect(authorizer.authorize(PostPolicy.editPost, post)).resolves.toBe(undefined)
-      })
-
       const user2: User = {
         id: 'user_id_1',
         email: 'test@example.com',
         role: 'member'
       }
 
-      await userContext.forUser(user2, async () => {
-        const post: Post = {
-          id: 'post_id_1',
-          userId: 'user_id_2',
-          status: 'draft'
-        }
+      const post: Post = {
+        id: 'post_id_1',
+        authorId: 'user_id_2',
+        status: 'draft'
+      }
 
-        await expect(authorizer.authorize(PostPolicy.editPost, post)).rejects.toThrowError(NotAuthorizedException)
+      await userContext.createContext(async () => {
+        userContext.setUser(user1)
+
+        await expect(authorizer.authorize(EditPostPolicy, post)).resolves.toBe(undefined)
+
+        userContext.setUser(user2)
+
+        await expect(authorizer.authorize(EditPostPolicy, post)).rejects.toThrowError(NotAuthorizedException)
       })
     })
   })
 
   describe('allows', () => {
     it('should check if user is allowed to continue given policy', async () => {
-      const userContext = new UserContext<User>()
-      const policyContext = new PostPolicyContext(userContext, new AccessRepository())
-      const authorizer = new Authorizer(policyContext)
-
       const user: User = {
         id: 'user_id_1',
         email: 'test@example.com',
@@ -134,29 +132,25 @@ describe('Authorizer', () => {
       await userContext.forUser(user, async () => {
         const post1: Post = {
           id: 'post_id_1',
-          userId: 'user_id_1',
+          authorId: 'user_id_1',
           status: 'draft'
         }
 
-        expect(await authorizer.allows(PostPolicy.editPost, post1)).toBe(true)
+        expect(await authorizer.allows(EditPostPolicy, post1)).toBe(true)
 
         const post2: Post = {
           id: 'post_id_2',
-          userId: 'user_id_2',
+          authorId: 'user_id_2',
           status: 'draft'
         }
 
-        expect(await authorizer.allows(PostPolicy.editPost, post2)).toBe(false)
+        expect(await authorizer.allows(EditPostPolicy, post2)).toBe(false)
       })
     })
   })
 
   describe('denies', () => {
     it('should check if user is not allowed to continue given policy', async () => {
-      const userContext = new UserContext<User>()
-      const policyContext = new PostPolicyContext(userContext, new AccessRepository())
-      const authorizer = new Authorizer(policyContext)
-
       const user: User = {
         id: 'user_id_1',
         email: 'test@example.com',
@@ -166,19 +160,19 @@ describe('Authorizer', () => {
       await userContext.forUser(user, async () => {
         const post1: Post = {
           id: 'post_id_1',
-          userId: 'user_id_1',
+          authorId: 'user_id_1',
           status: 'draft'
         }
 
-        expect(await authorizer.denies(PostPolicy.editPost, post1)).toBe(false)
+        expect(await authorizer.denies(EditPostPolicy, post1)).toBe(false)
 
         const post2: Post = {
           id: 'post_id_2',
-          userId: 'user_id_2',
+          authorId: 'user_id_2',
           status: 'draft'
         }
 
-        expect(await authorizer.denies(PostPolicy.editPost, post2)).toBe(true)
+        expect(await authorizer.denies(EditPostPolicy, post2)).toBe(true)
       })
     })
   })
@@ -188,8 +182,6 @@ describe('Authorizer', () => {
       const onError = jest.fn()
       const onSuccess = jest.fn()
 
-      const userContext = new UserContext<User>()
-      const policyContext = new PostPolicyContext(userContext, new AccessRepository())
       const authorizer = new Authorizer(policyContext, {
         async interceptor(user, action, authorize) {
           const username = user?.email ?? 'Guest'
@@ -221,15 +213,15 @@ describe('Authorizer', () => {
       await userContext.forUser(user, async () => {
         const post1: Post = {
           id: 'post_id_1',
-          userId: 'user_id_1',
+          authorId: 'user_id_1',
           status: 'draft'
         }
 
-        expect(await authorizer.allows(PostPolicy.editPost, post1)).toBe(true)
+        expect(await authorizer.allows(EditPostPolicy, post1)).toBe(true)
         expect(onError).not.toHaveBeenCalled()
         expect(onSuccess).toHaveBeenCalledWith(
           expect.objectContaining({
-            action: 'PostPolicy.editPost',
+            action: 'EditPostPolicy',
             username: 'test@example.com'
           })
         )
@@ -239,15 +231,15 @@ describe('Authorizer', () => {
 
         const post2: Post = {
           id: 'post_id_2',
-          userId: 'user_id_2',
+          authorId: 'user_id_2',
           status: 'draft'
         }
 
-        expect(await authorizer.allows(PostPolicy.editPost, post2)).toBe(false)
+        expect(await authorizer.allows(EditPostPolicy, post2)).toBe(false)
         expect(onSuccess).not.toHaveBeenCalled()
         expect(onError).toHaveBeenCalledWith(
           expect.objectContaining({
-            action: 'PostPolicy.editPost',
+            action: 'EditPostPolicy',
             username: 'test@example.com',
             cause: expect.any(NotAuthorizedException)
           })

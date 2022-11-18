@@ -1,35 +1,33 @@
-import { PolicyContext, UserContext } from '../../src'
+import { NotAuthenticatedException, PolicyContext, UserContext } from '../../src'
 import { User } from './types'
 
-export class CommonPolicyContext extends PolicyContext<User> {
-  constructor(userContext: UserContext<User>) {
-    super(userContext)
-  }
-
-  public hasRole(role: string) {
-    return this.getCurrentUser().role === role
-  }
-}
-
 export enum Acl {
+  WRITE_POSTS = 'write:posts',
   MODERATE_POSTS = 'moderate:posts'
 }
 
-export class AccessRepository {
+export class AclRepository {
   public async hasAccess(_userId: string, _acl: Acl): Promise<boolean> {
     return true
   }
 }
 
-export class PostPolicyContext extends CommonPolicyContext {
-  constructor(userContext: UserContext<User>, private readonly _aclRepository: AccessRepository) {
-    super(userContext)
+export class CommonPolicyContext implements PolicyContext<User> {
+  constructor(private readonly _userContext: UserContext<User>, private readonly _aclRepository: AclRepository) {}
+
+  public getCurrentUser(): User
+  public getCurrentUser(options: { allowGuest: false }): User
+  public getCurrentUser(options: { allowGuest: true }): User | null
+  public getCurrentUser(options: { allowGuest: boolean } = { allowGuest: false }): User | null {
+    const allowGuest = options?.allowGuest ?? false
+    const user = this._userContext.getUser()
+    if (!allowGuest && !user) {
+      throw new NotAuthenticatedException()
+    }
+    return user
   }
 
-  public async isPostModerator(user: User | null) {
-    if (user && user.role === 'moderator') {
-      return this._aclRepository.hasAccess(user.id, Acl.MODERATE_POSTS)
-    }
-    return false
+  public hasAccess(user: User, acl: Acl) {
+    return this._aclRepository.hasAccess(user.id, acl)
   }
 }
