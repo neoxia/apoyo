@@ -32,6 +32,22 @@ describe('Authorizer', () => {
         expect(authorizer.getCurrentUser()).toEqual(user)
       })
     })
+
+    it('should throw when no user is authenticated', async () => {
+      const userContext = new UserContext<User>()
+
+      await userContext.forUser(null, async () => {
+        expect(() => authorizer.getCurrentUser()).toThrowError(NotAuthenticatedException)
+      })
+    })
+
+    it('should not throw when allowing guests', async () => {
+      const userContext = new UserContext<User>()
+
+      await userContext.forUser(null, async () => {
+        expect(authorizer.getCurrentUser({ allowGuest: true })).toEqual(null)
+      })
+    })
   })
 
   describe('authorize', () => {
@@ -183,8 +199,9 @@ describe('Authorizer', () => {
       const onSuccess = jest.fn()
 
       const authorizer = new Authorizer(policyContext, {
-        async interceptor(user, action, authorize) {
+        async interceptor(user, policy, authorize) {
           const username = user?.email ?? 'Guest'
+          const action = policy.name ?? 'UnknownPolicy'
           try {
             await authorize()
             onSuccess({

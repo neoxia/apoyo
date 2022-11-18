@@ -44,6 +44,12 @@ export class Authorizer<ContextType extends PolicyContext<unknown>> {
   }
 
   public async authorize<Args extends any[]>(policy: PolicyType<ContextType, Args>, ...args: Args): Promise<void> {
+    if (typeof policy === 'function' && !policy.prototype.name) {
+      Object.defineProperty(policy.prototype, 'name', {
+        value: policy.name,
+        writable: false
+      })
+    }
     const policyInstance = typeof policy === 'function' ? new policy() : policy
 
     const run = async () => {
