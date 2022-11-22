@@ -1,5 +1,5 @@
 import { Prom } from '@apoyo/std'
-import { NotAuthenticatedException, NoUserContextException, UserContext } from '../src'
+import { NoUserContextException, UserContext } from '../src'
 import { User } from './setup/types'
 
 describe('UserContext', () => {
@@ -15,7 +15,7 @@ describe('UserContext', () => {
     await userContext.createContext(async () => {
       userContext.setUser(user)
 
-      expect(userContext.getCurrentUser()).toEqual(user)
+      expect(userContext.getUser()).toEqual(user)
     })
   })
 
@@ -38,7 +38,7 @@ describe('UserContext', () => {
     await userContext.createContext(async () => {
       await auth()
 
-      expect(userContext.getCurrentUser()).toEqual(user)
+      expect(userContext.getUser()).toEqual(user)
     })
   })
 
@@ -81,14 +81,14 @@ describe('UserContext', () => {
       await userContext.createContext(async () => {
         userContext.setUser(user2)
 
-        expect(userContext.getCurrentUser()).toEqual(user2)
+        expect(userContext.getUser()).toEqual(user2)
       })
 
       await userContext.forUser(user2, async () => {
-        expect(userContext.getCurrentUser()).toEqual(user2)
+        expect(userContext.getUser()).toEqual(user2)
       })
 
-      expect(userContext.getCurrentUser()).toEqual(user1)
+      expect(userContext.getUser()).toEqual(user1)
     })
   })
 
@@ -102,29 +102,13 @@ describe('UserContext', () => {
     }
 
     await userContext.forUser(user, async () => {
-      expect(userContext.getCurrentUser()).toEqual(user)
+      expect(userContext.getUser()).toEqual(user)
     })
   })
 
-  it('should throw when outside of context', async () => {
+  it('should return null when outside of context', async () => {
     const userContext = new UserContext<User>()
 
-    expect(() => userContext.getCurrentUser()).toThrowError(NotAuthenticatedException)
-  })
-
-  it('should throw when no user is stored in context', async () => {
-    const userContext = new UserContext<User>()
-
-    await userContext.forUser(null, async () => {
-      expect(() => userContext.getCurrentUser()).toThrowError(NotAuthenticatedException)
-    })
-  })
-
-  it('should not throw when allowing guests', async () => {
-    const userContext = new UserContext<User>()
-
-    await userContext.forUser(null, async () => {
-      expect(userContext.getCurrentUser({ allowGuest: true })).toEqual(null)
-    })
+    expect(userContext.getUser()).toEqual(null)
   })
 })

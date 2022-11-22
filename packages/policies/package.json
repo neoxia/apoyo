@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/policies",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Utils focused around authorization logic and policies",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -16,13 +16,11 @@
   "license": "MIT",
   "tags": [
     "utils",
-    "authentication",
     "authorization",
     "policies"
   ],
   "keywords": [
     "utils",
-    "authentication",
     "authorization",
     "policies"
   ],
