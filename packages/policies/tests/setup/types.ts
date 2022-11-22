@@ -6,6 +6,6 @@ export interface User {
 
 export interface Post {
   id: string
-  userId: string
+  authorId: string
   status: 'draft' | 'published'
 }

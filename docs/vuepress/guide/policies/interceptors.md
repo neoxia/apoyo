@@ -6,12 +6,12 @@ In those cases, you can use the specify an `interceptor` when creating your `Aut
 
 ```ts
 const authorizer = new Authorizer(policyContext, {
-  async interceptor(user, action, authorize) {
+  async interceptor(user, policy, authorize) {
     try {
       await authorize()
-      console.log(`${action} was authorized for ${user?.email ?? 'Guest' }`)
+      console.log(`${policy.name} was authorized for ${user?.email ?? 'Guest' }`)
     } catch (err) {
-      console.log(`${action} denied for ${user?.email ?? 'Guest' }`, err)
+      console.log(`${policy.name} denied for ${user?.email ?? 'Guest' }`, err)
       throw err
     }
   }
