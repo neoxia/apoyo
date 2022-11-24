@@ -31,7 +31,6 @@ import {
 
 export type AzureDriveCommonConfig = {
   container: string
-  prefix?: string
 }
 
 export type AzureDriveAuthByConnectionString = {
@@ -104,9 +103,7 @@ export class AzureDrive implements Drive {
    * Make absolute path to a given location
    */
   public makePath(location: string) {
-    return this._config.prefix
-      ? Location.stripSlashes(this._config.prefix) + '/' + Location.normalize(location)
-      : Location.normalize(location)
+    return Location.normalize(location)
   }
 
   public getBlockBlobClient(path: string) {

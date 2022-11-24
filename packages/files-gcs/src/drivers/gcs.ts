@@ -22,7 +22,6 @@ const pipelinePromise = promisify(pipeline)
 
 export type GcsDriveConfig = StorageOptions & {
   bucket: string
-  prefix?: string
   usingUniformAcl?: boolean
   cdnUrl?: string
 }
@@ -52,9 +51,7 @@ export class GcsDrive implements Drive {
    * Make absolute path to a given location
    */
   public makePath(location: string) {
-    return this._config.prefix
-      ? Location.stripSlashes(this._config.prefix) + '/' + Location.normalize(location)
-      : Location.normalize(location)
+    return Location.normalize(location)
   }
 
   /**
