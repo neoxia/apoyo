@@ -1,4 +1,5 @@
 export * from './drive'
 export * from './exceptions'
+export { Location } from './location'
 export { LocalDrive, LocalDriveConfig } from './drivers/local'
 export { FakeDrive, FakeDriveConfig as FakeDriverConfig } from './drivers/fake'

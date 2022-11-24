@@ -6,7 +6,8 @@ import {
   CannotMoveFileException,
   CannotReadFileException,
   Drive,
-  FileException
+  FileException,
+  LocationException
 } from '@apoyo/files'
 import { S3Drive, S3DriveConfig } from '../src'
 import { Arr, Dict, pipe } from '@apoyo/std'
@@ -292,6 +293,24 @@ describe('S3 Drive', () => {
           'x-id': expect.stringMatching('GetObject')
         })
       )
+    })
+  })
+
+  describe('makePath', () => {
+    it('should reject invalid locations', async () => {
+      const invalidLocations = [
+        `foo/../bar.txt`, // Reserved filename
+        `foo\\bar.txt`, // Illegal backslash char
+        `foo/<bar>.txt` // Illegal chars
+      ]
+
+      for (const invalidLocation of invalidLocations) {
+        await expect(drive.get(invalidLocation)).rejects.toThrow(LocationException)
+        await expect(drive.put(invalidLocation, 'Invalid')).rejects.toThrow(LocationException)
+        await expect(drive.delete(invalidLocation)).rejects.toThrow(LocationException)
+        await expect(drive.copy(invalidLocation, invalidLocation)).rejects.toThrow(LocationException)
+        await expect(drive.move(invalidLocation, invalidLocation)).rejects.toThrow(LocationException)
+      }
     })
   })
 })

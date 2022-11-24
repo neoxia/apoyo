@@ -15,7 +15,7 @@ import {
   CannotGetMetaDataException,
   CannotGenerateUrlException
 } from '../exceptions'
-import { Exception } from '@apoyo/std'
+import { Location } from '../location'
 
 export interface FakeDriveConfig {
   /**
@@ -47,15 +47,15 @@ export class FakeDrive implements Drive {
    * Make absolute path to a given location
    */
   public makePath(location: string) {
-    return location
+    return Location.normalize(location)
   }
 
   /**
    * Creates the directory recursively with in the memory
    */
-  private _ensureDir(location: string): Promise<void> {
+  private _ensureDir(path: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.adapter.mkdirp(dirname(location), (error) => {
+      this.adapter.mkdirp(dirname(path), (error) => {
         if (error) {
           reject(error)
         } else {
@@ -71,55 +71,60 @@ export class FakeDrive implements Drive {
    * converting the buffer to a string.
    */
   public async get(location: string): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-      this.adapter.readFile(this.makePath(location), (error, data) => {
-        if (error) {
-          reject(new CannotReadFileException(location, error))
-        } else if (!data) {
-          reject(new CannotReadFileException(location, new Exception('Undefined data')))
-        } else {
-          resolve(typeof data === 'string' ? Buffer.from(data) : data)
-        }
-      })
-    })
+    const absolutePath = this.makePath(location)
+
+    try {
+      const data = await this.adapter.promises.readFile(absolutePath)
+      return typeof data === 'string' ? Buffer.from(data) : data
+    } catch (err) {
+      throw new CannotReadFileException(location, err)
+    }
   }
 
   /**
    * Returns the file contents as a stream
    */
   public async getStream(location: string): Promise<NodeJS.ReadableStream> {
-    return this.adapter.createReadStream(this.makePath(location))
+    const absolutePath = this.makePath(location)
+    try {
+      return this.adapter.createReadStream(absolutePath)
+    } catch (error) {
+      throw new CannotReadFileException(location, error)
+    }
   }
 
   /**
    * A boolean to find if the location path exists or not
    */
-  public exists(location: string): Promise<boolean> {
-    return new Promise((resolve) => {
-      this.adapter.exists(this.makePath(location), (exists: boolean) => {
-        resolve(exists)
+  public async exists(location: string): Promise<boolean> {
+    const absolutePath = this.makePath(location)
+    try {
+      return await new Promise((resolve) => {
+        this.adapter.exists(absolutePath, (exists: boolean) => {
+          resolve(exists)
+        })
       })
-    })
+    } catch (error) {
+      throw new CannotGetMetaDataException(location, 'exists', error)
+    }
   }
 
   /**
    * Returns the file stats
    */
   public async getStats(location: string): Promise<DriveFileStats> {
-    return new Promise((resolve, reject) => {
-      this.adapter.stat(this.makePath(location), (error, stats) => {
-        if (error) {
-          reject(new CannotGetMetaDataException(location, 'stats', error))
-        } else {
-          resolve({
-            modified: stats!.mtime,
-            size: stats!.size as number,
-            isFile: stats!.isFile(),
-            etag: etag(stats as etag.StatsLike)
-          })
-        }
-      })
-    })
+    const absolutePath = this.makePath(location)
+    try {
+      const stats = await this.adapter.promises.stat(absolutePath)
+      return {
+        modified: new Date(stats.mtime),
+        size: Number(stats.size),
+        isFile: stats.isFile(),
+        etag: etag(stats as etag.StatsLike)
+      }
+    } catch (error) {
+      throw new CannotGetMetaDataException(location, 'stats', error)
+    }
   }
 
   /**
@@ -148,17 +153,13 @@ export class FakeDrive implements Drive {
    */
   public async put(location: string, contents: Buffer | string): Promise<void> {
     const absolutePath = this.makePath(location)
-    await this._ensureDir(absolutePath)
 
-    return new Promise((resolve, reject) => {
-      this.adapter.writeFile(absolutePath, contents, (error) => {
-        if (error) {
-          reject(new CannotWriteFileException(location, error))
-        } else {
-          resolve()
-        }
-      })
-    })
+    try {
+      await this._ensureDir(absolutePath)
+      await this.adapter.promises.writeFile(absolutePath, contents)
+    } catch (error) {
+      throw new CannotWriteFileException(location, error)
+    }
   }
 
   /**
@@ -194,19 +195,17 @@ export class FakeDrive implements Drive {
    * Remove a given location path
    */
   public async delete(location: string): Promise<void> {
-    if (!(await this.exists(location))) {
+    const exists = await this.exists(location)
+    if (!exists) {
       return
     }
 
-    return new Promise((resolve, reject) => {
-      this.adapter.unlink(this.makePath(location), (error) => {
-        if (error) {
-          reject(new CannotDeleteFileException(location, error))
-        } else {
-          resolve()
-        }
-      })
-    })
+    const absolutePath = this.makePath(location)
+    try {
+      await this.adapter.promises.unlink(absolutePath)
+    } catch (error) {
+      throw new CannotDeleteFileException(location, error)
+    }
   }
 
   /**
@@ -214,18 +213,15 @@ export class FakeDrive implements Drive {
    * The missing intermediate directories will be created (if required)
    */
   public async copy(source: string, destination: string): Promise<void> {
-    const desintationAbsolutePath = this.makePath(destination)
-    await this._ensureDir(desintationAbsolutePath)
+    const sourcePath = this.makePath(source)
+    const destinationPath = this.makePath(destination)
 
-    return new Promise((resolve, reject) => {
-      this.adapter.copyFile(this.makePath(source), desintationAbsolutePath, (error) => {
-        if (error) {
-          reject(new CannotCopyFileException(source, destination, error))
-        } else {
-          resolve()
-        }
-      })
-    })
+    try {
+      await this._ensureDir(destinationPath)
+      await this.adapter.promises.copyFile(sourcePath, destinationPath)
+    } catch (error) {
+      throw new CannotCopyFileException(source, destination, error)
+    }
   }
 
   /**
@@ -233,18 +229,15 @@ export class FakeDrive implements Drive {
    * The missing intermediate directories will be created (if required)
    */
   public async move(source: string, destination: string): Promise<void> {
-    const sourceAbsolutePath = this.makePath(source)
-    const desintationAbsolutePath = this.makePath(destination)
-    await this._ensureDir(desintationAbsolutePath)
+    const sourcePath = this.makePath(source)
+    const destinationPath = this.makePath(destination)
 
-    return new Promise<void>((resolve, reject) => {
-      this.adapter.copyFile(sourceAbsolutePath, desintationAbsolutePath, (error) => {
-        if (error) {
-          reject(new CannotMoveFileException(source, destination, error))
-        } else {
-          resolve()
-        }
-      })
-    }).then(() => this.delete(source))
+    try {
+      await this._ensureDir(destinationPath)
+      await this.adapter.promises.copyFile(sourcePath, destinationPath)
+      await this.delete(source)
+    } catch (error) {
+      throw new CannotMoveFileException(source, destination, error)
+    }
   }
 }

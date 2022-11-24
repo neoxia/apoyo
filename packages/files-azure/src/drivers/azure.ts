@@ -1,31 +1,33 @@
+import { Readable } from 'stream'
+
 import {
   CannotCopyFileException,
+  CannotDeleteFileException,
+  CannotGetMetaDataException,
   CannotMoveFileException,
   CannotReadFileException,
   CannotWriteFileException,
-  CannotDeleteFileException,
-  CannotGetMetaDataException,
-  Drive
+  Drive,
+  DriveFileStats,
+  Location,
+  LocationException,
+  SignedUrlOptions
 } from '@apoyo/files'
-
-import { DriveFileStats } from '@apoyo/files'
-
 import { DefaultAzureCredential, TokenCredential } from '@azure/identity'
 import {
-  newPipeline,
-  BlobServiceClient,
-  StorageSharedKeyCredential,
   BlobDownloadOptions,
   BlobDownloadToBufferOptions,
   BlobExistsOptions,
   BlobSASPermissions,
-  generateBlobSASQueryParameters,
   BlobSASSignatureValues,
+  BlobServiceClient,
+  BlockBlobClient,
   BlockBlobUploadOptions,
   BlockBlobUploadStreamOptions,
-  BlockBlobClient
+  generateBlobSASQueryParameters,
+  newPipeline,
+  StorageSharedKeyCredential
 } from '@azure/storage-blob'
-import { Readable } from 'stream'
 
 export type AzureDriveCommonConfig = {
   container: string
@@ -97,14 +99,24 @@ export class AzureDrive implements Drive {
     }
   }
 
-  public getBlockBlobClient(location: string) {
+  /**
+   * Make absolute path to a given location
+   */
+  public makePath(location: string) {
+    return Location.normalize(location)
+  }
+
+  public getBlockBlobClient(path: string) {
     const container = this._config.container
 
     const containerClient = this.adapter.getContainerClient(container)
-    return containerClient.getBlockBlobClient(location)
+    return containerClient.getBlockBlobClient(path)
   }
 
-  public async generateBlobSASURL(blockBlobClient: BlockBlobClient, options: BlobSASSignatureValues): Promise<string> {
+  private async _generateBlobSASURL(
+    blockBlobClient: BlockBlobClient,
+    options: BlobSASSignatureValues
+  ): Promise<string> {
     options.permissions =
       options.permissions === undefined || typeof options.permissions === 'string'
         ? BlobSASPermissions.parse(options.permissions || 'r')
@@ -116,7 +128,7 @@ export class AzureDrive implements Drive {
     const factories = (blockBlobClient as any).pipeline.factories
     const credential = factories[factories.length - 1] as StorageSharedKeyCredential
 
-    const blobSAS = await generateBlobSASQueryParameters(
+    const blobSAS = generateBlobSASQueryParameters(
       {
         containerName: blockBlobClient.containerName, // Required
         blobName: blockBlobClient.name, // Required
@@ -136,8 +148,9 @@ export class AzureDrive implements Drive {
    * converting the buffer to a string.
    */
   public async get(location: string, options: BlobDownloadToBufferOptions | any = {}): Promise<Buffer> {
+    const absolutePath = this.makePath(location)
     try {
-      const blockBlobClient = this.getBlockBlobClient(location)
+      const blockBlobClient = this.getBlockBlobClient(absolutePath)
       return await blockBlobClient.downloadToBuffer(0, 0, options)
     } catch (error) {
       throw new CannotReadFileException(location, error)
@@ -148,16 +161,22 @@ export class AzureDrive implements Drive {
    * Returns the file contents as a stream
    */
   public async getStream(location: string, options: BlobDownloadOptions | any = {}): Promise<NodeJS.ReadableStream> {
-    const response = await this.getBlockBlobClient(location).download(0, 0, options)
-    return response.readableStreamBody as NodeJS.ReadableStream
+    const absolutePath = this.makePath(location)
+    try {
+      const response = await this.getBlockBlobClient(absolutePath).download(0, 0, options)
+      return response.readableStreamBody as NodeJS.ReadableStream
+    } catch (error) {
+      throw new CannotReadFileException(location, error)
+    }
   }
 
   /**
    * A boolean to find if the location path exists or not
    */
   public exists(location: string, options: BlobExistsOptions | any = {}): Promise<boolean> {
+    const absolutePath = this.makePath(location)
     try {
-      return this.getBlockBlobClient(location).exists(options)
+      return this.getBlockBlobClient(absolutePath).exists(options)
     } catch (error) {
       throw new CannotGetMetaDataException(location, 'exists', error)
     }
@@ -166,16 +185,17 @@ export class AzureDrive implements Drive {
   /**
    * Returns the signed url for a given path
    */
-  public async getSignedUrl(location: string, options?: BlobSASSignatureValues): Promise<string> {
-    options = options || {
+  public async getSignedUrl(location: string, options?: SignedUrlOptions): Promise<string> {
+    const absolutePath = this.makePath(location)
+    const opts: BlobSASSignatureValues = {
+      ...options,
+      expiresOn: options?.expiresIn ? new Date(Date.now() + options.expiresIn * 1000) : undefined,
       containerName: this._config.container
     }
-    options.containerName = options.containerName || this._config.container
 
     try {
-      const blockBlobClient = this.getBlockBlobClient(location)
-      const SASUrl = await this.generateBlobSASURL(blockBlobClient, options)
-      return SASUrl
+      const blockBlobClient = this.getBlockBlobClient(absolutePath)
+      return await this._generateBlobSASURL(blockBlobClient, opts)
     } catch (error) {
       throw new CannotGetMetaDataException(location, 'signedUrl', error)
     }
@@ -185,7 +205,8 @@ export class AzureDrive implements Drive {
    * Returns URL to a given path
    */
   public async getUrl(location: string): Promise<string> {
-    return unescape(this.getBlockBlobClient(location).url)
+    const absolutePath = this.makePath(location)
+    return this.getBlockBlobClient(absolutePath).url
   }
 
   /**
@@ -199,8 +220,9 @@ export class AzureDrive implements Drive {
     contents: Buffer | string,
     options?: BlockBlobUploadOptions | undefined
   ): Promise<void> {
-    const blockBlobClient = this.getBlockBlobClient(location)
+    const absolutePath = this.makePath(location)
     try {
+      const blockBlobClient = this.getBlockBlobClient(absolutePath)
       await blockBlobClient.upload(contents, contents.length, options)
     } catch (error) {
       throw new CannotWriteFileException(location, error)
@@ -216,9 +238,9 @@ export class AzureDrive implements Drive {
     contents: NodeJS.ReadableStream,
     options?: BlockBlobUploadStreamOptions
   ): Promise<void> {
-    const blockBlobClient = this.getBlockBlobClient(location)
-
+    const absolutePath = this.makePath(location)
     try {
+      const blockBlobClient = this.getBlockBlobClient(absolutePath)
       await blockBlobClient.uploadStream(contents as Readable, undefined, undefined, options)
     } catch (error) {
       throw new CannotWriteFileException(location, error)
@@ -231,21 +253,21 @@ export class AzureDrive implements Drive {
    *
    * @todo look into returning the response of syncCopyFromURL
    */
-  public async copy(source: string, destination: string, options?: BlobSASSignatureValues): Promise<void> {
-    options = options || {
+  public async copy(source: string, destination: string): Promise<void> {
+    const sourcePath = this.makePath(source)
+    const destinationPath = this.makePath(destination)
+    const opts: BlobSASSignatureValues = {
       containerName: this._config.container
     }
-    options.containerName = options.containerName || this._config.container
-
-    const sourceBlockBlobClient = this.getBlockBlobClient(source)
-    const destinationBlockBlobClient = this.getBlockBlobClient(destination)
-
-    const url = await this.generateBlobSASURL(sourceBlockBlobClient, options)
 
     try {
+      const sourceBlockBlobClient = this.getBlockBlobClient(sourcePath)
+      const destinationBlockBlobClient = this.getBlockBlobClient(destinationPath)
+
+      const url = await this._generateBlobSASURL(sourceBlockBlobClient, opts)
       await destinationBlockBlobClient.syncCopyFromURL(url)
     } catch (error) {
-      throw new CannotCopyFileException(source, destination, error.original || error)
+      throw new CannotCopyFileException(source, destination, error)
     }
   }
 
@@ -255,8 +277,9 @@ export class AzureDrive implements Drive {
    * @todo find a way to extend delete with BlobDeleteOptions
    */
   public async delete(location: string): Promise<void> {
+    const absolutePath = this.makePath(location)
     try {
-      await this.getBlockBlobClient(location).deleteIfExists()
+      await this.getBlockBlobClient(absolutePath).deleteIfExists()
     } catch (error) {
       throw new CannotDeleteFileException(location, error)
     }
@@ -266,12 +289,15 @@ export class AzureDrive implements Drive {
    * Move a given location path from the source to the desination.
    * The missing intermediate directories will be created (if required)
    */
-  public async move(source: string, destination: string, options?: BlobSASSignatureValues): Promise<void> {
+  public async move(source: string, destination: string): Promise<void> {
     try {
-      await this.copy(source, destination, options)
+      await this.copy(source, destination)
       await this.delete(source)
     } catch (error) {
-      throw new CannotMoveFileException(source, destination, error.original || error)
+      if (error instanceof LocationException) {
+        throw error
+      }
+      throw new CannotMoveFileException(source, destination, error.cause || error)
     }
   }
 
@@ -279,8 +305,9 @@ export class AzureDrive implements Drive {
    * Returns the file stats
    */
   public async getStats(location: string): Promise<DriveFileStats> {
+    const absolutePath = this.makePath(location)
     try {
-      const metaData = await this.getBlockBlobClient(location).getProperties()
+      const metaData = await this.getBlockBlobClient(absolutePath).getProperties()
 
       return {
         modified: metaData.lastModified!,

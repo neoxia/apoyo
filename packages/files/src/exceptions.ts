@@ -1,4 +1,4 @@
-import { Exception } from '@apoyo/std'
+import { Exception, pipe, Str } from '@apoyo/std'
 
 /**
  * Base exception class for file errors
@@ -69,5 +69,39 @@ export class CannotGetMetaDataException extends FileException {
 export class CannotGenerateUrlException extends FileException {
   constructor(public readonly location: string) {
     super(`Cannot generate URL for location "${location}".`, undefined, 'E_CANNOT_GENERATE_URL')
+  }
+}
+
+export class LocationException extends Exception {
+  constructor(message: string, cause: Error | undefined, public readonly code: string) {
+    super(message, cause)
+  }
+}
+
+export class LocationTooLongException extends LocationException {
+  constructor(public readonly location: string) {
+    super(
+      `Location "${pipe(location, Str.truncate(80, '...'))}" is too long and exceeds allowed max length.`,
+      undefined,
+      'E_LOCATION_TOO_LONG'
+    )
+  }
+}
+
+export class LocationIllegalCharsException extends LocationException {
+  constructor(public readonly location: string) {
+    super(`Location "${location}" contains illegal characters.`, undefined, 'E_LOCATION_ILLEGAL_CHARS')
+  }
+}
+
+export class LocationReservedFilenameException extends LocationException {
+  constructor(public readonly location: string, public readonly reserved: string[]) {
+    super(`Location "${location}" contains reserved path or file name.`, undefined, 'E_LOCATION_RESERVED_FILENAME')
+  }
+}
+
+export class LocationEmptyFilenameException extends LocationException {
+  constructor(public readonly location: string, public readonly reserved: string[]) {
+    super(`Location "${location}" contains an empty file or folder name.`, undefined, 'E_LOCATION_EMPTY_FILENAME')
   }
 }

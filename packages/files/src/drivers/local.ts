@@ -15,6 +15,7 @@ import {
   CannotDeleteFileException,
   CannotGetMetaDataException
 } from '../exceptions'
+import { Location } from '../location'
 
 export interface LocalDriveConfig {
   /**
@@ -52,7 +53,7 @@ export class LocalDrive implements Drive {
    * Make absolute path to a given location
    */
   public makePath(location: string) {
-    return path.join(this._config.root, location)
+    return path.join(this._config.root, Location.normalize(location))
   }
 
   /**
@@ -61,8 +62,9 @@ export class LocalDrive implements Drive {
    * converting the buffer to a string.
    */
   public async get(location: string): Promise<Buffer> {
+    const absolutePath = this.makePath(location)
     try {
-      return await this.adapter.readFile(this.makePath(location))
+      return await this.adapter.readFile(absolutePath)
     } catch (error) {
       throw new CannotReadFileException(location, error)
     }
@@ -72,8 +74,9 @@ export class LocalDrive implements Drive {
    * Returns the file contents as a stream
    */
   public async getStream(location: string): Promise<NodeJS.ReadableStream> {
+    const absolutePath = this.makePath(location)
     try {
-      return this.adapter.createReadStream(this.makePath(location))
+      return this.adapter.createReadStream(absolutePath)
     } catch (error) {
       throw new CannotReadFileException(location, error)
     }
@@ -83,8 +86,9 @@ export class LocalDrive implements Drive {
    * A boolean to find if the location path exists or not
    */
   public async exists(location: string): Promise<boolean> {
+    const absolutePath = this.makePath(location)
     try {
-      return await this.adapter.pathExists(this.makePath(location))
+      return await this.adapter.pathExists(absolutePath)
     } catch (error) {
       throw new CannotGetMetaDataException(location, 'exists', error)
     }
@@ -94,8 +98,9 @@ export class LocalDrive implements Drive {
    * Returns the file stats
    */
   public async getStats(location: string): Promise<DriveFileStats> {
+    const absolutePath = this.makePath(location)
     try {
-      const stats = await this.adapter.stat(this.makePath(location))
+      const stats = await this.adapter.stat(absolutePath)
       return {
         modified: new Date(stats.mtime),
         size: stats.size,
@@ -132,8 +137,9 @@ export class LocalDrive implements Drive {
    * intermediate directories will be created (if required).
    */
   public async put(location: string, contents: Buffer | string): Promise<void> {
+    const absolutePath = this.makePath(location)
     try {
-      await this.adapter.outputFile(this.makePath(location), contents)
+      await this.adapter.outputFile(absolutePath, contents)
     } catch (error) {
       throw new CannotWriteFileException(location, error)
     }
@@ -174,8 +180,10 @@ export class LocalDrive implements Drive {
    * Remove a given location path
    */
   public async delete(location: string): Promise<void> {
+    const absolutePath = this.makePath(location)
+
     try {
-      await this.adapter.remove(this.makePath(location))
+      await this.adapter.remove(absolutePath)
     } catch (error) {
       throw new CannotDeleteFileException(location, error)
     }
@@ -186,8 +194,11 @@ export class LocalDrive implements Drive {
    * The missing intermediate directories will be created (if required)
    */
   public async copy(source: string, destination: string): Promise<void> {
+    const sourcePath = this.makePath(source)
+    const destinationPath = this.makePath(destination)
+
     try {
-      await this.adapter.copy(this.makePath(source), this.makePath(destination), {
+      await this.adapter.copy(sourcePath, destinationPath, {
         overwrite: true
       })
     } catch (error) {
@@ -200,8 +211,11 @@ export class LocalDrive implements Drive {
    * The missing intermediate directories will be created (if required)
    */
   public async move(source: string, destination: string): Promise<void> {
+    const sourcePath = this.makePath(source)
+    const destinationPath = this.makePath(destination)
+
     try {
-      await this.adapter.move(this.makePath(source), this.makePath(destination), {
+      await this.adapter.move(sourcePath, destinationPath, {
         overwrite: true
       })
     } catch (error) {

@@ -6,7 +6,8 @@ import {
   CannotMoveFileException,
   CannotReadFileException,
   Drive,
-  FileException
+  FileException,
+  LocationException
 } from '@apoyo/files'
 import { GcsDrive, GcsDriveConfig } from '../src'
 
@@ -301,4 +302,22 @@ describe('GCS Drive', () => {
   //     )
   //   })
   // })
+
+  describe('makePath', () => {
+    it('should reject invalid locations', async () => {
+      const invalidLocations = [
+        `foo/../bar.txt`, // Reserved filename
+        `foo\\bar.txt`, // Illegal chars
+        `foo/<bar>.txt` // Illegal chars
+      ]
+
+      for (const invalidLocation of invalidLocations) {
+        await expect(drive.get(invalidLocation)).rejects.toThrow(LocationException)
+        await expect(drive.put(invalidLocation, 'Invalid')).rejects.toThrow(LocationException)
+        await expect(drive.delete(invalidLocation)).rejects.toThrow(LocationException)
+        await expect(drive.copy(invalidLocation, invalidLocation)).rejects.toThrow(LocationException)
+        await expect(drive.move(invalidLocation, invalidLocation)).rejects.toThrow(LocationException)
+      }
+    })
+  })
 })

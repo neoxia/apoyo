@@ -5,6 +5,7 @@ import {
   CannotGetMetaDataException,
   CannotMoveFileException,
   CannotReadFileException,
+  LocationException,
   FileException
 } from '@apoyo/files'
 import { AzureDrive, AzureDriveConfig } from '../src'
@@ -288,6 +289,24 @@ describe('Azure Drive', () => {
           sig: expect.anything()
         })
       )
+    })
+  })
+
+  describe('makePath', () => {
+    it('should reject invalid locations', async () => {
+      const invalidLocations = [
+        `foo/../bar.txt`, // Reserved filename
+        `foo\\bar.txt`, // Illegal chars
+        `foo/<bar>.txt` // Illegal chars
+      ]
+
+      for (const invalidLocation of invalidLocations) {
+        await expect(drive.get(invalidLocation)).rejects.toThrow(LocationException)
+        await expect(drive.put(invalidLocation, 'Invalid')).rejects.toThrow(LocationException)
+        await expect(drive.delete(invalidLocation)).rejects.toThrow(LocationException)
+        await expect(drive.copy(invalidLocation, invalidLocation)).rejects.toThrow(LocationException)
+        await expect(drive.move(invalidLocation, invalidLocation)).rejects.toThrow(LocationException)
+      }
     })
   })
 })
