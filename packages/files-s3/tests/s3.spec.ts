@@ -18,6 +18,7 @@ describe('S3 Drive', () => {
   beforeEach(async () => {
     const config: S3DriveConfig = {
       bucket: 'test',
+      prefix: 'development',
       region: 'us-east-1',
       endpoint: process.env.AWS_S3_SERVER || 'http://localhost:4569',
       forcePathStyle: true,

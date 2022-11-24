@@ -32,6 +32,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 export type S3DriveConfig = S3ClientConfig & {
   bucket: string
+  prefix?: string
   cdnUrl?: string
   key?: string
   secret?: string
@@ -69,7 +70,9 @@ export class S3Drive implements Drive {
    * Make absolute path to a given location
    */
   public makePath(location: string) {
-    return Location.normalize(location)
+    return this._config.prefix
+      ? Location.stripSlashes(this._config.prefix) + '/' + Location.normalize(location)
+      : Location.normalize(location)
   }
 
   /**
