@@ -1,5 +1,9 @@
+import type { Provider } from './providers'
+
 export type Tuple<T = any> = [T, ...T[]] | [...any[]]
 
 export type NoInfer<T> = T extends infer S ? S : never
 
-export type Fn<Args extends any[], Type> = (...args: NoInfer<Args>) => Type
+export type Fn<Args extends any[], T> = (...args: NoInfer<Args>) => Provider.ReturnType<T>
+
+export type Type<T, Args extends Tuple> = { new (...args: Args): T }

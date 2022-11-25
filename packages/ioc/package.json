@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/ioc",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Functional dependency injection",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -18,19 +18,19 @@
     "typescript",
     "dependency injection",
     "ioc",
-    "injectables"
+    "providers"
   ],
   "keywords": [
     "typescript",
     "dependency injection",
     "ioc",
-    "injectables"
+    "providers"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/neoxia/apoyo"
   },
-  "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/scopes",
+  "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/ioc",
   "scripts": {
     "test": "jest --verbose --runInBand",
     "build": "tsup"

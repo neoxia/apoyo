@@ -1,20 +1,18 @@
-import { Arr } from '@apoyo/std'
+import { Provider } from './providers'
+import { ProviderKey } from './keys'
+import { ContainerAlreadyClosedException, ContainerClosedException } from './exceptions'
 
-import { Injectable } from './injectables'
-import { Ref } from './refs'
-import { Resource } from './resources'
-
-const override = <T>(from: Injectable, to: Injectable<T> | T): Injectable<T> => {
-  if (Injectable.is(to)) {
-    return Injectable.create(async (container) => container.get(to), from.ref)
+const override = <T>(from: Provider, to: Provider<T> | T): Provider<T> => {
+  if (to instanceof Provider) {
+    return Provider.from(async (container) => container.get(to), from.key)
   }
-  return Injectable.create(async () => to, from.ref)
+  return Provider.from(async () => to, from.key)
 }
 
 export namespace Container {
   export interface Binding<A = any, B extends A = any> {
-    from: Injectable<A>
-    to: B | Injectable<B>
+    from: Provider<A>
+    to: B | Provider<B>
   }
   export interface Options {
     bindings?: Binding<any, any>[]
@@ -23,15 +21,14 @@ export namespace Container {
 
 export class Container {
   private _isOpen = true
-  private _bindings: Map<Ref, Injectable> = new Map()
-  private _mounted: WeakMap<Ref, PromiseLike<any>> = new WeakMap()
-  private _beforeCloseHooks: Resource.Unmount[] = []
+  private _bindings: Map<ProviderKey, Provider> = new Map()
+  private _mounted: WeakMap<ProviderKey, PromiseLike<any>> = new WeakMap()
 
   public static create(options: Container.Options = {}) {
     return new Container(options)
   }
 
-  public static bind<T, U extends T>(from: Injectable<T>, to: U | Injectable<U>): Container.Binding<T, U> {
+  public static bind<T, U extends T>(from: Provider<T>, to: U | Provider<U>): Container.Binding<T, U> {
     return {
       from,
       to
@@ -40,34 +37,33 @@ export class Container {
 
   constructor(options: Container.Options = {}) {
     const bindings = options.bindings ?? []
-    this._bindings = new Map(bindings.map(({ from, to }) => [from.ref, override(from, to)]))
+    this._bindings = new Map(bindings.map(({ from, to }) => [from.key, override(from, to)]))
   }
 
-  public resolve<T>(injectable: Injectable<T>): Injectable<T> {
-    return (this._bindings.get(injectable.ref) as Injectable<T> | undefined) ?? injectable
+  public resolve<T>(injectable: Provider<T>): Provider<T> {
+    return (this._bindings.get(injectable.key) as Provider<T> | undefined) ?? injectable
   }
-  public async get<T>(variable: Injectable<T>): Promise<T> {
+
+  public async get<T>(variable: Provider<T>): Promise<T> {
     if (!this._isOpen) {
-      throw new Error('Scope has been closed and cannot be re-used')
+      throw new ContainerClosedException()
     }
 
     const target = this.resolve(variable)
-    if (!this._mounted.has(target.ref)) {
-      this._mounted.set(target.ref, target.initialize(this))
+    if (!this._mounted.has(target.key)) {
+      this._mounted.set(target.key, target.provide(this))
     }
-    return this._mounted.get(target.ref)!
-  }
-  public async close(): Promise<void> {
-    if (!this._isOpen) {
-      throw new Error('Scope already closed')
-    }
-    this._isOpen = false
-    for (const unmount of Arr.reverse(this._beforeCloseHooks)) {
-      await unmount()
-    }
+    return this._mounted.get(target.key)!
   }
 
-  public beforeClose(fn: () => void | Promise<void>) {
-    this._beforeCloseHooks.push(fn)
+  public async close(): Promise<void> {
+    if (!this._isOpen) {
+      throw new ContainerAlreadyClosedException()
+    }
+    const destroyHooks = await this.get(Provider.$onDestroy)
+    await destroyHooks.execute()
+
+    this._mounted = new WeakMap()
+    this._isOpen = false
   }
 }

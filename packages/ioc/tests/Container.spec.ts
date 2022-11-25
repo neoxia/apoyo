@@ -1,5 +1,5 @@
 import { pipe, Prom, Result, Option } from '@apoyo/std'
-import { Abstract, Container, Implementation, Injectable, Resource } from '../src'
+import { Container, Provider, ShutdownPriority } from '../src'
 
 describe('Container.create', () => {
   it('should build and return container', () => {
@@ -14,7 +14,7 @@ describe('Container.bind', () => {
   it('should bind a Injectable to a constant value', async () => {
     const fn = jest.fn()
 
-    const $a = Implementation.create(() => {
+    const $a = Provider.bind<number>().to(() => {
       fn('a')
       return 1
     })
@@ -34,11 +34,11 @@ describe('Container.bind', () => {
   it('should bind a Injectable to another Injectable', async () => {
     const fn = jest.fn()
 
-    const $a = Implementation.create(() => {
+    const $a = Provider.bind<number>().to(() => {
       fn('a')
       return 1
     })
-    const $b = Implementation.create(() => {
+    const $b = Provider.bind<number>().to(() => {
       fn('b')
       return 2
     })
@@ -61,15 +61,15 @@ describe('Container.bind', () => {
   it('should resolve deeply', async () => {
     const fn = jest.fn()
 
-    const $a = Implementation.create(() => {
+    const $a = Provider.bind<number>().to(() => {
       fn('a')
       return 1
     })
-    const $b = Implementation.create(() => {
+    const $b = Provider.bind<number>().to(() => {
       fn('b')
       return 2
     })
-    const $c = Implementation.create(() => {
+    const $c = Provider.bind<number>().to(() => {
       fn('c')
       return 3
     })
@@ -94,11 +94,11 @@ describe('Container.bind', () => {
   it('should resolve correctly with injectables and constants', async () => {
     const fn = jest.fn()
 
-    const $a = Implementation.create(() => {
+    const $a = Provider.bind<number>().to(() => {
       fn('a')
       return 1
     })
-    const $b = Implementation.create(() => {
+    const $b = Provider.bind<number>().to(() => {
       fn('b')
       return 2
     })
@@ -129,9 +129,7 @@ describe('Container.bind', () => {
 
     interface ITodoRepository extends IRepository<Todo> {}
 
-    const $todoRepository = Abstract.create<ITodoRepository>('ITodoRepository')
-
-    const $findAll = Implementation.create([$todoRepository], (repo) => repo.findAll)
+    const $todoRepository = Provider.bind<ITodoRepository>().toAbstract('ITodoRepository')
 
     const mockRepository: ITodoRepository = {
       findAll: () => [
@@ -147,10 +145,11 @@ describe('Container.bind', () => {
       bindings: [Container.bind($todoRepository, mockRepository)]
     })
 
-    const findAll = await container.get($findAll)
+    const repository = await container.get($todoRepository)
 
-    expect(typeof findAll).toBe('function')
-    expect(findAll()).toEqual([
+    expect(typeof repository).toBe('object')
+    expect(typeof repository.findAll).toBe('function')
+    expect(repository.findAll()).toEqual([
       {
         id: 'xxxx',
         title: 'Wake up'
@@ -163,7 +162,7 @@ describe('Container.get', () => {
   it('should load and get the variable once', async () => {
     let calls = 0
 
-    const $a = Implementation.create(() => {
+    const $a = Provider.bind<number>().to(() => {
       ++calls
       return calls
     })
@@ -181,11 +180,11 @@ describe('Container.get', () => {
   it('should work with injectables having dependencies', async () => {
     let calls = 0
 
-    const $a = Implementation.create(() => {
+    const $a = Provider.bind<number>().to(() => {
       ++calls
       return calls
     })
-    const $b = Implementation.create([$a], (nb) => nb * 10)
+    const $b = Provider.bind<number>().toFactory((nb) => nb * 10, [$a])
 
     const scope = Container.create()
 
@@ -200,7 +199,7 @@ describe('Container.get', () => {
   it('should not mount more than once when loaded in concurrency', async () => {
     let calls = 0
 
-    const $a = Implementation.create(async () => {
+    const $a = Provider.bind<number>().to(async () => {
       ++calls
       await Prom.sleep(200)
       return calls
@@ -222,27 +221,65 @@ describe('Container.get', () => {
 
 describe('Container.close', () => {
   it('should close correctly', async () => {
-    let calls = 0
+    const calls: string[] = []
 
-    const $a = Implementation.create(() => {
-      return Resource.of(10, () => {
-        ++calls
+    class MyDatabaseConnection {
+      async initialize() {
+        // init connection
+      }
+
+      async close() {
+        // close connection
+        calls.push('db')
+      }
+    }
+
+    class MyHttpServer {
+      async start() {
+        // init connection
+      }
+
+      async close() {
+        // close connection
+        calls.push('http')
+      }
+    }
+
+    const $db = Provider.bind<MyDatabaseConnection>()
+      .toClass(MyDatabaseConnection, [])
+      .asResource({
+        priority: ShutdownPriority.LOW,
+        init: (db) => db.initialize(),
+        close: (db) => db.close()
       })
-    })
+
+    const $http = Provider.bind<MyHttpServer>()
+      .toClass(MyHttpServer, [])
+      .asResource({
+        priority: ShutdownPriority.HIGH,
+        init: (server) => server.start(),
+        close: (server) => server.close()
+      })
 
     const scope = Container.create()
-    const value = await scope.get($a)
 
-    expect(value).toBe(10)
-    expect(calls).toBe(0)
+    const http = await scope.get($http)
+    const db = await scope.get($db)
+
+    expect(http).toBeInstanceOf(MyHttpServer)
+    expect(db).toBeInstanceOf(MyDatabaseConnection)
+
+    // No close methods should have been called yet.
+    expect(calls).toEqual([])
 
     await scope.close()
 
-    expect(calls).toBe(1)
+    // Should first stop HTTP server (because of higher priority setting), then stop the DB.
+    expect(calls).toEqual(['http', 'db'])
   })
 
   it('should throw when used after closing', async () => {
-    const $a = Injectable.of(1)
+    const $a = Provider.bind<number>().toConst(1)
 
     const scope = Container.create()
 
