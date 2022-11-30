@@ -141,7 +141,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@apoyo/ioc@workspace:packages/ioc, @apoyo/ioc@~0.5.0":
+"@apoyo/ioc@workspace:packages/ioc, @apoyo/ioc@~0.6.0":
   version: 0.0.0-use.local
   resolution: "@apoyo/ioc@workspace:packages/ioc"
   dependencies:
@@ -182,7 +182,7 @@ __metadata:
   resolution: "@apoyo/process@workspace:packages/process"
   dependencies:
     "@apoyo/decoders": ^0.0.16
-    "@apoyo/ioc": ~0.5.0
+    "@apoyo/ioc": ~0.6.0
     "@apoyo/std": ^0.0.15
     "@types/dotenv-flow": ^3.2.0
     "@types/jest": ^26.0.23
@@ -198,7 +198,7 @@ __metadata:
     typescript: ^4.7.4
   peerDependencies:
     "@apoyo/decoders": ^0.0.16
-    "@apoyo/ioc": ~0.5.0
+    "@apoyo/ioc": ~0.6.0
     "@apoyo/std": ^0.0.15
   languageName: unknown
   linkType: soft

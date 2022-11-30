@@ -8,7 +8,7 @@ process.env['C'] = '10'
 describe('Env.load', () => {
   const env = Env.load({
     path: __dirname,
-    node_env: AppEnvironment.DEV.name
+    appEnv: AppEnvironment.DEV
   })
 
   it('should load env files correctly', () => {

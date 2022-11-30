@@ -1,5 +1,5 @@
-import { Implementation, Injectable } from '@apoyo/ioc'
-import { Err } from '@apoyo/std'
+import { Provider } from '@apoyo/ioc'
+import { Exception } from '@apoyo/std'
 
 export class AppEnvironment {
   public static DEV = new AppEnvironment(['dev', 'develop', 'development'], 'development')
@@ -10,41 +10,36 @@ export class AppEnvironment {
   constructor(public readonly validNames: string[], public readonly name: string) {}
 }
 
-export const findCurrentEnv = (nodeEnv: string, supportedEnvs: AppEnvironment[]) => {
+export class UnsupportedAppEnvironment extends Exception {
+  public readonly code = 'E_UNSUPPORTED_APP_ENV'
+  constructor(public readonly received: string, public readonly supported: AppEnvironment[]) {
+    const expected = supported.map((env) => env.name)
+    const msg = `Unsupported NODE_ENV environment variables. Received value ${JSON.stringify(
+      received
+    )}, expected one of ${expected.join(', ')}`
+
+    super(msg)
+  }
+}
+
+export const getCurrentAppEnvironment = (supportedEnvs: AppEnvironment[]): AppEnvironment => {
+  const nodeEnv = process.env.NODE_ENV
+  if (!nodeEnv) {
+    return AppEnvironment.PROD
+  }
   for (const env of supportedEnvs) {
     if (env.validNames.includes(nodeEnv)) {
       return env
     }
   }
-  return undefined
+  throw new UnsupportedAppEnvironment(nodeEnv, supportedEnvs)
 }
 
-export const $supportedEnvs = Injectable.of([
+export const $supportedEnvs = Provider.fromConst([
   AppEnvironment.DEV,
   AppEnvironment.STAGING,
   AppEnvironment.PROD,
   AppEnvironment.TEST
 ])
 
-export const $appEnv = Implementation.create(
-  [$supportedEnvs],
-  (supportedEnvs): AppEnvironment => {
-    const nodeEnv = process.env.NODE_ENV
-    if (!nodeEnv) {
-      return AppEnvironment.PROD
-    }
-    const appEnv = findCurrentEnv(nodeEnv, supportedEnvs)
-    if (appEnv) {
-      return appEnv
-    }
-    const expected = supportedEnvs.map((env) => env.name)
-    const msg = `Unsupported NODE_ENV environment variables. Received value ${JSON.stringify(
-      nodeEnv
-    )}, expected one of ${expected.join(', ')}`
-
-    throw Err.of(msg, {
-      received: nodeEnv,
-      expected
-    })
-  }
-)
+export const $appEnv = Provider.fromFactory(getCurrentAppEnvironment, [$supportedEnvs])
