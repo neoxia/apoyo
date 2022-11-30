@@ -1,6 +1,11 @@
-import { Provider } from './providers'
+import { Provider } from './provider'
 import { ProviderKey } from './keys'
-import { ContainerAlreadyClosedException, ContainerClosedException } from './exceptions'
+import {
+  ContainerAlreadyClosedException,
+  ContainerClosedException,
+  ContainerUnsupportedEventException
+} from './exceptions'
+import { ShutdownHook, ShutdownHooks } from './shutdown'
 
 const override = <T>(from: Provider, to: Provider<T> | T): Provider<T> => {
   if (to instanceof Provider) {
@@ -23,6 +28,7 @@ export class Container {
   private _isOpen = true
   private _bindings: Map<ProviderKey, Provider> = new Map()
   private _mounted: WeakMap<ProviderKey, PromiseLike<any>> = new WeakMap()
+  private _shutdownHooks = new ShutdownHooks()
 
   public static create(options: Container.Options = {}) {
     return new Container(options)
@@ -51,17 +57,28 @@ export class Container {
 
     const target = this.resolve(variable)
     if (!this._mounted.has(target.key)) {
-      this._mounted.set(target.key, target.provide(this))
+      this._mounted.set(target.key, target.factory(this))
     }
     return this._mounted.get(target.key)!
+  }
+
+  public on(event: 'close', hook: ShutdownHook): void
+  public on(event: string, ...args: any[]): void {
+    switch (event) {
+      case 'close': {
+        const hook: ShutdownHook = args[0]
+        this._shutdownHooks.register(hook.close, hook.priority)
+        return
+      }
+    }
+    throw new ContainerUnsupportedEventException(event)
   }
 
   public async close(): Promise<void> {
     if (!this._isOpen) {
       throw new ContainerAlreadyClosedException()
     }
-    const destroyHooks = await this.get(Provider.$onDestroy)
-    await destroyHooks.execute()
+    await this._shutdownHooks.execute()
 
     this._mounted = new WeakMap()
     this._isOpen = false

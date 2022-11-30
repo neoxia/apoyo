@@ -1,5 +1,5 @@
 export { ProviderKey } from './keys'
-export { Provider, UnboundProvider } from './providers'
+export { Provider } from './provider'
 export { Container } from './container'
-export * from './shutdown'
-export * from './exceptions'
+export { ShutdownHook, ShutdownPriority } from './shutdown'
+export { ContainerAlreadyClosedException, ContainerClosedException } from './exceptions'

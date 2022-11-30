@@ -1,4 +1,4 @@
-import type { Provider } from './providers'
+import type { Provider } from './provider'
 
 export type Tuple<T = any> = [T, ...T[]] | [...any[]]
 

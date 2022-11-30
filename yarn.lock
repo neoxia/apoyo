@@ -141,16 +141,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@apoyo/ioc@npm:~0.5.0":
-  version: 0.5.1
-  resolution: "@apoyo/ioc@npm:0.5.1"
-  peerDependencies:
-    "@apoyo/std": ^0.0.15
-  checksum: decfe0067eeb2b6781b318307d7b5d4e6450c03193a41d914ebfdc6dc19583e65e81d8baacad34fd1ff48e06a722c2bdb9d24a4c5ef402180e3f13abb44e78c1
-  languageName: node
-  linkType: hard
-
-"@apoyo/ioc@workspace:packages/ioc":
+"@apoyo/ioc@workspace:packages/ioc, @apoyo/ioc@~0.6.0":
   version: 0.0.0-use.local
   resolution: "@apoyo/ioc@workspace:packages/ioc"
   dependencies:
@@ -191,7 +182,7 @@ __metadata:
   resolution: "@apoyo/process@workspace:packages/process"
   dependencies:
     "@apoyo/decoders": ^0.0.16
-    "@apoyo/ioc": ~0.5.0
+    "@apoyo/ioc": ~0.6.0
     "@apoyo/std": ^0.0.15
     "@types/dotenv-flow": ^3.2.0
     "@types/jest": ^26.0.23
@@ -207,7 +198,7 @@ __metadata:
     typescript: ^4.7.4
   peerDependencies:
     "@apoyo/decoders": ^0.0.16
-    "@apoyo/ioc": ~0.5.0
+    "@apoyo/ioc": ~0.6.0
     "@apoyo/std": ^0.0.15
   languageName: unknown
   linkType: soft

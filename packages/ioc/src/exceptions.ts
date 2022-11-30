@@ -1,12 +1,5 @@
 import { Exception } from '@apoyo/std'
 
-export class AbstractProviderException extends Exception {
-  public readonly code = 'E_PROVIDER_NOT_IMPLEMENTED'
-  constructor(name: string) {
-    super(`Abstract provider ${JSON.stringify(name)} has not been implemented`)
-  }
-}
-
 export class ContainerClosedException extends Exception {
   public readonly code = 'E_CONTAINER_CLOSED'
   constructor() {
@@ -18,5 +11,12 @@ export class ContainerAlreadyClosedException extends Exception {
   public readonly code = 'E_CONTAINER_ALREADY_CLOSED'
   constructor() {
     super(`Container is already closed.`)
+  }
+}
+
+export class ContainerUnsupportedEventException extends Exception {
+  public readonly code = 'E_CONTAINER_UNSUPPORTED_EVENT'
+  constructor(public readonly event: string) {
+    super(`Container event "${event}" is not supported.`)
   }
 }

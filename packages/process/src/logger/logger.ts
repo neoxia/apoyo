@@ -2,7 +2,7 @@ import pino, { Logger, LoggerOptions as PinoOptions } from 'pino'
 import pinoPretty from 'pino-pretty'
 
 import { BooleanDecoder, Decoder, EnumDecoder } from '@apoyo/decoders'
-import { Injectable, Implementation } from '@apoyo/ioc'
+import { Provider } from '@apoyo/ioc'
 import { pipe, run } from '@apoyo/std'
 
 import { Env } from '../process'
@@ -16,12 +16,11 @@ export const $env = Env.define({
   LOG_PRETTY: pipe(BooleanDecoder.boolean, Decoder.default(false))
 })
 
-export const $options = Injectable.of<LoggerOptions>({})
+export const $options = Provider.fromConst<LoggerOptions>({})
 
-export const $out = Injectable.of<Writable>(process.stdout)
+export const $out = Provider.fromConst<Writable>(process.stdout)
 
-export const $logger: Injectable<Logger> = Implementation.create(
-  [$env, $options, $als, $out],
+export const $logger = Provider.fromFactory(
   (env, config, als, out): Logger => {
     const prettyEnabled = run(() => {
       if (config.prettyPrint === false) {
@@ -57,20 +56,24 @@ export const $logger: Injectable<Logger> = Implementation.create(
     }
 
     return pino(options, stream)
-  }
+  },
+  [$env, $options, $als, $out]
 )
 
-export const child = (options: LoggerChildOptions | Injectable<LoggerChildOptions>): Injectable<Logger> => {
-  const $options = Injectable.is(options) ? options : Injectable.of(options)
-  return Implementation.create([$logger, $options], (logger, options) => {
-    return logger.child(
-      {
-        name: options.name,
-        ...options.bindings
-      },
-      options
-    )
-  })
+export const child = (options: LoggerChildOptions | Provider<LoggerChildOptions>): Provider<Logger> => {
+  const $options = options instanceof Provider ? options : Provider.fromConst(options)
+  return Provider.fromFactory(
+    (logger, options): Logger => {
+      return logger.child(
+        {
+          name: options.name,
+          ...options.bindings
+        },
+        options
+      )
+    },
+    [$logger, $options]
+  )
 }
 
 export const forContext = (name: string) => child({ name })

@@ -2,14 +2,23 @@ import dotenvExpand from 'dotenv-expand'
 import dotenv from 'dotenv-flow'
 import fs from 'fs'
 
-import { Implementation } from '@apoyo/ioc'
+import { Provider } from '@apoyo/ioc'
 import { Dict, Err, pipe } from '@apoyo/std'
 
-import { $appEnv } from './app-env'
+import { $appEnv, AppEnvironment } from './app-env'
 import { $rootDir } from '../root'
 
-export const load = (options: dotenv.DotenvConfigOptions = {}): Dict<string> => {
-  const nodeEnv = options.node_env || process.env.NODE_ENV || options.default_node_env
+export interface EnvironmentParameters {
+  [key: string]: string
+}
+
+export interface LoadEnvironmentOptions {
+  appEnv: AppEnvironment
+  path: string
+}
+
+export const load = (options: LoadEnvironmentOptions): EnvironmentParameters => {
+  const nodeEnv = options.appEnv.name
 
   const path = options.path || process.cwd()
 
@@ -30,11 +39,11 @@ export const load = (options: dotenv.DotenvConfigOptions = {}): Dict<string> => 
   return env.parsed
 }
 
-export const $envDir = Implementation.create([$rootDir], (rootDir) => rootDir)
+export const $envDir = Provider.fromConst($rootDir)
 
-export const $env = Implementation.create([$appEnv, $envDir], (appEnv, path) =>
-  load({
-    node_env: appEnv.name,
-    path
-  })
-)
+export const $envOptions = Provider.fromObject<LoadEnvironmentOptions>({
+  appEnv: $appEnv,
+  path: $envDir
+})
+
+export const $env = Provider.fromFactory(load, [$envOptions])
