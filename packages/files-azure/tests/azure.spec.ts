@@ -18,6 +18,7 @@ describe('Azure Drive', () => {
     // Check https://github.com/Azure/Azurite#usage-with-azure-storage-sdks-or-tools for more information.
     const config: AzureDriveConfig = {
       container: 'test',
+      prefix: 'development',
       accountName: 'devstoreaccount1',
       accountKey: 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==',
       localAddress: 'http://devstoreaccount1.blob.localhost:10000'
@@ -273,17 +274,19 @@ describe('Azure Drive', () => {
 
   describe('getUrl', () => {
     it('get url to a given file', async () => {
-      const url = await drive.getUrl('foo.txt')
-      expect(url).toBe('http://devstoreaccount1.blob.localhost:10000/test/foo.txt')
+      const url = await drive.getUrl('bar/foo.txt')
+      expect(url).toBe('http://devstoreaccount1.blob.localhost:10000/test/development%2Fbar%2Ffoo.txt')
     })
   })
 
   describe('getSignedUrl', () => {
     it('get signed url to a given file', async () => {
-      const url = await drive.getSignedUrl('foo.txt')
+      const url = await drive.getSignedUrl('bar/foo.txt')
       const parsed = new URL(url)
       const queryParams = pipe(parsed.searchParams.entries(), Arr.from, Dict.fromPairs)
-      expect(parsed.origin + parsed.pathname).toBe('http://devstoreaccount1.blob.localhost:10000/test/foo.txt')
+      expect(parsed.origin + parsed.pathname).toBe(
+        'http://devstoreaccount1.blob.localhost:10000/test/development%2Fbar%2Ffoo.txt'
+      )
       expect(queryParams).toEqual(
         expect.objectContaining({
           sig: expect.anything()

@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/files-azure",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "File driver for Azure Storage",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
