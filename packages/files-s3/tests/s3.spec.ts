@@ -278,7 +278,7 @@ describe('S3 Drive', () => {
   describe('getUrl', () => {
     it('get url to a given file', async () => {
       const url = await drive.getUrl('foo.txt')
-      expect(url).toBe('http://localhost:4569/test/foo.txt')
+      expect(url).toBe('http://localhost:4569/test/development/foo.txt')
     })
   })
 
@@ -287,7 +287,7 @@ describe('S3 Drive', () => {
       const url = await drive.getSignedUrl('foo.txt')
       const parsed = new URL(url)
       const queryParams = pipe(parsed.searchParams.entries(), Arr.from, Dict.fromPairs)
-      expect(parsed.origin + parsed.pathname).toBe('http://localhost:4569/test/foo.txt')
+      expect(parsed.origin + parsed.pathname).toBe('http://localhost:4569/test/development/foo.txt')
       expect(queryParams).toEqual(
         expect.objectContaining({
           'X-Amz-Signature': expect.anything(),

@@ -284,8 +284,8 @@ describe('GCS Drive', () => {
 
   describe('getUrl', () => {
     it('get url to a given file', async () => {
-      const url = await drive.getUrl('foo.txt')
-      expect(url).toBe('http://localhost:4443/test/foo.txt')
+      const url = await drive.getUrl('bar/foo.txt')
+      expect(url).toBe('http://localhost:4443/test/development%2Fbar%2Ffoo.txt')
     })
   })
 
@@ -295,7 +295,7 @@ describe('GCS Drive', () => {
   //     const url = await driver.getSignedUrl('foo.txt')
   //     const parsed = new URL(url)
   //     const queryParams = pipe(parsed.searchParams.entries(), Arr.from, Dict.fromPairs)
-  //     expect(parsed.origin + parsed.pathname).toBe('http://localhost:4443/test/foo.txt')
+  //     expect(parsed.origin + parsed.pathname).toBe('http://localhost:4443/test/development%2Fbar%2Ffoo.txt')
   //     expect(queryParams).toEqual(
   //       expect.objectContaining({
   //         sig: expect.anything()
