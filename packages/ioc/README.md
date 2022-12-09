@@ -1,4 +1,4 @@
-# Apoyo - Scopes
+# Apoyo - IoC
 
 [![npm version](https://badgen.net/npm/v/@apoyo/ioc)](https://www.npmjs.com/package/@apoyo/ioc)
 [![build size](https://badgen.net/bundlephobia/min/@apoyo/ioc)](https://bundlephobia.com/result?p=@apoyo/ioc)
@@ -16,7 +16,8 @@ Install package:
 
 ## Documentation
 
-Please visit the [documentation](https://nx-apoyo.netlify.app/guide/scopes/getting-started.html) for more information.
+TODO
+<!-- Please visit the [documentation](https://nx-apoyo.netlify.app/guide/scopes/getting-started.html) for more information. -->
 
 ## License
 

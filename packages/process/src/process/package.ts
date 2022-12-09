@@ -2,10 +2,17 @@ import fs from 'fs'
 import { join } from 'path'
 
 import { DecodeError, Decoder, ObjectDecoder, TextDecoder } from '@apoyo/decoders'
-import { Implementation } from '@apoyo/ioc'
+import { Provider } from '@apoyo/ioc'
 import { Err, pipe, Result } from '@apoyo/std'
 
 import { $rootDir } from './root'
+
+export interface Pkg {
+  name: string
+  version: string
+  description?: string
+  author?: string
+}
 
 const jsonDecoder = Decoder.create((input: string) =>
   pipe(
@@ -14,7 +21,7 @@ const jsonDecoder = Decoder.create((input: string) =>
   )
 )
 
-const pkgDecoder = ObjectDecoder.struct({
+const pkgDecoder = ObjectDecoder.struct<Pkg>({
   name: TextDecoder.string,
   version: TextDecoder.string,
   description: pipe(TextDecoder.string, TextDecoder.optional),
@@ -26,7 +33,7 @@ const fileDecoder = pipe(
   Decoder.chain(() => pkgDecoder)
 )
 
-export const readPkg = async (rootDir: string) => {
+export const readPkg = async (rootDir: string): Promise<Pkg> => {
   const path = join(rootDir, 'package.json')
   const content = await fs.promises.readFile(path, {
     encoding: 'utf-8'
@@ -45,6 +52,6 @@ export const readPkg = async (rootDir: string) => {
   )
 }
 
-export const $pkg = Implementation.create([$rootDir], (rootDir) => readPkg(rootDir))
+export const $pkg = Provider.fromFactory(readPkg, [$rootDir])
 
-export const $version = Implementation.create([$pkg], (pkg) => pkg.version)
+export const $version = Provider.fromFactory((pkg) => pkg.version, [$pkg])

@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from 'async_hooks'
 import { Bindings } from 'pino'
 
-import { Implementation } from '@apoyo/ioc'
+import { Provider } from '@apoyo/ioc'
 
 export class LoggerALS {
   private _storage = new AsyncLocalStorage<Bindings>()
@@ -26,4 +26,4 @@ export class LoggerALS {
   }
 }
 
-export const $als = Implementation.create(() => new LoggerALS())
+export const $als = Provider.fromClass(LoggerALS, [])

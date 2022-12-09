@@ -1,1 +1,0 @@
-export { Injectable } from './injectable'

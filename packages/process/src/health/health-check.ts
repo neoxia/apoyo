@@ -1,4 +1,4 @@
-import { Injectable, Implementation } from '@apoyo/ioc'
+import { Provider } from '@apoyo/ioc'
 
 export interface HealthReport {
   name: string
@@ -32,8 +32,6 @@ export class HealthReporter {
   }
 }
 
-export const $healthChecks = Injectable.of<HealthCheck[]>([])
+export const $healthChecks = Provider.fromConst<HealthCheck[]>([])
 
-export const $healthReporter = Implementation.create([$healthChecks], (checks) => {
-  return new HealthReporter(checks)
-})
+export const $healthReporter = Provider.fromClass(HealthReporter, [$healthChecks])
