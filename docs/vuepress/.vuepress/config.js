@@ -94,17 +94,17 @@ module.exports = {
           '/guide/policies/interceptors.md'
         ]
       },
-      // {
-      //   title: 'Scopes',
-      //   collapsable: true,
-      //   children: [
-      //     '/guide/scopes/getting-started.md',
-      //     '/guide/scopes/injectables.md',
-      //     '/guide/scopes/resources.md',
-      //     '/guide/scopes/scopes.md',
-      //     '/guide/scopes/advanced-features.md',
-      //   ]
-      // },
+      {
+        title: 'IoC',
+        collapsable: true,
+        sidebarDepth: 3,
+        children: [
+          '/guide/ioc/getting-started.md',
+          '/guide/ioc/providers.md',
+          '/guide/ioc/resources.md',
+          '/guide/ioc/advanced-features.md',
+        ]
+      },
       // {
       //   title: 'Http',
       //   collapsable: true,
