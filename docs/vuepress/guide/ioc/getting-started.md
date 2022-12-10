@@ -17,7 +17,7 @@ Today, a lot of solutions exists for dependency injection in JS/TS, the most pop
 - Typedi
 - etc...
 
-However, very few DI solutions exist that are fully type-safe and are easy to use.
+However, very few DI solutions exist that are fully type-safe and easy to use.
 
 <!-- ### Vocabulary
 
@@ -87,11 +87,11 @@ export class LoggerModule {
 }
 
 export class MailerModule {
-  private static MAILER_LOGGER = LoggerModule.child('Mailer')
+  private static LOGGER = LoggerModule.child('Mailer')
 
   static MAILER = Provider.fromFactory(createNodemailer, [
     ConfigurationModule.MAILER, 
-    MailerModule.MAILER_LOGGER
+    MailerModule.LOGGER
   ])
 }
 ```
@@ -116,11 +116,11 @@ export class HttpModule {
 
 <br/>
 
-5/ **No native support decorators**: while this is opiniated, there are not supported for multiple reasons:
+5/ **No native decorators support**: while this is opiniated, there are not supported for multiple reasons:
 
 - Your implementations **should not be aware** of the framework / IoC container system you use. Decorators go against this practice, as they need to be applied on your implementations.
 
-- It is easy to produce run-time errors with decorators:
+- It is easy to introduce run-time errors with decorators:
 
 ```ts
 @Injectable()
@@ -143,7 +143,7 @@ class MyService {
 }
 ```
 
-- Decorators can also only be applied to classes. They won't work for primitives or factories.
+- Decorators can only be applied to classes. They won't work for primitives or factories.
 
 <br/>
 
@@ -161,4 +161,4 @@ const a = b
 const b = a
 ```
 
-Circular dependencies will **not be supported** in the future either! Most of the time, circular dependencies can be avoided by splitting up your code correctly.
+Circular dependencies will **not be supported** in the future either! Most of the time, circular dependencies can easily be avoided by splitting up your code correctly.
