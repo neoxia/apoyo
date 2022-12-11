@@ -17,7 +17,7 @@ Today, a lot of solutions exists for dependency injection in JS/TS, the most pop
 - Typedi
 - etc...
 
-However, very few DI solutions exist that are fully type-safe and easy to use.
+However, very few DI solutions exist that are fully type-safe and easy to use. This solution also completely forgoes decorators to achieve higher type-safeness and better decoupling by encouraging the use of abstractions.
 
 <!-- ### Vocabulary
 
@@ -28,17 +28,19 @@ The container will initialize this `Provider` and load all its dependencies if t
 
 The container also keeps a record of all providers that have already been been loaded, to avoid re-loading the same `Provider` twice. -->
 
-### Unique features
+## Features
 
-Here a few unique features of this library:
+### Ease of use
 
-1/ Easily create fully typed providers:
+This library is very easy to use while still being fully typed.
+
+In the example below, we organize our providers in "modules" / "namespaces":
 
 ```ts
 import { Provider } from '@apoyo/ioc'
 
 export class ConfigurationModule {
-  static ENV = Provider.fromFactory(loadEnvironment, [])
+  private static ENV = Provider.fromFactory(loadEnvironment, [])
   
   static HTTP = Provider.fromFactory(configureHttp, [ConfigurationModule.ENV])
   static LOGGER = Provider.fromFactory(configureLogger, [ConfigurationModule.LOGGER])
@@ -56,9 +58,9 @@ const httpConfig = await container.get(ConfigurationModule.HTTP)
 
 **Note**: Keep in mind that providers are simply "factories". They don't execute anything by themselves, nor should they: they only "wire" up our dependencies / tell our program how to instantiate everything.
 
-<br/>
+### Integrations
 
-2/ Very easy to integrate with existing third-party libraries:
+This library is very easy to use with existing third-party libraries:
 
 ```ts
 export class MailerModule {
@@ -66,9 +68,9 @@ export class MailerModule {
 }
 ```
 
-<br/>
+### Composition
 
-3/ **Encourages composition**: A provider is a simple variable. This means we can also pass them as parameters to functions and dynamically create new ones:
+This library **encourages composition**: As a provider is a simple variable,  we can also pass them as parameters to functions and dynamically create new ones:
 
 *Example*:
 
@@ -96,9 +98,9 @@ export class MailerModule {
 }
 ```
 
-<br/>
+### Resource management
 
-4/ **Disposable resources** that can be cleaned up when the container is closed:
+This library has inbuild resource management, to automatically cleaned up **disposable resources** when the container is closed:
 
 ```ts
 export class HttpModule {
@@ -114,11 +116,15 @@ export class HttpModule {
 }
 ```
 
-<br/>
+You may also specify a shutdown priority to control the order in which your resources are cleaned up, from the highest priority first to the lowest priority at last.
 
-5/ **No native decorators support**: while this is opiniated, there are not supported for multiple reasons:
+### No decorators
 
-- Your implementations **should not be aware** of the framework / IoC container system you use. Decorators go against this practice, as they need to be applied on your implementations.
+This library does not offer **decorators support**: while this is opiniated, there are not supported for multiple reasons:
+
+- Your implementations **should not be aware** of the framework / IoC container system you use. Decorators go against this practice, as they need to be applied on your implementations directly.
+
+- Decorators encourage **higher coupling**, by making it harder to depend on an abstraction, instead of an implementation: In fact, most of the time, when using decorators, you inject **classes** and not **interfaces**.
 
 - It is easy to introduce run-time errors with decorators:
 
@@ -131,7 +137,7 @@ class MyService {
 }
 ```
 
-- Decorators have the issue of not always being type-safe, especially:
+- Decorators can not verify that the token you inject correspond to the given type:
 
 ```ts
 @Injectable()
@@ -143,11 +149,13 @@ class MyService {
 }
 ```
 
-- Decorators can only be applied to classes. They won't work for primitives or factories.
+- Decorators can only be applied to **your** classes. They won't work for primitives or factories or classes from third-party libraries. As such, if you want to create providers for third-party libraries (for example), you will need to use a different API, which means you sometimes use decorators and sometimes a different API. This makes your code less consistent.
 
-<br/>
+This library makes this choice very simple: There is only one way to create providers.
 
-6/ **No circular dependencies are supported**. As such, the following is impossible:
+### Circular dependencies
+
+This library does not support **circular dependencies**. As such, the following is impossible:
 
 ```ts
 // This does not work

@@ -37,3 +37,5 @@ To configure this, will would need to assign:
 
 - A `ShutdownPriority.HIGH` to the HTTP server
 - A `ShutdownPriority.LOW` to the database connection
+
+The resources with the highest priority will be shutdown first.
