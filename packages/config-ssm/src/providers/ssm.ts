@@ -14,17 +14,16 @@ export interface SSMProviderConfig {
   key?: string
   secret?: string
   region: string
+  mapper?: SSMParameterKeyMapper
 }
 
 export type SSMParameterKeyMapper = (parameterKey: string) => string
 
 export class SSMProvider implements ParametersProvider {
-  private ssm: SSM
+  private readonly _ssm: SSM
+  private readonly _keyMapper: SSMParameterKeyMapper
 
-  constructor(
-    private readonly config: SSMProviderConfig,
-    private readonly mapper: SSMParameterKeyMapper = (key) => key.toUpperCase()
-  ) {
+  constructor(private readonly config: SSMProviderConfig) {
     const credentials =
       config.key && config.secret
         ? {
@@ -33,12 +32,18 @@ export class SSMProvider implements ParametersProvider {
           }
         : undefined
 
-    this.ssm = new SSM({
+    this._ssm = new SSM({
       region: config.region,
       credentials
     })
+
+    this._keyMapper = config.mapper ?? ((key) => key.toUpperCase())
   }
 
+  /**
+   * By default, the prefix is removed from the keys of the parameters fetched from SSM.
+   * By default, if no "mapper" is specified in the configuration object, the key will be upper-cased to better match existing environment variables.
+   */
   async load() {
     const prefix = this.config.prefix ?? ''
     const params = await this._getParametersByPrefix(prefix)
@@ -53,7 +58,7 @@ export class SSMProvider implements ParametersProvider {
       if (!key.startsWith(prefix)) {
         continue
       }
-      const newKey = this.mapper(key.substring(prefix.length))
+      const newKey = this._keyMapper(key.substring(prefix.length))
 
       map[newKey] = param.Value
     }
@@ -67,7 +72,7 @@ export class SSMProvider implements ParametersProvider {
 
     try {
       do {
-        const result = await this.ssm.getParametersByPath({
+        const result = await this._ssm.getParametersByPath({
           Path: prefix,
           MaxResults: 100,
           Recursive: true,
