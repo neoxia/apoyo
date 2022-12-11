@@ -1,5 +1,5 @@
-import { pipe, Prom, Result, Option, Exception } from '@apoyo/std'
-import { Container, Provider, ShutdownPriority } from '../src'
+import { Prom, Exception } from '@apoyo/std'
+import { Container, ContainerClosedException, Provider, ShutdownPriority } from '../src'
 
 describe('Container.create', () => {
   it('should build and return container', () => {
@@ -12,19 +12,18 @@ describe('Container.create', () => {
 
 describe('Container.bind', () => {
   it('should bind a Injectable to a constant value', async () => {
-    const fn = jest.fn()
+    const fn = jest.fn(() => 1)
 
-    const $a = Provider.from(() => {
-      fn('a')
-      return 1
-    })
+    class MyModule {
+      static A = Provider.fromFactory(fn, [])
+    }
 
-    const bindings = [Container.bind($a, 2)]
+    const bindings = [Container.bind(MyModule.A, 2)]
     const container = Container.create({
       bindings
     })
 
-    const a = await container.get($a)
+    const a = await container.get(MyModule.A)
 
     expect(fn).toHaveBeenCalledTimes(0)
 
@@ -32,59 +31,57 @@ describe('Container.bind', () => {
   })
 
   it('should bind a Injectable to another Injectable', async () => {
-    const fn = jest.fn()
+    const fnA = jest.fn(() => 1)
+    const fnB = jest.fn(() => 2)
 
-    const $a = Provider.from(() => {
-      fn('a')
-      return 1
-    })
-    const $b = Provider.from(() => {
-      fn('b')
-      return 2
-    })
+    class MyModule {
+      static A = Provider.fromFactory(fnA, [])
+    }
+    class MyModuleMock {
+      static B = Provider.fromFactory(fnB, [])
+    }
 
-    const bindings = [Container.bind($a, $b)]
+    const bindings = [Container.bind(MyModule.A, MyModuleMock.B)]
     const container = Container.create({
       bindings
     })
 
-    const a = await container.get($a)
-    const b = await container.get($b)
+    // Should use MyModuleMock.B
+    const a = await container.get(MyModule.A)
 
-    expect(fn).toHaveBeenCalledTimes(1)
-    expect(fn).toHaveBeenNthCalledWith(1, 'b')
+    // Should not re-create MyModuleMock.B a second time
+    const b = await container.get(MyModuleMock.B)
+
+    expect(fnA).toHaveBeenCalledTimes(0)
+    expect(fnB).toHaveBeenCalledTimes(1)
 
     expect(a).toBe(2)
     expect(b).toBe(2)
   })
 
   it('should resolve deeply', async () => {
-    const fn = jest.fn()
+    const fnA = jest.fn(() => 1)
+    const fnB = jest.fn(() => 2)
+    const fnC = jest.fn(() => 3)
 
-    const $a = Provider.from(() => {
-      fn('a')
-      return 1
-    })
-    const $b = Provider.from(() => {
-      fn('b')
-      return 2
-    })
-    const $c = Provider.from(() => {
-      fn('c')
-      return 3
-    })
+    class MyModule {
+      static A = Provider.fromFactory(fnA, [])
+      static B = Provider.fromFactory(fnB, [])
+      static C = Provider.fromFactory(fnC, [])
+    }
 
-    const bindings = [Container.bind($b, $c), Container.bind($a, $b)]
+    const bindings = [Container.bind(MyModule.B, MyModule.C), Container.bind(MyModule.A, MyModule.B)]
     const container = Container.create({
       bindings
     })
 
-    const a = await container.get($a)
-    const b = await container.get($b)
-    const c = await container.get($c)
+    const a = await container.get(MyModule.A)
+    const b = await container.get(MyModule.B)
+    const c = await container.get(MyModule.C)
 
-    expect(fn).toHaveBeenCalledTimes(1)
-    expect(fn).toHaveBeenNthCalledWith(1, 'c')
+    expect(fnA).toHaveBeenCalledTimes(0)
+    expect(fnB).toHaveBeenCalledTimes(0)
+    expect(fnC).toHaveBeenCalledTimes(1)
 
     expect(a).toBe(3)
     expect(b).toBe(3)
@@ -92,26 +89,24 @@ describe('Container.bind', () => {
   })
 
   it('should resolve correctly with injectables and constants', async () => {
-    const fn = jest.fn()
+    const fnA = jest.fn(() => 1)
+    const fnB = jest.fn(() => 2)
 
-    const $a = Provider.from(() => {
-      fn('a')
-      return 1
-    })
-    const $b = Provider.from(() => {
-      fn('b')
-      return 2
-    })
+    class MyModule {
+      static A = Provider.fromFactory(fnA, [])
+      static B = Provider.fromFactory(fnB, [])
+    }
 
-    const bindings = [Container.bind($b, 10), Container.bind($a, $b)]
+    const bindings = [Container.bind(MyModule.B, 10), Container.bind(MyModule.A, MyModule.B)]
     const container = Container.create({
       bindings
     })
 
-    const a = await container.get($a)
-    const b = await container.get($b)
+    const a = await container.get(MyModule.A)
+    const b = await container.get(MyModule.B)
 
-    expect(fn).toHaveBeenCalledTimes(0)
+    expect(fnA).toHaveBeenCalledTimes(0)
+    expect(fnB).toHaveBeenCalledTimes(0)
 
     expect(a).toBe(10)
     expect(b).toBe(10)
@@ -120,7 +115,7 @@ describe('Container.bind', () => {
   it('should be able to rebind providers', async () => {
     interface IRepository<T> {
       findAll: () => T[]
-      findById: (id: string) => Option<T>
+      findById: (id: string) => T | null
     }
     interface Todo {
       id: string
@@ -129,9 +124,11 @@ describe('Container.bind', () => {
 
     interface ITodoRepository extends IRepository<Todo> {}
 
-    const $todoRepository = Provider.from<ITodoRepository>(() => {
-      throw new Exception('Not implemented')
-    })
+    class MyModule {
+      static TODO_REPOSITORY = Provider.from<ITodoRepository>(() => {
+        throw new Exception('Not implemented')
+      })
+    }
 
     const mockRepository: ITodoRepository = {
       findAll: () => [
@@ -140,14 +137,14 @@ describe('Container.bind', () => {
           title: 'Wake up'
         }
       ],
-      findById: () => undefined
+      findById: () => null
     }
 
     const container = Container.create({
-      bindings: [Container.bind($todoRepository, mockRepository)]
+      bindings: [Container.bind(MyModule.TODO_REPOSITORY, mockRepository)]
     })
 
-    const repository = await container.get($todoRepository)
+    const repository = await container.get(MyModule.TODO_REPOSITORY)
 
     expect(typeof repository).toBe('object')
     expect(typeof repository.findAll).toBe('function')
@@ -162,60 +159,59 @@ describe('Container.bind', () => {
 
 describe('Container.get', () => {
   it('should load and get the variable once', async () => {
-    let calls = 0
+    const fn = jest.fn(() => 1)
 
-    const $a = Provider.from(() => {
-      ++calls
-      return calls
-    })
+    class MyModule {
+      static A = Provider.fromFactory(fn, [])
+    }
 
-    const scope = Container.create()
+    const container = Container.create()
 
-    const a = await scope.get($a)
-    const b = await scope.get($a)
+    const a = await container.get(MyModule.A)
+    const b = await container.get(MyModule.A)
 
-    expect(calls).toBe(1)
+    expect(fn).toHaveBeenCalledTimes(1)
     expect(a).toBe(1)
     expect(b).toBe(1)
   })
 
   it('should work with injectables having dependencies', async () => {
-    let calls = 0
+    const fn = jest.fn(() => 1)
 
-    const $a = Provider.from(() => {
-      ++calls
-      return calls
-    })
-    const $b = Provider.fromFactory((nb) => nb * 10, [$a])
+    class MyModule {
+      static A = Provider.fromFactory(fn, [])
+      static B = Provider.fromFactory((nb) => nb * 10, [MyModule.A])
+    }
 
-    const scope = Container.create()
+    const container = Container.create()
 
-    const a = await scope.get($b)
-    const b = await scope.get($b)
+    const a = await container.get(MyModule.B)
+    const b = await container.get(MyModule.B)
 
-    expect(calls).toBe(1)
+    expect(fn).toHaveBeenCalledTimes(1)
     expect(a).toBe(10)
     expect(b).toBe(10)
   })
 
   it('should not mount more than once when loaded in concurrency', async () => {
-    let calls = 0
-
-    const $a = Provider.from(async () => {
-      ++calls
+    const fn = jest.fn(async () => {
       await Prom.sleep(200)
-      return calls
+      return 1
     })
 
-    const scope = Container.create()
+    class MyModule {
+      static A = Provider.fromFactory(fn, [])
+    }
 
-    const pA = scope.get($a)
-    const pB = scope.get($a)
+    const container = Container.create()
+
+    const pA = container.get(MyModule.A)
+    const pB = container.get(MyModule.A)
 
     const a = await pA
     const b = await pB
 
-    expect(calls).toBe(1)
+    expect(fn).toHaveBeenCalledTimes(1)
     expect(a).toBe(1)
     expect(b).toBe(1)
   })
@@ -225,16 +221,16 @@ describe('Container.close', () => {
   it('should close correctly', async () => {
     const calls: string[] = []
 
-    const scope = Container.create()
+    const container = Container.create()
 
-    scope.on('close', {
+    container.on('close', {
       async close() {
         calls.push('db')
       },
       priority: ShutdownPriority.LOW
     })
 
-    scope.on('close', {
+    container.on('close', {
       async close() {
         calls.push('http')
       },
@@ -244,21 +240,21 @@ describe('Container.close', () => {
     // No close methods should have been called yet.
     expect(calls).toEqual([])
 
-    await scope.close()
+    await container.close()
 
     // Should first stop HTTP server (because of higher priority setting), then stop the DB.
     expect(calls).toEqual(['http', 'db'])
   })
 
   it('should throw when used after closing', async () => {
-    const $a = Provider.fromConst(1)
+    class MyModule {
+      static A = Provider.fromConst(1)
+    }
 
-    const scope = Container.create()
+    const container = Container.create()
 
-    await scope.close()
+    await container.close()
 
-    const result = await pipe(scope.get($a), Prom.tryCatch)
-
-    expect(pipe(result, Result.isKo)).toBe(true)
+    await expect(container.get(MyModule.A)).rejects.toThrow(ContainerClosedException)
   })
 })

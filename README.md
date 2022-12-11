@@ -20,6 +20,8 @@ The goal was having:
 
 - [Policies](packages/policies) (`@apoyo/policies`): Contains utils to better separate and write authorization logic.
 
+- [IoC](packages/ioc) (`@apoyo/ioc`): Contains a fully type-safe IoC container (no decorators).
+
 <!--
 Packages that are not ready yet:
 
