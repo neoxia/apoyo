@@ -14,7 +14,18 @@ Install package:
 
 ## Documentation
 
-This package contains a `ParametersProvider` to load application parameters from AWS SSM.
+Get app parameters from SSM using the following exported function:
+
+```ts
+import { AppParameters } from '@apoyo/config'
+import { getParametersFromSSM } from '@apoyo/config-ssm'
+
+const ssmParams: AppParameters = await getParametersFromSSM({
+  path: '/projects/my-app/',
+  key: 'access key',
+  secret: 'secret key'
+})
+```
 
 A more complete documentation will be made available once the API has stabilized itself.
 

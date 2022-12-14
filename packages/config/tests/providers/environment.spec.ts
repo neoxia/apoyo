@@ -1,19 +1,17 @@
 import { resolve } from 'path'
-import { AppEnvironment, AppParameters, EnvironmentProvider } from '../../src'
+import { AppMode, AppParameters, getParametersFromEnvironment } from '../../src'
 
-describe('EnvironmentProvider.load', () => {
+describe('getParametersFromEnvironment', () => {
   let parameters: AppParameters
 
   beforeEach(async () => {
-    const provider = new EnvironmentProvider({
-      path: resolve(__dirname, '..'),
-      appEnv: AppEnvironment.DEV
-    })
-
     process.env['C'] = '10'
     process.env['D'] = '11'
 
-    parameters = await provider.load()
+    parameters = await getParametersFromEnvironment({
+      path: resolve(__dirname, '..'),
+      appEnv: AppMode.DEV
+    })
   })
 
   it('should load env files correctly', () => {

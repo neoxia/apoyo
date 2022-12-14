@@ -14,40 +14,34 @@ Install package:
 
 ## Documentation
 
-This package contains utils to facilitate loading your application parameters (env, ssm, etc...).
-
-It may be used to normalize `NODE_ENV` values from given aliases as well as easily load all `.env` files using `dotenv-flow` and `dotenv-expand` behind the scenes.
+The `config` package series contains utils to facilitate loading your application parameters from different providers (env, aws ssm, gcp secret manager, etc...).
 
 A more complete documentation will be made available once the API has stabilized itself.
 
 ## Usage
 
 ```ts
-import { AppEnvironment, EnvironmentProvider, getDefaultAppEnvironments, getCurrentAppEnvironment } from '@apoyo/config'
-import { SSMProvider } from '@apoyo/config-ssm'
+import { getParametersFromEnvironment, AppParameters } from '@apoyo/config'
+import { getParametersFromSSM } from '@apoyo/config-ssm'
 
-const supportedEnvs = getDefaultAppEnvironments()
-const appEnv = getCurrentAppEnvironment(process.env.NODE_ENV, supportedEnvs)
-
-const envProvider = new EnvironmentProvider({
-  appEnv,
+const envParams = await getParametersFromEnvironment({
+  nodeEnv: process.env.NODE_ENV,
   path: process.cwd()
 })
 
-const envParams = await envProvider.load()
+const ssmEnabled = envParams['AWS_SSM_ENABLED'] === 'true' ? true : false
 
-const ssmProvider = new SSMProvider({
-  prefix: envParams['SSM_PREFIX'],
-  key: envParams['AWS_ACCESS_KEY_ID'],
-  secret: envParams['AWS_SECRET_ACCESS_KEY'],
-  region: envParams['AWS_REGION'],
-  mapper: (paramKey) => paramKey.toUpperCase()
-})
-
-const ssmParams = await ssmProvider.load()
+const ssmParams = ssmEnabled
+  ? await getParametersFromSSM({
+    prefix: envParams['AWS_SSM_PREFIX'],
+    key: envParams['AWS_ACCESS_KEY_ID'],
+    secret: envParams['AWS_SECRET_ACCESS_KEY'],
+    region: envParams['AWS_REGION']
+  })
+  : {}
 
 // Merge parameters from env and ssm
-const appParams = {
+const appParams: AppParameters = {
   ...envParams,
   ...ssmParams
 }
