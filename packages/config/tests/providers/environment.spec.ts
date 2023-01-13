@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { AppMode, AppParameters, getParametersFromEnvironment } from '../../src'
+import { AppParameters, getParametersFromEnvironment } from '../../src'
 
 describe('getParametersFromEnvironment', () => {
   let parameters: AppParameters
@@ -10,7 +10,7 @@ describe('getParametersFromEnvironment', () => {
 
     parameters = await getParametersFromEnvironment({
       path: resolve(__dirname, '..'),
-      appEnv: AppMode.DEV
+      nodeEnv: 'development'
     })
   })
 
