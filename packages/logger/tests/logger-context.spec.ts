@@ -27,7 +27,14 @@ describe('LoggerContext', () => {
       context
     )
 
+    const featureLogger = logger.child({
+      name: 'MyFeature',
+      hello: 'John'
+    })
+
     const reqLogger = logger.child({
+      name: 'Http',
+      hello: 'Doe',
       req: {
         id: 'xxxx-xxxx-xxxx',
         method: 'GET',
@@ -39,12 +46,14 @@ describe('LoggerContext', () => {
       const contextBindings = context.bindings()
 
       expect(contextBindings).toEqual({
+        name: 'Http',
+        hello: 'Doe',
         req: expect.objectContaining({
           id: expect.any(String)
         })
       })
 
-      logger.info(
+      featureLogger.info(
         {
           foo: 'bar'
         },
@@ -56,9 +65,11 @@ describe('LoggerContext', () => {
       const log = stdout.mock.calls[0][0]
       expect(log).toEqual(
         expect.objectContaining({
+          name: 'MyFeature',
           level: logger.levels.values[LogLevel.INFO],
           msg: 'Info',
           foo: 'bar',
+          hello: 'John',
           req: expect.objectContaining({
             id: expect.anything()
           })
