@@ -1,0 +1,27 @@
+---
+to: src/interfaces/http/<%= h.changeCase.param(module) %>/routes/<%= h.changeCase.param(subfolder) %>/create-<%= h.changeCase.param(model) %>.route.ts
+---
+import { Type } from '@sinclair/typebox'
+import { <%= h.changeCase.pascal(module) %>Module } from '@/providers'
+
+import { defineRoute } from '../../../factory'
+import {
+  <%= h.changeCase.pascal(model) %>CreateInput,
+  <%= h.changeCase.pascal(model) %>
+} from '../../schemas'
+
+export const create<%= h.changeCase.pascal(model) %>Route = defineRoute({
+  method: 'POST',
+  url: '/',
+  schema: {
+    body: Type.Ref(<%= h.changeCase.pascal(model) %>CreateInput),
+    response: {
+      200: Type.Ref(<%= h.changeCase.pascal(model) %>)
+    }
+  },
+  async handler(request, reply) {
+    const usecase = await request.container.get(<%= h.changeCase.pascal(module) %>Module.CREATE_<%= h.changeCase.constant(model) %>_USE_CASE)
+    const result = await usecase.execute(request.body)
+    reply.send(result)
+  }
+})

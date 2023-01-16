@@ -1,0 +1,36 @@
+---
+to: src/infra/auth/jwt-authenticator.ts
+unless_exists: true
+---
+import { JwtVerifier } from "@/infra/jwt/contracts";
+import { User, UserRepository } from "@/utils/authorizer";
+import { NotAuthenticatedException } from "@apoyo/policies";
+
+import { JwtVerifyException } from "../jwt/exceptions";
+
+export class JwtAuthenticator {
+  constructor(private readonly jwtVerifier: JwtVerifier, private readonly userRepository: UserRepository) { }
+
+  public async authenticate(token?: string): Promise<User | null> {
+    if (!token) {
+      return null
+    }
+
+    try {
+      const payload = await this.jwtVerifier.verify(token);
+      const userId = typeof payload === 'object' && payload !== null && 'sub' in payload && typeof payload.sub === 'string' 
+        ? payload.sub 
+        : null
+  
+      if (userId) {
+        return this.userRepository.findById(userId)
+      }
+      return null
+    } catch (err) {
+      if (err instanceof JwtVerifyException) {
+        throw new NotAuthenticatedException()
+      }
+      throw err
+    }
+  }
+}

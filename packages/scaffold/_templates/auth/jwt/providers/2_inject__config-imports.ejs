@@ -1,0 +1,8 @@
+---
+inject: true
+to: src/providers/config.provider.ts
+after: from '@apoyo/ioc'\n
+skip_if: from './jwt.provider'
+---
+import { configureLocalJwt } from "@/config";
+import { LocalJwtConfig } from "@/infra/jwt";

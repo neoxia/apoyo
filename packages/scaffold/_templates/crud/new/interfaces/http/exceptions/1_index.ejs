@@ -1,0 +1,32 @@
+---
+to: src/interfaces/http/exceptions/index.ts
+unless_exists: true
+---
+import { BaseException, BusinessException, NotFoundException } from "@/utils/exceptions"
+import { NotAuthenticatedException, NotAuthorizedException } from "@apoyo/policies"
+import fastifyPlugin from "fastify-plugin"
+
+import { FastifyApp } from "../factory"
+
+const createHttpError = (err: BaseException) => ({
+  code: err.code,
+  message: err.message
+})
+
+export const appErrorHandler = fastifyPlugin(async (app: FastifyApp) => {
+  app.setErrorHandler((err, _request, reply) => {
+    if (err instanceof BusinessException) {
+      return reply.status(400).send(createHttpError(err))
+    }
+    if (err instanceof NotAuthenticatedException) {
+      return reply.status(401).send(createHttpError(err))
+    }
+    if (err instanceof NotAuthorizedException) {
+      return reply.status(403).send(createHttpError(err))
+    }
+    if (err instanceof NotFoundException) {
+      return reply.status(404).send(createHttpError(err))
+    }
+    throw err
+  }) 
+})

@@ -1,0 +1,11 @@
+---
+to: src/infra/jwt/contracts.ts
+unless_exists: true
+---
+export interface JwtVerifier {
+  verify(token: string): Promise<unknown>
+}
+
+export interface JwtSigner {
+  sign(payload: unknown): Promise<string>
+}

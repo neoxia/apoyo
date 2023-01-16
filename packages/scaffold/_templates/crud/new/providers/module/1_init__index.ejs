@@ -1,0 +1,5 @@
+---
+to: src/providers/<%= h.changeCase.param(module) %>/index.ts
+unless_exists: true
+---
+export * as <%= h.changeCase.pascal(module) %>Module from './use-cases'

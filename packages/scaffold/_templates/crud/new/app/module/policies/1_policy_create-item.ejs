@@ -1,0 +1,14 @@
+---
+to: src/app/<%= h.changeCase.param(module) %>/policies/<%= h.changeCase.param(subfolder) %>/create-<%= h.changeCase.param(model) %>.policy.ts
+---
+import { BasePolicy } from '@apoyo/policies'
+import { PolicyContext } from '@/utils/authorizer'
+
+import { <%= h.changeCase.pascal(module) %>Policy } from '../base.policy'
+
+export class Create<%= h.changeCase.pascal(model) %>Policy implements BasePolicy {
+  public async *authorize(ctx: PolicyContext) {
+    yield* <%= h.changeCase.pascal(module) %>Policy.before(ctx)
+    return ctx.isAdmin()
+  }
+}

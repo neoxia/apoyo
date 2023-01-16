@@ -1,0 +1,9 @@
+---
+inject: true
+to: src/app/<%= h.changeCase.param(module) %>/dtos/index.ts
+append: true
+skip_if: <%= h.changeCase.param(model) %>
+---
+export * from './<%= h.changeCase.param(subfolder) %>/<%= h.changeCase.param(model) %>.dto'
+export * from './<%= h.changeCase.param(subfolder) %>/<%= h.changeCase.param(model) %>-create.dto'
+export * from './<%= h.changeCase.param(subfolder) %>/<%= h.changeCase.param(model) %>-update.dto'

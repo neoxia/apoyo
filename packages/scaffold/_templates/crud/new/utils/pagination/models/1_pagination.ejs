@@ -1,0 +1,19 @@
+---
+to: src/utils/pagination/models/pagination.model.ts
+unless_exists: true
+---
+
+export class PageOptions {
+  constructor(
+    private readonly page: number, 
+    private readonly perPage: number
+  ) {}
+
+  public getPage() {
+    return this.page
+  }
+
+  public getPerPage() {
+    return this.perPage
+  }
+}

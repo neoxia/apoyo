@@ -1,0 +1,14 @@
+---
+to: src/app/<%= h.changeCase.param(module) %>/policies/<%= h.changeCase.param(subfolder) %>/list-<%= h.changeCase.param(model) %>s.policy.ts
+---
+import { BasePolicy } from '@apoyo/policies'
+import { PolicyContext } from '@/utils/authorizer'
+
+import { <%= h.changeCase.pascal(module) %>Policy } from '../base.policy'
+
+export class List<%= h.changeCase.pascal(model) %>sPolicy implements BasePolicy {
+  public async *authorize(ctx: PolicyContext) {
+    yield* <%= h.changeCase.pascal(module) %>Policy.before(ctx)
+    return true
+  }
+}

@@ -1,0 +1,22 @@
+---
+to: src/config/jwt.config.ts
+unless_exists: true
+---
+import assert from "assert";
+
+import { LocalJwtConfig } from "@/infra/jwt";
+
+export async function configureLocalJwt(params: Record<string, string | undefined>): Promise<LocalJwtConfig> {
+
+  const secret = params['JWT_SECRET']
+  const expiresIn = params['JWT_EXPIRES_IN']
+
+  assert(secret, 'JWT_SECRET is not defined')
+  assert(secret, 'JWT_EXPIRES_IN is not defined')
+
+  return {
+    secretOrPublicKey: secret,
+    secretOrPrivateKey: secret,
+    expiresIn
+  }
+}

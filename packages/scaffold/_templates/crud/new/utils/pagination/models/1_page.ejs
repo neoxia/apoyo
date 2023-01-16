@@ -1,0 +1,25 @@
+---
+to: src/utils/pagination/models/page.model.ts
+unless_exists: true
+---
+
+export interface PageMetadata {
+  page: number
+  perPage: number
+  total: number
+}
+
+export class Page<Model> {
+  constructor(
+    private readonly items: Model[], 
+    private readonly metadata: PageMetadata
+  ) {}
+
+  public getItems() {
+    return this.items
+  }
+
+  public getMetadata() {
+    return this.metadata
+  }
+}

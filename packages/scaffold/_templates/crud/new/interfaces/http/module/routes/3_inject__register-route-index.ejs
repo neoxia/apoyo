@@ -1,0 +1,7 @@
+---
+inject: true
+to: src/interfaces/http/<%= h.changeCase.param(module) %>/routes/index.ts
+after: async function <%= h.changeCase.camel(module) %>Routes
+skip_if: app.register(<%= h.changeCase.param(subfolder) %>Routes)
+---
+  await app.register(<%= h.changeCase.camel(subfolder) %>Routes, { prefix: '/<%= h.inflection.pluralize(h.changeCase.param(model)) %>' })

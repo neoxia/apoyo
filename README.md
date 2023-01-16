@@ -10,6 +10,20 @@ The goal was having:
 - Libraries covering utilities for most use-cases, without having to install tons of libraries.
 - Libraries favoring composition and customability.
 
+## Notes on stability
+
+Currently, a lot of the packages are still in development, and as such may contain unstable API.
+
+To give you a better overview over which package may be used safely, we will use the following stages to track the stability of the packages when the version is still below *1.0.0*:
+
+- **Stage 1**: Highly unstable! These packages may still completely change or be deleted at any moment!
+
+- **Stage 2**: A first mostly stable version has been published, however we are still collecting feedback. The API may still change in 0.x.x versions, but we will keep backward compatibility.
+
+- **Stage 3**: Mostly stable, will probably be moved to *1.0.0* soon.
+
+Any package that is not listed below or in the documentation is by default not stable and should not be used.
+
 ## Packages
 
 - [Std](packages/std) (`@apoyo/std`): Contains general, framework agnostic utilities, such as utilities for errors, promises, async concurrency, and many others!

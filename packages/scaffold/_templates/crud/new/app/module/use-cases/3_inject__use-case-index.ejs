@@ -1,0 +1,11 @@
+---
+inject: true
+to: src/app/<%= module %>/use-cases/index.ts
+append: true
+skip_if: <%= h.changeCase.param(name) %>
+---
+export * from './<%= h.changeCase.param(subfolder) %>/create-<%= h.changeCase.param(model) %>.use-case'
+export * from './<%= h.changeCase.param(subfolder) %>/delete-<%= h.changeCase.param(model) %>.use-case'
+export * from './<%= h.changeCase.param(subfolder) %>/update-<%= h.changeCase.param(model) %>.use-case'
+export * from './<%= h.changeCase.param(subfolder) %>/view-<%= h.changeCase.param(model) %>.use-case'
+export * from './<%= h.changeCase.param(subfolder) %>/list-<%= h.changeCase.param(model) %>s.use-case'

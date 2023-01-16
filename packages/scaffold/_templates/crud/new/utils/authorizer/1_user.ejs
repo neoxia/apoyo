@@ -1,0 +1,14 @@
+---
+to: src/utils/authorizer/user.ts
+unless_exists: true
+---
+export enum UserRole {
+  MEMBER = 'member',
+  ADMIN = 'admin'
+}
+
+export interface User {
+  id: string
+  email: string
+  role: UserRole
+}

@@ -1,0 +1,21 @@
+---
+to: src/providers/<%= h.changeCase.param(module) %>/use-cases/<%= h.changeCase.param(subfolder) %>.provider.ts
+---
+import { Provider } from '@apoyo/ioc'
+
+import {
+  List<%= h.changeCase.pascal(model) %>sUseCase,
+  View<%= h.changeCase.pascal(model) %>UseCase,
+  Create<%= h.changeCase.pascal(model) %>UseCase,
+  Update<%= h.changeCase.pascal(model) %>UseCase,
+  Delete<%= h.changeCase.pascal(model) %>UseCase
+} from '@/app/<%= h.changeCase.param(module) %>/use-cases'
+
+import { AuthModule } from '../../auth.provider'
+import { <%= h.changeCase.constant(model) %>_REPOSITORY } from '../repositories/<%= h.changeCase.param(model) %>.provider'
+
+export const LIST_<%= h.changeCase.constant(model) %>S_USE_CASE = Provider.fromClass(List<%= h.changeCase.pascal(model) %>sUseCase, [AuthModule.AUTHORIZER, <%= h.changeCase.constant(model) %>_REPOSITORY])
+export const VIEW_<%= h.changeCase.constant(model) %>_USE_CASE = Provider.fromClass(View<%= h.changeCase.pascal(model) %>UseCase, [AuthModule.AUTHORIZER, <%= h.changeCase.constant(model) %>_REPOSITORY])
+export const CREATE_<%= h.changeCase.constant(model) %>_USE_CASE = Provider.fromClass(Create<%= h.changeCase.pascal(model) %>UseCase, [AuthModule.AUTHORIZER, <%= h.changeCase.constant(model) %>_REPOSITORY])
+export const UPDATE_<%= h.changeCase.constant(model) %>_USE_CASE = Provider.fromClass(Update<%= h.changeCase.pascal(model) %>UseCase, [AuthModule.AUTHORIZER, <%= h.changeCase.constant(model) %>_REPOSITORY])
+export const DELETE_<%= h.changeCase.constant(model) %>_USE_CASE = Provider.fromClass(Delete<%= h.changeCase.pascal(model) %>UseCase, [AuthModule.AUTHORIZER, <%= h.changeCase.constant(model) %>_REPOSITORY])

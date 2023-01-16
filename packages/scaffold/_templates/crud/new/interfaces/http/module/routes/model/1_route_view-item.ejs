@@ -1,0 +1,27 @@
+---
+to: src/interfaces/http/<%= h.changeCase.param(module) %>/routes/<%= h.changeCase.param(subfolder) %>/view-<%= h.changeCase.param(model) %>.route.ts
+---
+import { Type } from '@sinclair/typebox'
+import { <%= h.changeCase.pascal(module) %>Module } from '@/providers'
+
+import { defineRoute } from '../../../factory'
+import { <%= h.changeCase.pascal(model) %> } from '../../schemas'
+
+
+export const view<%= h.changeCase.pascal(model) %>Route = defineRoute({
+  method: 'GET',
+  url: '/:id',
+  schema: {
+    params: Type.Object({
+      id: Type.String({ format: 'uuid' })
+    }),
+    response: {
+      200: Type.Ref(<%= h.changeCase.pascal(model) %>)
+    }
+  },
+  async handler(request, reply) {
+    const usecase = await request.container.get(<%= h.changeCase.pascal(module) %>Module.VIEW_<%= h.changeCase.constant(model) %>_USE_CASE)
+    const result = await usecase.execute(request.params.id)
+    reply.send(result)
+  }
+})

@@ -1,0 +1,8 @@
+---
+inject: true
+to: src/providers/auth.provider.ts
+after: from '@/utils/authorizer'
+skip_if: from './jwt.provider'
+---
+import { JwtAuthenticator } from '@/infra/auth/jwt-authenticator';
+import { JwtModule } from './jwt.provider'

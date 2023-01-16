@@ -1,0 +1,14 @@
+---
+to: src/interfaces/http/factory.ts
+unless_exists: true
+---
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+import { Server, IncomingMessage, ServerResponse } from 'http'
+
+import { FastifyBaseLogger, FastifyInstance, FastifySchema, RouteGenericInterface, RouteOptions } from 'fastify'
+
+export type FastifyApp = FastifyInstance<Server, IncomingMessage, ServerResponse, FastifyBaseLogger, TypeBoxTypeProvider>
+
+export const defineRoute = <
+    SchemaCompiler extends FastifySchema = FastifySchema,
+  >(opts: RouteOptions<Server, IncomingMessage, ServerResponse, RouteGenericInterface, unknown, SchemaCompiler, TypeBoxTypeProvider>) => opts

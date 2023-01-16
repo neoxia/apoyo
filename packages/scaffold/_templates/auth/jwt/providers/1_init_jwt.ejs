@@ -1,0 +1,12 @@
+---
+to: src/providers/jwt.provider.ts
+unless_exists: true
+---
+import { Provider } from "@apoyo/ioc";
+import { JwtSigner, JwtVerifier, LocalJwtSigner, LocalJwtVerifier } from "@/infra/jwt";
+import { ConfigModule } from "./config.provider";
+
+export namespace JwtModule {
+  export const JWT_VERIFIER: Provider<JwtVerifier> = Provider.fromClass(LocalJwtVerifier, [ConfigModule.LOCAL_JWT])
+  export const JWT_SIGNER: Provider<JwtSigner> = Provider.fromClass(LocalJwtSigner, [ConfigModule.LOCAL_JWT])
+}

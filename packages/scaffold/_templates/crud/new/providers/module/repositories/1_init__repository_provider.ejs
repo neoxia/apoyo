@@ -1,0 +1,9 @@
+---
+to: src/providers/<%= h.changeCase.param(module) %>/repositories/<%= h.changeCase.param(model) %>.provider.ts
+---
+import { Provider } from '@apoyo/ioc'
+
+import { I<%= h.changeCase.pascal(model) %>Repository } from '@/app/<%= h.changeCase.param(module) %>/repositories'
+import { <%= h.changeCase.pascal(model) %>Repository } from '@/infra/repositories/<%= h.changeCase.param(module) %>'
+
+export const <%= h.changeCase.constant(model) %>_REPOSITORY: Provider<I<%= h.changeCase.pascal(model) %>Repository> = Provider.fromClass(<%= h.changeCase.pascal(model) %>Repository, [])

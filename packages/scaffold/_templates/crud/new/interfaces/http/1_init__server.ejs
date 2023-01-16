@@ -1,0 +1,62 @@
+---
+to: src/interfaces/http/server.ts
+unless_exists: true
+---
+import { Container } from '@apoyo/ioc'
+import { Logger } from '@apoyo/logger'
+
+import fastify from 'fastify'
+import fastifyCors from '@fastify/cors'
+import fastifySwagger from '@fastify/swagger'
+import fastifySwaggerUI from '@fastify/swagger-ui'
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+
+import { FastifyApp } from './factory'
+import { appContainer } from './container'
+import { appAuth } from './auth'
+import { appErrorHandler } from './exceptions'
+
+export async function createApiRoutes(app: FastifyApp) {
+}
+
+export interface HttpServerConfig {
+  host?: string
+  port: number
+}
+
+export class HttpServer {
+  private app: FastifyApp
+
+  constructor(logger: Logger, private readonly config: HttpServerConfig, private readonly container: Container) {
+    this.app = fastify({ logger }).withTypeProvider<TypeBoxTypeProvider>()
+  }
+
+  public async initialize() {
+    const app = this.app
+
+    await app.register(appContainer, {
+      container: this.container
+    })
+    await app.register(appAuth)
+    await app.register(appErrorHandler)
+
+    await app.register(fastifyCors, {})
+    await app.register(fastifySwagger)
+    await app.register(fastifySwaggerUI, {
+      routePrefix: '/docs'
+    })
+
+    await app.register(createApiRoutes, { prefix: '/api/v1' })
+  }
+
+  public async listen() {
+    await this.app.listen({
+      host: this.config.host,
+      port: this.config.port
+    })
+  }
+
+  public async close() {
+    await this.app.close()
+  }
+}

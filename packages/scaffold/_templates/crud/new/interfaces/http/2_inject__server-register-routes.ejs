@@ -1,0 +1,7 @@
+---
+inject: true
+to: src/interfaces/http/server.ts
+after: async function createApiRoutes
+skip_if: app.register(<%= h.changeCase.param(module) %>Routes)
+---
+  await app.register(<%= h.changeCase.param(module) %>Routes, { prefix: '/<%= h.inflection.pluralize(h.changeCase.param(module)) %>' })

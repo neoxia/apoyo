@@ -1,0 +1,15 @@
+---
+to: src/providers/auth.provider.ts
+unless_exists: true
+---
+import { Provider } from '@apoyo/ioc';
+
+import { Authorizer, PolicyContext, UserContext,UserRepository } from '@/utils/authorizer'
+import { UserRepositoryImpl } from '@/infra/repositories/auth'
+
+export namespace AuthModule {
+  export const USER_CONTEXT = Provider.fromClass(UserContext, [])
+  export const USER_REPOSITORY: Provider<UserRepository> = Provider.fromClass(UserRepositoryImpl, [])
+  export const POLICY_CONTEXT = Provider.fromClass(PolicyContext, [USER_CONTEXT])
+  export const AUTHORIZER = Provider.fromClass(Authorizer, [POLICY_CONTEXT])
+}

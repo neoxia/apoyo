@@ -1,0 +1,7 @@
+---
+inject: true
+to: src/interfaces/http/<%= h.changeCase.param(module) %>/routes/index.ts
+after: import { defineRoute } from '../../../factory'
+skip_if: './<%= h.changeCase.param(subfolder) %>'
+---
+import { <%= h.changeCase.camel(subfolder) %>Routes } from './<%= h.changeCase.param(subfolder) %>'

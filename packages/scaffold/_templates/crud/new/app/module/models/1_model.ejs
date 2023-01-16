@@ -1,0 +1,38 @@
+---
+to: src/app/<%= h.changeCase.param(module) %>/models/<%= h.changeCase.param(model) %>.model.ts
+---
+import { Obj } from '@apoyo/std'
+
+export interface <%= h.changeCase.pascal(model) %>State {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export class <%= h.changeCase.pascal(model) %> {
+
+  constructor(private state: <%= h.changeCase.pascal(model) %>State) {}
+
+  // Getters
+
+  public getId() {
+    return this.state.id
+  }
+
+  public getCreatedAt() {
+    return this.state.createdAt
+  }
+
+  public getUpdatedAt() {
+    return this.state.updatedAt
+  }
+
+  // Actions
+
+  public patch(updates: Partial<<%= h.changeCase.pascal(model) %>State>) {
+    this.state = {
+      ...this.state,
+      ...Obj.compact(updates)
+    }
+  }
+}

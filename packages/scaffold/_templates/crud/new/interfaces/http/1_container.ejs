@@ -1,0 +1,17 @@
+---
+to: src/interfaces/http/container.ts
+unless_exists: true
+---
+import { Container } from '@apoyo/ioc'
+import fastifyPlugin from "fastify-plugin"
+
+import { FastifyApp } from "./factory"
+
+export const appContainer = fastifyPlugin(async (app: FastifyApp, options: { container: Container }) => {
+  const container = options.container
+  app.decorate('container', container)
+  app.addHook('onRequest', (req, reply, done) => {
+    req.container = container
+    done()
+  })
+})

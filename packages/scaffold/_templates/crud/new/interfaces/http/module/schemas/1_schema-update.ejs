@@ -1,0 +1,9 @@
+---
+to: src/interfaces/http/<%= h.changeCase.param(module) %>/schemas/<%= h.changeCase.param(subfolder) %>/<%= h.changeCase.param(model) %>-update.schema.ts
+---
+import { Type } from '@sinclair/typebox'
+
+export const <%= h.changeCase.pascal(model) %>UpdateInput = Type.Object({}, {
+  $id: '<%= h.changeCase.pascal(model) %>UpdateInput',
+  additionalProperties: false
+})

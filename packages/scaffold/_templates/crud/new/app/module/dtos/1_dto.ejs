@@ -1,0 +1,20 @@
+---
+to: src/app/<%= h.changeCase.param(module) %>/dtos/<%= h.changeCase.param(subfolder) %>/<%= h.changeCase.param(model) %>.dto.ts
+---
+import { <%= h.changeCase.pascal(model) %> } from '../../models'
+
+export interface <%= h.changeCase.pascal(model) %>Dto {
+  id: string
+  createdAt: string
+  updatedAt: string
+}
+
+export namespace <%= h.changeCase.pascal(model) %>Dto {
+  export function fromModel(model: <%= h.changeCase.pascal(model) %>): <%= h.changeCase.pascal(model) %>Dto {
+    return {
+      id: model.getId(),
+      createdAt: model.getCreatedAt().toISOString(),
+      updatedAt: model.getUpdatedAt().toISOString()
+    }
+  }
+}

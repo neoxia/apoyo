@@ -1,0 +1,14 @@
+---
+to: src/app/<%= h.changeCase.param(module) %>/repositories/<%= h.changeCase.param(model) %>.repository.ts
+---
+import { PageOptions, Page } from '@/utils/pagination'
+import { <%= h.changeCase.pascal(model) %> } from '../models'
+
+export interface I<%= h.changeCase.pascal(model) %>Repository {
+  nextIdentifier(): Promise<string>
+  find(pagination: PageOptions): Promise<Page<<%= h.changeCase.pascal(model) %>>>;
+  findById(id: string): Promise<<%= h.changeCase.pascal(model) %>>;
+  create(model: <%= h.changeCase.pascal(model) %>): Promise<void>;
+  update(model: <%= h.changeCase.pascal(model) %>): Promise<void>;
+  delete(id: string): Promise<void>
+}

@@ -1,0 +1,9 @@
+---
+to: src/utils/authorizer/authorizer.ts
+unless_exists: true
+---
+import { Authorizer as BaseAuthorizer } from '@apoyo/policies'
+
+import { PolicyContext } from './policy-context'
+
+export class Authorizer extends BaseAuthorizer<PolicyContext> {}

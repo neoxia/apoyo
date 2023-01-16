@@ -1,0 +1,27 @@
+---
+to: src/interfaces/http/<%= h.changeCase.param(module) %>/routes/<%= h.changeCase.param(subfolder) %>/list-<%= h.changeCase.param(model) %>s.route.ts
+---
+import { Type } from '@sinclair/typebox'
+import { <%= h.changeCase.pascal(module) %>Module } from '@/providers'
+
+import { defineRoute } from '../../../factory'
+import { PageOptions, PageOf } from '../../../shared/schemas'
+import {
+  <%= h.changeCase.pascal(model) %>
+} from '../../schemas'
+
+export const list<%= h.changeCase.pascal(model) %>sRoute = defineRoute({
+  method: 'GET',
+  url: '/',
+  schema: {
+    querystring: Type.Ref(PageOptions),
+    response: {
+      200: PageOf(Type.Ref(<%= h.changeCase.pascal(model) %>))
+    }
+  },
+  async handler(request, reply) {
+    const usecase = await request.container.get(<%= h.changeCase.pascal(module) %>Module.LIST_<%= h.changeCase.constant(model) %>S_USE_CASE)
+    const result = await usecase.execute(request.query)
+    reply.send(result)
+  }
+})

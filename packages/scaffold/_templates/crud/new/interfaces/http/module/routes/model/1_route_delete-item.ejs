@@ -1,0 +1,25 @@
+---
+to: src/interfaces/http/<%= h.changeCase.param(module) %>/routes/<%= h.changeCase.param(subfolder) %>/delete-<%= h.changeCase.param(model) %>.route.ts
+---
+import { Type } from '@sinclair/typebox'
+import { <%= h.changeCase.pascal(module) %>Module } from '@/providers'
+
+import { defineRoute } from '../../../factory'
+
+export const delete<%= h.changeCase.pascal(model) %>Route = defineRoute({
+  method: 'DELETE',
+  url: '/:id',
+  schema: {
+    params: Type.Object({
+      id: Type.String({ format: 'uuid' })
+    }),
+    response: {
+      204: {}
+    }
+  },
+  async handler(request, reply) {
+    const usecase = await request.container.get(<%= h.changeCase.pascal(module) %>Module.DELETE_<%= h.changeCase.constant(model) %>_USE_CASE)
+    await usecase.execute(request.params.id)
+    reply.send()
+  }
+})

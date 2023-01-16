@@ -1,0 +1,25 @@
+---
+to: src/utils/pagination/dtos/page.dto.ts
+unless_exists: true
+---
+import { Page } from '../models'
+
+export interface PageMetadataDto {
+  page: number
+  perPage: number
+  total: number
+}
+
+export interface PageDto<Dto> {
+  items: Dto[]
+  metadata: PageMetadataDto
+}
+
+export namespace PageDto {
+  export function fromModel<Model, Dto>(model: Page<Model>, fn: (model: Model) => Dto): PageDto<Dto> {
+    return {
+      items: model.getItems().map(fn),
+      metadata: model.getMetadata()
+    }
+  }
+}

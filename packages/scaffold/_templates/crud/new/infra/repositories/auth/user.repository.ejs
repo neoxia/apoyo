@@ -1,0 +1,22 @@
+---
+to: src/infra/repositories/auth/user.repository.ts
+---
+import { User, UserRepository, UserRole } from "@/utils/authorizer";
+
+export class UserRepositoryImpl implements UserRepository {
+  public async findById(id: string): Promise<User> {
+    return {
+      id: id,
+      email: 'xxx@example.com',
+      role: UserRole.ADMIN
+    }
+  }
+
+  public async findByEmail(email: string): Promise<User> {
+    return {
+      id: 'xxxx',
+      email: email,
+      role: UserRole.ADMIN
+    }
+  }
+}

@@ -1,0 +1,7 @@
+---
+inject: true
+to: src/providers/auth.provider.ts
+after: export const AUTHORIZER
+skip_if: export const JWT_AUTHENTICATOR
+---
+  export const JWT_AUTHENTICATOR = Provider.fromClass(JwtAuthenticator, [JwtModule.JWT_VERIFIER, USER_REPOSITORY])

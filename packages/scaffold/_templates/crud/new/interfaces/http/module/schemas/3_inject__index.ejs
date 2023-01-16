@@ -1,0 +1,9 @@
+---
+inject: true
+to: src/interfaces/http/<%= h.changeCase.param(module) %>/schemas/index.ts
+append: true
+skip_if: <%= h.changeCase.param(model) %>
+---
+export * from './<%= h.changeCase.param(subfolder) %>/<%= h.changeCase.param(model) %>.schema'
+export * from './<%= h.changeCase.param(subfolder) %>/<%= h.changeCase.param(model) %>-create.schema'
+export * from './<%= h.changeCase.param(subfolder) %>/<%= h.changeCase.param(model) %>-update.schema'

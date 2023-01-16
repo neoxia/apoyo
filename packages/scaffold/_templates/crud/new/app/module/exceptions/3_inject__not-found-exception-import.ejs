@@ -1,0 +1,7 @@
+---
+inject: true
+to: src/app/<%= h.changeCase.param(module) %>/exceptions/<%= h.changeCase.param(model) %>.exception.ts
+prepend: true
+skip_if: NotFoundException
+---
+import { NotFoundException } from '@/utils/exceptions'

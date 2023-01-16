@@ -1,0 +1,58 @@
+---
+to: src/process.ts
+unless_exists: true
+---
+import { Exception } from '@apoyo/std'
+
+export class ProcessException extends Exception {
+  constructor(message: string, cause: Error | undefined, public readonly exitCode: number) {
+    super(message, cause)
+  }
+}
+
+export async function end() {
+  return new Promise<number>(async (resolve, reject) => {
+    const removeListeners = () => {
+      process.off('beforeExit', handleBeforeExit)
+      process.off('uncaughtException', handleException)
+      process.off('unhandledRejection', handleException)
+      process.off('SIGTERM', handleSigs)
+      process.off('SIGINT', handleSigs)
+      process.off('SIGUSR1', handleSigs)
+      process.off('SIGUSR2', handleSigs)
+    }
+
+    const handleBeforeExit = (code: number) => {
+      removeListeners()
+      return code === 0
+        ? resolve(0)
+        : reject(new ProcessException(`Exit program with code ${code}`, undefined, code))
+    }
+
+    const handleSigs = () => {
+      removeListeners()
+      resolve(0)
+    }
+
+    const handleException = (cause: any) => {
+      removeListeners()
+      const code = 1
+      reject(new ProcessException(`Exit program with code ${code}`, cause, code))
+    }
+
+    // On empty event loop or process.emit 'exit' signal
+    process.on('beforeExit', handleBeforeExit)
+
+    // On uncaught error
+    process.on('uncaughtException', handleException)
+    process.on('unhandledRejection', handleException)
+
+    // On termination signals
+    process.on('SIGTERM', handleSigs)
+    process.on('SIGINT', handleSigs)
+
+    // Handle nodemon restart
+    process.on('SIGUSR1', handleSigs)
+    process.on('SIGUSR2', handleSigs)
+  })
+}

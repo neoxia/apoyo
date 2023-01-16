@@ -1,0 +1,15 @@
+---
+to: src/interfaces/http/types.d.ts
+unless_exists: true
+---
+import { Container } from "@apoyo/ioc";
+import fastify from "fastify";
+
+declare module 'fastify' {
+  export interface FastifyRequest {
+    container: Container
+  }
+  export interface FastifyInstance {
+    container: Container
+  }
+}

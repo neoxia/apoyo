@@ -1,0 +1,23 @@
+---
+to: src/app/<%= module %>/use-cases/<%= h.changeCase.param(subfolder) %>/list-<%= h.changeCase.param(model) %>s.use-case.ts
+---
+import { Authorizer } from '@/utils/authorizer'
+import { PageOptions } from '@/utils/pagination'
+import { PageOptionsDto, PageDto } from '@/utils/pagination'
+
+import { List<%= h.changeCase.pascal(model) %>sPolicy } from '../../policies'
+import { I<%= h.changeCase.pascal(model) %>Repository } from '../../repositories'
+import { <%= h.changeCase.pascal(model) %>Dto } from '../../dtos'
+
+export class List<%= h.changeCase.pascal(model) %>sUseCase {
+  constructor(private readonly authorizer: Authorizer, private readonly <%= h.changeCase.camel(model) %>Repository: I<%= h.changeCase.pascal(model) %>Repository) {}
+
+  public async execute(pageOptionsDto: PageOptionsDto): Promise<PageDto<<%= h.changeCase.pascal(model) %>Dto>> {
+    await this.authorizer.authorize(List<%= h.changeCase.pascal(model) %>sPolicy)
+
+    const pagination = new PageOptions(pageOptionsDto.page, pageOptionsDto.perPage)
+    const <%= h.changeCase.camel(model) %>Page = await this.<%= h.changeCase.camel(model) %>Repository.find(pagination)
+
+    return PageDto.fromModel(<%= h.changeCase.camel(model) %>Page, <%= h.changeCase.pascal(model) %>Dto.fromModel)
+  }
+}

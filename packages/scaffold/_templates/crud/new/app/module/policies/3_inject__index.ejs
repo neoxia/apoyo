@@ -1,0 +1,11 @@
+---
+inject: true
+to: src/app/<%= h.changeCase.param(module) %>/policies/index.ts
+append: true
+skip_if: <%= h.changeCase.param(model) %>
+---
+export * from './<%= h.changeCase.param(subfolder) %>/create-<%= h.changeCase.param(model) %>.policy'
+export * from './<%= h.changeCase.param(subfolder) %>/delete-<%= h.changeCase.param(model) %>.policy'
+export * from './<%= h.changeCase.param(subfolder) %>/update-<%= h.changeCase.param(model) %>.policy'
+export * from './<%= h.changeCase.param(subfolder) %>/view-<%= h.changeCase.param(model) %>.policy'
+export * from './<%= h.changeCase.param(subfolder) %>/list-<%= h.changeCase.param(model) %>s.policy'

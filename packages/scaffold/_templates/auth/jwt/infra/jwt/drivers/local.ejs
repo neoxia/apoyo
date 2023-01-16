@@ -1,0 +1,50 @@
+---
+to: src/infra/jwt/drivers/local.ts
+unless_exists: true
+---
+import { sign, verify } from 'jsonwebtoken'
+
+import { JwtSigner, JwtVerifier } from "../contracts";
+import { JwtVerifyException } from "../exceptions";
+
+export interface LocalJwtVerifierConfig {
+  issuer?: string
+  audience?: string
+  secretOrPublicKey: string
+}
+
+export interface LocalJwtSignerConfig {
+  expiresIn?: string | number 
+  issuer?: string
+  audience?: string
+  secretOrPrivateKey: string
+}
+
+export type LocalJwtConfig = LocalJwtSignerConfig & LocalJwtVerifierConfig
+
+export class LocalJwtVerifier implements JwtVerifier {
+  constructor(private readonly config: LocalJwtVerifierConfig) {}
+
+  public async verify(token: string): Promise<unknown> {
+    try {
+      return verify(token, this.config.secretOrPublicKey, {
+        issuer: this.config.issuer,
+        audience: this.config.audience
+      })
+    } catch (err: any) {
+      throw new JwtVerifyException(err)
+    }
+  }
+}
+
+export class LocalJwtSigner implements JwtSigner {
+  constructor(private readonly config: LocalJwtSignerConfig) {}
+
+  public async sign(payload: string | object): Promise<string> {
+    return sign(payload, this.config.secretOrPrivateKey, {
+      issuer: this.config.issuer,
+      audience: this.config.audience,
+      expiresIn: this.config.expiresIn
+    })
+  }
+}

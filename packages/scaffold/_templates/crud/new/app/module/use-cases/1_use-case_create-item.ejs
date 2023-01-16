@@ -1,0 +1,31 @@
+---
+to: src/app/<%= module %>/use-cases/<%= h.changeCase.param(subfolder) %>/create-<%= h.changeCase.param(model) %>.use-case.ts
+---
+import { Authorizer } from '@/utils/authorizer'
+
+import { Create<%= h.changeCase.pascal(model) %>Policy } from '../../policies'
+import { I<%= h.changeCase.pascal(model) %>Repository } from '../../repositories'
+import { <%= h.changeCase.pascal(model) %> } from '../../models'
+import { <%= h.changeCase.pascal(model) %>Dto, <%= h.changeCase.pascal(model) %>CreateDto } from '../../dtos'
+
+export class Create<%= h.changeCase.pascal(model) %>UseCase {
+  constructor(private readonly authorizer: Authorizer, private readonly <%= h.changeCase.camel(model) %>Repository: I<%= h.changeCase.pascal(model) %>Repository) {}
+
+  public async execute(input: <%= h.changeCase.pascal(model) %>CreateDto): Promise<<%= h.changeCase.pascal(model) %>Dto> {
+    await this.authorizer.authorize(Create<%= h.changeCase.pascal(model) %>Policy)
+
+    const <%= h.changeCase.camel(model) %>Id = await this.<%= h.changeCase.camel(model) %>Repository.nextIdentifier()
+    const now = new Date()
+    const createdAt = now
+    const updatedAt = now
+    const <%= h.changeCase.camel(model) %> = new <%= h.changeCase.pascal(model) %>({
+      id: <%= h.changeCase.camel(model) %>Id,
+      createdAt,
+      updatedAt
+    })
+
+    await this.<%= h.changeCase.camel(model) %>Repository.create(<%= h.changeCase.camel(model) %>)
+
+    return <%= h.changeCase.pascal(model) %>Dto.fromModel(<%= h.changeCase.camel(model) %>)
+  }
+}

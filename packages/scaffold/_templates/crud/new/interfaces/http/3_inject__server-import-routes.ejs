@@ -1,0 +1,7 @@
+---
+inject: true
+to: src/interfaces/http/server.ts
+after: from './factory'
+skip_if: from './<%= h.changeCase.param(module) %>'
+---
+import { <%= h.changeCase.camel(module) %>Routes } from './<%= h.changeCase.param(module) %>'

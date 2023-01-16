@@ -1,0 +1,7 @@
+---
+inject: true
+to: src/config/index.ts
+append: true
+skip_if: from './jwt.config'
+---
+export * from './jwt.config'

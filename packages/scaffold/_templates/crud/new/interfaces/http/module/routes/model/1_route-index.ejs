@@ -1,0 +1,27 @@
+---
+to: src/interfaces/http/<%= h.changeCase.param(module) %>/routes/<%= h.changeCase.param(subfolder) %>/index.ts
+---
+import { FastifyApp } from '../../../factory'
+import {
+  <%= h.changeCase.pascal(model) %>,
+  <%= h.changeCase.pascal(model) %>CreateInput,
+  <%= h.changeCase.pascal(model) %>UpdateInput
+} from '../../schemas'
+
+import { create<%= h.changeCase.pascal(model) %>Route } from './create-<%= h.changeCase.param(model) %>.route'
+import { delete<%= h.changeCase.pascal(model) %>Route } from './delete-<%= h.changeCase.param(model) %>.route'
+import { update<%= h.changeCase.pascal(model) %>Route } from './update-<%= h.changeCase.param(model) %>.route'
+import { view<%= h.changeCase.pascal(model) %>Route } from './view-<%= h.changeCase.param(model) %>.route'
+import { list<%= h.changeCase.pascal(model) %>sRoute } from './list-<%= h.changeCase.param(model) %>s.route'
+
+export async function <%= h.changeCase.param(subfolder) %>Routes(app: FastifyApp) {
+  app.addSchema(<%= h.changeCase.pascal(model) %>)
+  app.addSchema(<%= h.changeCase.pascal(model) %>CreateInput)
+  app.addSchema(<%= h.changeCase.pascal(model) %>UpdateInput)
+
+  app.route(create<%= h.changeCase.pascal(model) %>Route)
+  app.route(delete<%= h.changeCase.pascal(model) %>Route)
+  app.route(update<%= h.changeCase.pascal(model) %>Route)
+  app.route(view<%= h.changeCase.pascal(model) %>Route)
+  app.route(list<%= h.changeCase.pascal(model) %>sRoute)
+}

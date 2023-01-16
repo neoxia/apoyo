@@ -1,0 +1,7 @@
+---
+inject: true
+to: src/providers/config.provider.ts
+after: export const LOGGER
+skip_if: export const LOCAL_JWT
+---
+  export const LOCAL_JWT: Provider<LocalJwtConfig> = Provider.fromFactory(configureLocalJwt, [PARAMETERS])

@@ -1,0 +1,9 @@
+---
+to: src/utils/authorizer/user-context.ts
+unless_exists: true
+---
+import { UserContext as BaseUserContext } from '@apoyo/policies'
+
+import { User } from './user'
+
+export class UserContext extends BaseUserContext<User> {}

@@ -1,0 +1,8 @@
+---
+to: src/interfaces/http/<%= h.changeCase.param(module) %>/routes/index.ts
+unless_exists: true
+---
+import { FastifyApp } from '../../factory'
+
+export async function <%= h.changeCase.camel(module) %>Routes(app: FastifyApp) {
+}

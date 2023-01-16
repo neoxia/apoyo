@@ -1,0 +1,30 @@
+---
+to: src/interfaces/http/<%= h.changeCase.param(module) %>/routes/<%= h.changeCase.param(subfolder) %>/update-<%= h.changeCase.param(model) %>.route.ts
+---
+import { Type } from '@sinclair/typebox'
+import { <%= h.changeCase.pascal(module) %>Module } from '@/providers'
+
+import { defineRoute } from '../../../factory'
+import {
+  <%= h.changeCase.pascal(model) %>UpdateInput,
+  <%= h.changeCase.pascal(model) %>
+} from '../../schemas'
+
+export const update<%= h.changeCase.pascal(model) %>Route = defineRoute({
+  method: 'PUT',
+  url: '/:id',
+  schema: {
+    params: Type.Object({
+      id: Type.String({ format: 'uuid' })
+    }),
+    body: Type.Ref(<%= h.changeCase.pascal(model) %>UpdateInput),
+    response: {
+      200: Type.Ref(<%= h.changeCase.pascal(model) %>)
+    }
+  },
+  async handler(request, reply) {
+    const usecase = await request.container.get(<%= h.changeCase.pascal(module) %>Module.UPDATE_<%= h.changeCase.constant(model) %>_USE_CASE)
+    const result = await usecase.execute(request.params.id, request.body)
+    reply.send(result)
+  }
+})

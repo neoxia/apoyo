@@ -1,0 +1,36 @@
+---
+to: src/infra/repositories/<%= h.changeCase.param(module) %>/<%= h.changeCase.param(model) %>.repository.ts
+---
+import { Exception } from '@apoyo/std'
+
+import { PageOptions, Page } from '@/utils/pagination'
+import { <%= h.changeCase.pascal(model) %> } from '@/app/<%= h.changeCase.param(module) %>/models'
+import { I<%= h.changeCase.pascal(model) %>Repository } from '@/app/<%= h.changeCase.param(module) %>/repositories'
+
+import * as uuid from 'uuid'
+
+export class <%= h.changeCase.pascal(model) %>Repository implements I<%= h.changeCase.pascal(model) %>Repository {
+  public async nextIdentifier(): Promise<string> {
+    return uuid.v4()
+  }
+
+  public async find(pagination: PageOptions): Promise<Page<<%= h.changeCase.pascal(model) %>>> {
+    throw new Exception('Not implemented')
+  }
+
+  public async findById(id: string): Promise<<%= h.changeCase.pascal(model) %>> {
+    throw new Exception('Not implemented')
+  }
+
+  public async create(model: <%= h.changeCase.pascal(model) %>): Promise<void> {
+    throw new Exception('Not implemented')
+  }
+
+  public async update(model: <%= h.changeCase.pascal(model) %>): Promise<void> {
+    throw new Exception('Not implemented')
+  }
+
+  public async delete(id: string): Promise<void> {
+    throw new Exception('Not implemented')
+  }
+}

@@ -1,0 +1,24 @@
+---
+to: src/config/http.config.ts
+unless_exists: true
+---
+import assert from "assert";
+
+import { HttpServerConfig } from '@/interfaces/http'
+
+export async function configureHttp(params: Record<string, string | undefined>): Promise<HttpServerConfig> {
+
+  const host = params['HOST']
+  const port = params['PORT']
+
+  assert(port, 'PORT is not defined')
+
+  const portParsed = parseInt(port)
+
+  assert(!Number.isNaN(portParsed) && portParsed > 0, 'PORT should be a positive number')
+
+  return {
+    host,
+    port: portParsed
+  }
+}

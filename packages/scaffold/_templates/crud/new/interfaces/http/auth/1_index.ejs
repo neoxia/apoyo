@@ -1,0 +1,26 @@
+---
+to: src/interfaces/http/auth/index.ts
+unless_exists: true
+---
+import fastifyPlugin from "fastify-plugin"
+
+import { User } from "@/utils/authorizer"
+import { AuthModule } from "@/providers"
+
+import { FastifyApp } from "../factory"
+
+export const appAuth = fastifyPlugin(async (app: FastifyApp) => {
+  const userContext = await app.container.get(AuthModule.USER_CONTEXT)
+  
+  // Initialize user context
+  app.addHook('onRequest', async (req, _reply, done) => {
+    userContext.createContext(done)
+  })
+
+  // Call authentication logic
+  app.addHook('onRequest', async (req) => {
+    // TODO: add your authentication strategy
+    const user: User | null = null
+    userContext.setUser(user)
+  })
+})

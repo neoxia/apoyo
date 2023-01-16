@@ -1,0 +1,24 @@
+---
+to: src/interfaces/http/auth/strategies/auth-by-jwt.ts
+unless_exists: true
+---
+import { FastifyRequest } from "fastify";
+
+import { User } from "@/utils/authorizer";
+import { AuthModule } from "@/providers";
+
+export const BEARER_PREFIX = 'Bearer '
+
+export const extractBearerToken = (req: FastifyRequest) => {
+  const header = req.headers['authorization']
+  const token = header && header.startsWith(BEARER_PREFIX)
+    ? header.substring(BEARER_PREFIX.length)
+    : undefined
+  return token
+}
+
+export async function authByJwt(req: FastifyRequest): Promise<User | null> {
+  const authenticator = await req.container.get(AuthModule.JWT_AUTHENTICATOR)
+  const token = extractBearerToken(req)
+  return authenticator.authenticate(token)
+}

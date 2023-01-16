@@ -1,0 +1,10 @@
+---
+to: src/app/<%= h.changeCase.param(module) %>/policies/base.policy.ts
+unless_exists: true
+---
+import { PolicyContext } from '@/utils/authorizer'
+
+export namespace <%= h.changeCase.pascal(module) %>Policy {
+
+  export async function *before(_ctx: PolicyContext) {}
+}

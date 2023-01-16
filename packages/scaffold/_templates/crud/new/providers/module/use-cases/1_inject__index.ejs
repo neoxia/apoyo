@@ -1,0 +1,7 @@
+---
+inject: true
+to: src/providers/<%= h.changeCase.param(module) %>/use-cases/index.ts
+append: true
+skip_if: <%= h.changeCase.param(subfolder) %>
+---
+export * from './<%= h.changeCase.param(subfolder) %>.provider'

@@ -1,0 +1,33 @@
+---
+to: src/app/<%= module %>/use-cases/<%= h.changeCase.param(subfolder) %>/update-<%= h.changeCase.param(model) %>.use-case.ts
+---
+import { Authorizer } from '@/utils/authorizer'
+
+import { <%= h.changeCase.pascal(model) %>NotFoundException } from '../../exceptions'
+import { Update<%= h.changeCase.pascal(model) %>Policy } from '../../policies'
+import { I<%= h.changeCase.pascal(model) %>Repository } from '../../repositories'
+import { <%= h.changeCase.pascal(model) %> } from '../../models'
+import { <%= h.changeCase.pascal(model) %>Dto, <%= h.changeCase.pascal(model) %>UpdateDto } from '../../dtos'
+
+export class Update<%= h.changeCase.pascal(model) %>UseCase {
+  constructor(private readonly authorizer: Authorizer, private readonly <%= h.changeCase.camel(model) %>Repository: I<%= h.changeCase.pascal(model) %>Repository) {}
+
+  public async execute(id: string, input: <%= h.changeCase.pascal(model) %>UpdateDto): Promise<<%= h.changeCase.pascal(model) %>Dto> {
+    const <%= h.changeCase.camel(model) %> = await this.<%= h.changeCase.camel(model) %>Repository.findById(id)
+    if (!<%= h.changeCase.camel(model) %>) {
+      throw new <%= h.changeCase.pascal(model) %>NotFoundException()
+    }
+
+    await this.authorizer.authorize(Update<%= h.changeCase.pascal(model) %>Policy, <%= h.changeCase.camel(model) %>)
+
+    const now = new Date()
+    const updatedAt = now
+    <%= h.changeCase.camel(model) %>.patch({
+      updatedAt
+    })
+
+    await this.<%= h.changeCase.camel(model) %>Repository.update(<%= h.changeCase.camel(model) %>)
+
+    return <%= h.changeCase.pascal(model) %>Dto.fromModel(<%= h.changeCase.camel(model) %>)
+  }
+}

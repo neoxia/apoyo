@@ -1,0 +1,23 @@
+---
+to: src/app/<%= module %>/use-cases/<%= h.changeCase.param(subfolder) %>/delete-<%= h.changeCase.param(model) %>.use-case.ts
+---
+import { Authorizer } from '@/utils/authorizer'
+
+import { <%= h.changeCase.pascal(model) %>NotFoundException } from '../../exceptions'
+import { Delete<%= h.changeCase.pascal(model) %>Policy } from '../../policies'
+import { I<%= h.changeCase.pascal(model) %>Repository } from '../../repositories'
+
+export class Delete<%= h.changeCase.pascal(model) %>UseCase {
+  constructor(private readonly authorizer: Authorizer, private readonly <%= h.changeCase.camel(model) %>Repository: I<%= h.changeCase.pascal(model) %>Repository) {}
+
+  public async execute(id: string): Promise<void> {
+    const <%= h.changeCase.camel(model) %> = await this.<%= h.changeCase.camel(model) %>Repository.findById(id)
+    if (!<%= h.changeCase.camel(model) %>) {
+      throw new <%= h.changeCase.pascal(model) %>NotFoundException()
+    }
+
+    await this.authorizer.authorize(Delete<%= h.changeCase.pascal(model) %>Policy, <%= h.changeCase.camel(model) %>)
+
+    await this.<%= h.changeCase.camel(model) %>Repository.delete(<%= h.changeCase.camel(model) %>.getId())
+  }
+}

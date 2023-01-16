@@ -1,0 +1,12 @@
+---
+to: src/interfaces/http/<%= h.changeCase.param(module) %>/schemas/<%= h.changeCase.param(subfolder) %>/<%= h.changeCase.param(model) %>.schema.ts
+---
+import { Type } from '@sinclair/typebox'
+
+export const <%= h.changeCase.pascal(model) %> = Type.Object({
+  id: Type.String({ format: 'uuid' }),
+  createdAt: Type.String({ format: 'datetime' }),
+  updatedAt: Type.String({ format: 'datetime' }),
+}, {
+  $id: '<%= h.changeCase.pascal(model) %>'
+})

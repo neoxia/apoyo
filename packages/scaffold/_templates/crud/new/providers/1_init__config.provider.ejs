@@ -1,0 +1,19 @@
+---
+to: src/providers/config.provider.ts
+unless_exists: true
+---
+import { Provider } from "@apoyo/ioc";
+
+import { configureHttp, configureLogger } from '@/config'
+
+import { HttpServerConfig } from "@/interfaces/http";
+
+export namespace ConfigModule {
+  export const PARAMETERS: Provider<Record<string, string | undefined>> = Provider.from(async () => {
+    // TODO: Load parameters from env and other secret managers
+    return process.env
+  })
+
+  export const HTTP: Provider<HttpServerConfig> = Provider.fromFactory(configureHttp, [PARAMETERS])
+  export const LOGGER = Provider.fromFactory(configureLogger, [PARAMETERS])
+}

@@ -1,0 +1,12 @@
+---
+to: src/providers/logger.provider.ts
+unless_exists: true
+---
+import { Provider } from '@apoyo/ioc';
+
+export namespace LoggerModule {
+  // TODO: add @apoyo/logger
+  export const LOGGER: Provider<Logger> = Provider.from(() => {
+    throw new Error('Not implemented')
+  })
+}

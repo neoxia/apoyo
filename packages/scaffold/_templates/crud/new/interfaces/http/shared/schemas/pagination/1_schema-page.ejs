@@ -1,0 +1,19 @@
+---
+to: src/interfaces/http/shared/schemas/page.schema.ts
+---
+import { TSchema, Type } from '@sinclair/typebox'
+
+export const PageMetadata = Type.Object({
+  page: Type.Integer(),
+  perPage: Type.Integer(),
+  total: Type.Integer()
+}, {
+  $id: 'PageMetadata'
+})
+
+export const PageOf = (type: TSchema) => {
+  return Type.Object({
+    metadata: PageMetadata,
+    items: Type.Array(type)
+  })
+}

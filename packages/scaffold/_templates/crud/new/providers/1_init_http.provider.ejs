@@ -1,0 +1,22 @@
+---
+to: src/providers/http.provider.ts
+unless_exists: true
+---
+import { pipe } from '@apoyo/std'
+import { Provider } from '@apoyo/ioc'
+
+import { HttpServer } from '@/interfaces/http'
+
+import { LoggerModule } from './logger.provider'
+import { ConfigModule } from './config.provider'
+
+const CONTAINER = Provider.from(container => container)
+
+export namespace HttpModule {
+  export const SERVER = pipe(
+    Provider.fromClass(HttpServer, [LoggerModule.LOGGER, ConfigModule.HTTP, CONTAINER]),
+    Provider.asResource({
+      init: (server) => server.initialize()
+    })
+  )
+}

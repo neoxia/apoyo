@@ -1,0 +1,12 @@
+---
+inject: true
+to: src/app/<%= h.changeCase.param(module) %>/exceptions/<%= h.changeCase.param(model) %>.exception.ts
+append: true
+skip_if: <%= h.changeCase.param(model) %>NotFoundException
+---
+
+export class <%= h.changeCase.pascal(model) %>NotFoundException extends NotFoundException {
+  constructor() {
+    super(`<%= h.changeCase.pascal(model) %> not found`, undefined, `E_<%= h.changeCase.constant(model) %>_NOT_FOUND`)
+  }
+}

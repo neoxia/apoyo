@@ -1,0 +1,16 @@
+---
+to: src/config/logger.config.ts
+unless_exists: true
+---
+export async function configureLogger(params: Record<string, string | undefined>) {
+
+  const enabled = params['LOGGER_ENABLED'] === 'false' ? false : true
+  const level = params['LOGGER_LEVEL'] || 'info'
+  const prettyPrint = params['LOGGER_PRETTY'] === 'true' ? true : false
+
+  return {
+    enabled,
+    level,
+    prettyPrint
+  }
+}

@@ -1,0 +1,7 @@
+---
+inject: true
+to: src/app/<%= h.changeCase.param(module) %>/exceptions/index.ts
+append: true
+skip_if: <%= h.changeCase.param(model) %>
+---
+export * from './<%= h.changeCase.param(model) %>.exception'

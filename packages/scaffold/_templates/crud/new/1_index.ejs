@@ -1,0 +1,42 @@
+---
+to: src/index.ts
+unless_exists: true
+---
+import { Container, ShutdownPriority } from '@apoyo/ioc'
+
+import { LoggerModule, HttpModule } from '@/providers'
+
+import { end } from './process'
+
+export async function bootstrap() {
+  const container = new Container()
+  const logger = await container.get(LoggerModule.LOGGER)
+
+  try {
+    logger.info('Bootstrap application')
+
+    const httpServer = await container.get(HttpModule.SERVER)
+
+    logger.info('Start HTTP server')
+
+    await httpServer.listen()
+
+    container.on('close', {
+      priority: ShutdownPriority.HIGH,
+      close: () => httpServer.close()
+    })
+
+    logger.info('Application started')
+
+    await end()
+
+  } catch (err) {
+    logger.fatal('Application has crashed')
+  } finally {
+    logger.info('Close application')
+    await container.close()
+    logger.info('Application exited gracefully')
+  }
+}
+
+bootstrap()
