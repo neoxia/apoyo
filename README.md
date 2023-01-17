@@ -2,19 +2,21 @@
 
 ## Motivations
 
-Today, most libraries contain single implementations for a given service.
-Most of the time, it is hard to find good libraries that contain an abstraction with multiple implementations / drivers.
-Most of the time, these type of solutions are heavily tied to a specific framework, making them unusable for everybody not using that framework.
+Today, in the NodeJS world, it is hard to find libraries that contain abstractions with multiple implementations / drivers. It is even harder to find one that is not tied to a specific framework.
+Most of the time, this forces developers to write these abstractions themselves.
 
-*Example*: Let's say we need to download / upload files in our application, you will need to write your own abstractions and implementations based on the provider of your choice (ex: AWS S3), test them, etc...
+Let's say we need to download / upload files in our application, we will need to think about the required abstractions, write and test our implementation(s) based on the provider of our choice (ex: AWS S3), etc...
 
-Apoyo's goal is to improve developer experience by providing **simple** abstractions, as well as most commonly used implementations for them, using existing third-party libraries when possible, so that you can simply install the driver you need and start coding:
+Apoyo's goal is to improve developer experience by providing **simple** abstractions, as well as most commonly used implementations for them.
+Simply add the driver you need and that's it:
 
 ```ts
 import { Drive } from '@apoyo/files'
 import { S3Drive } from '@apoyo/files-s3'
 
 const drive: Drive = new S3Drive({ ... })
+
+const content = await drive.get('path/to/file.txt')
 ```
 
 ## Features
