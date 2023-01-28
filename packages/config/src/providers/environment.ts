@@ -4,7 +4,7 @@ import fs from 'fs'
 
 import { Dict } from '@apoyo/std'
 
-import { AppParameters } from '../app-parameters'
+import { Parameters } from '../parameters'
 import { ParameterProviderException } from '../exceptions'
 
 export class EnvironmentParseException extends ParameterProviderException {
@@ -18,7 +18,7 @@ export interface EnvironmentProviderOptions {
   path?: string
 }
 
-export async function getParametersFromEnvironment(config: EnvironmentProviderOptions = {}): Promise<AppParameters> {
+export async function getParametersFromEnvironment(config: EnvironmentProviderOptions = {}): Promise<Parameters> {
   const nodeEnv = config.nodeEnv ?? process.env.NODE_ENV
   const envPath = config.path ?? process.cwd()
   const files = dotenv.listDotenvFiles(envPath, { node_env: nodeEnv }).filter((filename) => fs.existsSync(filename))

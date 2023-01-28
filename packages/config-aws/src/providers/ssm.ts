@@ -1,4 +1,4 @@
-import { AppParameters } from '@apoyo/config'
+import { Parameters } from '@apoyo/config'
 import { Parameter, SSM } from '@aws-sdk/client-ssm'
 import { SSMProviderReadException } from '../exceptions'
 
@@ -28,10 +28,9 @@ export interface SSMProviderConfig {
   /**
    * Allows you to remap your SSM parameter names to a new parameter name.
    *
-   * If no mapper is specified in the configuration object, the default mapper will try to constant-case the key to better match the name of existing environment variables.
-   * This default mapper only handles basic use cases (param-case). For a more complete solution, we recommend using the `constant-case` package.
+   * The default mapper will replace '-' by '_' and uppercase your keys, to better match the naming conventions of environment variables.
    */
-  mapper?: SSMParameterKeyMapper
+  keyCaseMapper?: SSMParameterKeyMapper
 }
 
 export type SSMParameterKeyMapper = (parameterKey: string) => string
@@ -55,7 +54,10 @@ export async function getParametersFromSSM(config: SSMProviderConfig) {
 
   const params = await getSSMParametersByPath(ssm, config.path)
 
-  return ssmParametersToAppParameters(params, config)
+  return ssmParametersToConfigParameters(params, {
+    path: config.path,
+    mapper: config.keyCaseMapper
+  })
 }
 
 async function getSSMParametersByPath(ssm: SSM, path?: string) {
@@ -87,17 +89,17 @@ async function getSSMParametersByPath(ssm: SSM, path?: string) {
  * Note: This function is not a proper constantCase and only handles basic use cases (param-case).
  * For a more complete and tested solution, we recommend using the `constant-case` package.
  */
-function constantCase(key: string) {
+function normalize(key: string) {
   return key.split(/-/).filter(Boolean).join('_').toUpperCase()
 }
 
-function ssmParametersToAppParameters(
+function ssmParametersToConfigParameters(
   ssmParameters: Parameter[],
   config: { path?: string; mapper?: SSMParameterKeyMapper }
-): AppParameters {
-  const keyMapper = config.mapper ?? constantCase
+): Parameters {
+  const keyMapper = config.mapper ?? normalize
   const path = config.path ?? ''
-  const map: AppParameters = {}
+  const map: Parameters = {}
 
   for (const param of ssmParameters) {
     const key = param.Name

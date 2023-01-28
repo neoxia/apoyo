@@ -1,5 +1,5 @@
 {
-  "name": "@apoyo/config-ssm",
+  "name": "@apoyo/config-aws",
   "version": "0.0.1",
   "description": "app parameters provider from AWS SSM",
   "main": "dist/index.js",
@@ -28,7 +28,7 @@
     "type": "git",
     "url": "https://github.com/neoxia/apoyo"
   },
-  "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/config-ssm",
+  "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/config-aws",
   "scripts": {
     "test": "jest --verbose --runInBand --passWithNoTests",
     "build": "tsup"

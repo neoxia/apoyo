@@ -21,10 +21,10 @@ A more complete documentation will be made available once the API has stabilized
 ## Usage
 
 ```ts
-import { getParametersFromEnvironment, AppParameters } from '@apoyo/config'
-import { getParametersFromSSM } from '@apoyo/config-ssm'
+import { getParametersFromEnvironment, Parameters } from '@apoyo/config'
+import { getParametersFromSSM } from '@apoyo/config-aws'
 
-async function getAppParameters(): AppParameters {
+async function getParameters(): Parameters {
   const envParams = await getParametersFromEnvironment({
     nodeEnv: process.env.NODE_ENV,
     path: process.cwd()
@@ -42,7 +42,7 @@ async function getAppParameters(): AppParameters {
     : {}
 
   // Merge parameters from env and ssm
-  const appParams: AppParameters = {
+  const appParams: Parameters = {
     ...envParams,
     ...ssmParams
   }
@@ -54,10 +54,10 @@ async function getAppParameters(): AppParameters {
 Once these parameters are loaded, you can use them instead of a hard-coded `process.env` to configure your services:
 
 ```ts
-import { AppParameters } from '@apoyo/config'
+import { Parameters } from '@apoyo/config'
 import assert from 'assert'
 
-async function configureHttp(parameters: AppParameters) {
+async function configureHttp(parameters: Parameters) {
   // Note: You still need to validate the parameters using the validation library of your choice.
 
   assert(parameters.PORT, 'The parameter PORT should be defined')

@@ -1,8 +1,8 @@
 import { resolve } from 'path'
-import { AppParameters, getParametersFromEnvironment } from '../../src'
+import { Parameters, getParametersFromEnvironment } from '../../src'
 
 describe('getParametersFromEnvironment', () => {
-  let parameters: AppParameters
+  let parameters: Parameters
 
   beforeEach(async () => {
     process.env['C'] = '10'

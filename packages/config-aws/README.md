@@ -1,6 +1,6 @@
 # Apoyo - Config SSM
 
-[![npm version](https://badgen.net/npm/v/@apoyo/config-ssm)](https://www.npmjs.com/package/@apoyo/config-ssm)
+[![npm version](https://badgen.net/npm/v/@apoyo/config-aws)](https://www.npmjs.com/package/@apoyo/config-aws)
 
 **Warning**: This package is still unstable! The API may still change!
 
@@ -10,17 +10,17 @@ Install peer dependencies:
 `npm install @apoyo/std @apoyo/config`
 
 Install package:
-`npm install @apoyo/config-ssm`
+`npm install @apoyo/config-aws`
 
 ## Documentation
 
 Get app parameters from SSM using the following exported function:
 
 ```ts
-import { AppParameters } from '@apoyo/config'
-import { getParametersFromSSM } from '@apoyo/config-ssm'
+import { Parameters } from '@apoyo/config'
+import { getParametersFromSSM } from '@apoyo/config-aws'
 
-const ssmParams: AppParameters = await getParametersFromSSM({
+const ssmParams: Parameters = await getParametersFromSSM({
   path: '/projects/my-app/',
   key: 'access key',
   secret: 'secret key'

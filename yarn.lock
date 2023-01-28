@@ -14,9 +14,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apoyo/config-ssm@workspace:packages/config-ssm":
+"@apoyo/config-aws@workspace:packages/config-aws":
   version: 0.0.0-use.local
-  resolution: "@apoyo/config-ssm@workspace:packages/config-ssm"
+  resolution: "@apoyo/config-aws@workspace:packages/config-aws"
   dependencies:
     "@apoyo/config": ^0.0.1
     "@apoyo/std": ^0.0.15
