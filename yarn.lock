@@ -158,6 +158,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@apoyo/logger@workspace:packages/logger":
+  version: 0.0.0-use.local
+  resolution: "@apoyo/logger@workspace:packages/logger"
+  dependencies:
+    "@apoyo/std": ^0.0.15
+    "@types/jest": ^26.0.23
+    "@types/node": ^16.18.0
+    jest: ^26.4.2
+    pino: ^8.7.0
+    pino-pretty: ^9.1.1
+    ts-jest: ^26.3.0
+    ts-node: ^8.0.2
+    tsup: ^6.1.2
+    typescript: ^4.7.4
+  peerDependencies:
+    "@apoyo/std": ^0.0.15
+  languageName: unknown
+  linkType: soft
+
 "@apoyo/policies@workspace:packages/policies":
   version: 0.0.0-use.local
   resolution: "@apoyo/policies@workspace:packages/policies"
