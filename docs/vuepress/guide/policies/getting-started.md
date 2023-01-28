@@ -73,9 +73,9 @@ To have full type-safety with this library, the following two options are **requ
 
 ## Usage
 
-This library exposes five type of objects:
+This library exposes multiple concepts:
 
-- an `UserContext`, to authenticate a user for a given request / asynchroneous context (see [AsyncLocalStorage](https://nodejs.org/docs/latest-v14.x/api/async_hooks.html#async_hooks_class_asynclocalstorage) for more information).
+- The `UserContext`, to authenticate a user for a given request / asynchroneous context (see [AsyncLocalStorage](https://nodejs.org/docs/latest-v14.x/api/async_hooks.html#async_hooks_class_asynclocalstorage) for more information).
 
 - a `PolicyContext`, to define the context that is required to execute our policies.
 
@@ -83,19 +83,23 @@ This library exposes five type of objects:
 
 - an `Authorizer`, which can authorize policies for a given user.
 
-While going through this quick preview, you will see all five of these types being used.
+While going through this quick preview, you will see all these concepts being used.
 
 ### Create some types
 
-```ts
-// src/types.ts
+*src/user.ts*:
 
+```ts
 export interface User {
   id: string
   email: string
   role: 'admin' | 'moderator' | 'member'
 }
+```
 
+*src/post.ts*:
+
+```ts
 export interface Post {
   id: string
   authorId: string
@@ -103,28 +107,26 @@ export interface Post {
 }
 ```
 
-### Create custom policy context
+### Create custom user context and policy context
+
+*src/user-context.ts*:
+
+```ts
+import { UserContext } from '@apoyo/policies'
+import { User } from './user'
+
+export class MyUserContext extends UserContext<User> {}
+```
 
 *src/policy-context.ts*:
 
 ```ts
 import { PolicyContext } from '@apoyo/policies'
+import { MyUserContext } from './user-context'
 
-export enum Acl {
-  WRITE_POSTS = 'write:posts',
-  MODERATE_POSTS = 'moderate:posts'
-}
-
-export class AclRepository {
-  public async hasAccess(_userId: string, _acl: Acl): Promise<boolean> {
-    return true
-  }
-}
-
-export class CommonPolicyContext implements PolicyContext<User> {
+export class MyPolicyContext {
   constructor(
-    private readonly _userContext: UserContext<User>, 
-    private readonly _aclRepository: AclRepository) {}
+    private readonly _userContext: MyUserContext) {}
 
   public getCurrentUser(): User
   public getCurrentUser(options: { allowGuest: false }): User
@@ -137,12 +139,23 @@ export class CommonPolicyContext implements PolicyContext<User> {
     }
     return user
   }
+}
+```
 
-  public hasAccess(user: User, acl: Acl) {
-    return this._aclRepository.hasAccess(user.id, acl)
+*src/authorizer.ts*:
+
+```ts
+import { Authorizer } from '@apoyo/policies'
+import { MyPolicyContext } from './policy-context'
+
+export class MyAuthorizer extends Authorizer<MyPolicyContext> {
+  public getCurrentUser(): User
+  public getCurrentUser(options: { allowGuest: false }): User
+  public getCurrentUser(options: { allowGuest: true }): User | null
+  public getCurrentUser(options: { allowGuest: boolean } = { allowGuest: false }): User | null {
+    return this.context.getCurrentUser(options)
   }
 }
-
 ```
 
 ### Declare policies
@@ -153,47 +166,15 @@ Policies use [Generators](https://developer.mozilla.org/en-US/docs/Web/JavaScrip
 
 As such, when a boolean is `yield`ed or `return`ed by the policy, the policy finishes and will either succeed or fail (and throw an `NotAuthorizedException`) depending on if the boolean is true or false.
 
-Let's declare some basic helpers:
-
-*src/policies/common.policy.ts*:
-
-```ts
-import { CommonPolicyContext } from '../policy-context'
-
-export namespace CommonPolicy {
-  /**
-   * Helper middleware that can be called on demand
-   * Early exit policy if user is admin
-   */
-  export async function* isAdmin(ctx: CommonPolicyContext) {
-    const user = ctx.getCurrentUser({ allowGuest: true })
-    if (user?.role === 'admin') {
-      yield true
-    }
-  }
-
-  /**
-   * It is a good practice to name the middleware that should always be executed by your other middlewares "before".
-   * This allows your policies to stay more consistent, even across different code-bases.
-   */
-  export async function* before(ctx: CommonPolicyContext) {
-    yield* isAdmin(ctx)
-  }
-}
-
-```
-
-*src/policies/posts/view-post.policy.ts*:
+*src/policies/posts.policy.ts*:
 
 ```ts
 import { BasePolicy } from '@apoyo/policies'
-import { CommonPolicyContext } from '../policy-context'
-import { CommonPolicy } from './common.policy'
+import { MyPolicyContext } from './policy-context'
+import { Post } from './post'
 
 export class ViewPostPolicy implements BasePolicy {
-  public async *authorize(ctx: CommonPolicyContext, post: Post) {
-    yield* CommonPolicy.before(ctx)
-
+  public async *authorize(ctx: MyPolicyContext, post: Post) {
     if (post.status === 'published') {
       return true
     }
@@ -211,7 +192,7 @@ export class ViewPostPolicy implements BasePolicy {
 ```ts
 import { Authorizer } from '@apoyo/policies'
 import { PostRepository } from '../repositories/post.repository'
-import { ViewPostPolicy } from '../policies/posts/view-post.policy'
+import { ViewPostPolicy } from '../policies/posts.policy'
 
 export class ViewPostUseCase {
   constructor(private readonly authorizer: Authorizer, private readonly postRepository: PostRepository) {}
@@ -228,72 +209,23 @@ export class ViewPostUseCase {
 }
 ```
 
-### With express server
+### Authenticating a user
 
 ```ts
-import { Authorizer, UserContext } from '@apoyo/policies'
-import express from 'express'
+const userContext = new MyUserContext()
+const policyContext = new MyPolicyContext(userContext)
+const authorizer = new MyAuthorizer(policyContext)
 
-import { CommonPolicyContext } from './policy-context'
-import { PostRepository } from './repositories/post.repository'
-import { ViewPostUseCase } from './use-cases/view-post'
-
-// Initialize all dependencies
-// You can use an IOC or any other solution of your choice to setup your dependencies
-async function initialize() {
-
-  const postRepository = new PostRepository() // not implemented in this demo
-
-  const userContext = new UserContext<User>()
-  const policyContext = new CommonPolicyContext(userContext)
-  const authorizer = new Authorizer(policyContext)
-
-  const viewPostUseCase = new ViewPostUseCase(authorizer, postRepository)
-
-  return {
-    userContext,
-    viewPostUseCase
-  }
+// User to authenticate
+const user: User | null = {
+  id: 'xxxx',
+  email: 'test@example.com',
+  role: 'member'
 }
 
-async function main() {
-  try {
-    // Initialize dependencies
-    const { userContext, viewPostUseCase } = initialize()
+await userContext.forUser(user, async () => {
+  // Authenticated user is available in this scope
 
-    // Initialize express app
-    const app = express()
-
-    app.use((req, res, next) => {
-      // Authenticate your user
-      const user: User | null = {
-        id: 'xxxx',
-        email: 'test@example.com',
-        role: 'member'
-      }
-      // Register user in the current user context
-      userContext.forUser(user, next)
-    })
-
-    app.get('/posts/:id', async (req, res, next) => {
-      try {
-        const postId = req.params.id
-        const post = await viewPostUseCase.execute(postId)
-
-        res.status(200).json(post)
-      } catch (err) {
-        next(err)
-      }
-    })
-
-    app.listen(3000)
-
-    console.log('Application started on port 3000')
-  } catch (err) {
-    console.error(err)
-    process.exit(1)
-  }
-}
-
-main()
+  console.log(authorizer.getCurrentUser())
+})
 ```

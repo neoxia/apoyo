@@ -10,23 +10,23 @@ A policy middleware is simply a generator yielding a boolean. It can take any pa
 
 ```ts
 
-export namespace CommonPolicy {
+export namespace BasePolicy {
 
-  export async function* isAdmin(ctx: CommonPolicyContext) {
+  export async function* isAdmin(ctx: MyPolicyContext) {
     const user = ctx.getCurrentUser({ allowGuest: true })
     if (user?.role === 'admin') {
       yield true
     }
   }
 
-  export async function* requireAcl(ctx: CommonPolicyContext, acl: Acl) {
+  export async function* requireAcl(ctx: MyPolicyContext, acl: Acl) {
     const hasAcl = await ctx.hasAccess(ctx.getCurrentUser(), acl)
     if (!hasAcl) {
       yield false
     }
   }
 
-  export async function* before(ctx: CommonPolicyContext) {
+  export async function* before(ctx: MyPolicyContext) {
     yield* isAdmin(ctx)
   }
 }
@@ -44,13 +44,13 @@ export namespace CommonPolicy {
 
 By adding the following code to the existing code snippets from the `Getting started` page, we can bypass authorization for admin users.
 
-*src/policies/posts/edit-post.policy.ts*:
+*src/policies/posts.policy.ts*:
 
 ```ts
 export class EditPostPolicy implements BasePolicy {
-  public async *authorize(ctx: CommonPolicyContext, post: Post) {
-    yield* CommonPolicy.before(ctx)
-    yield* CommonPolicy.requireAcl(ctx, Acl.WRITE_POSTS)
+  public async *authorize(ctx: MyPolicyContext, post: Post) {
+    yield* BasePolicy.before(ctx)
+    yield* BasePolicy.requireAcl(ctx, Acl.WRITE_POSTS)
 
     const user = ctx.getCurrentUser()
     return user.id === post.authorId

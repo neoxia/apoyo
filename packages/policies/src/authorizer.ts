@@ -24,13 +24,13 @@ export interface AuthorizerOptions<PolicyContext> {
    * })
    * ```
    */
-  interceptor?(user: PolicyContext, policy: Policy<PolicyContext>, authorize: () => Promise<void>): Promise<void>
+  interceptor?(ctx: PolicyContext, policy: Policy<PolicyContext>, authorize: () => Promise<void>): Promise<void>
 }
 
 export class Authorizer<PolicyContext> {
   constructor(
-    private readonly _context: PolicyContext,
-    private readonly _options: AuthorizerOptions<PolicyContext> = {}
+    protected readonly context: PolicyContext,
+    private readonly options: AuthorizerOptions<PolicyContext> = {}
   ) {}
 
   public async authorize<Args extends any[]>(policy: PolicyType<PolicyContext, Args>, ...args: Args): Promise<void> {
@@ -44,15 +44,15 @@ export class Authorizer<PolicyContext> {
     const policyInstance = typeof policy === 'function' ? new policy() : policy
 
     const run = async () => {
-      const it = policyInstance.authorize(this._context, ...args)
+      const it = policyInstance.authorize(this.context, ...args)
       const result = await it.next()
       if (result.value === false) {
         throw new NotAuthorizedException()
       }
     }
 
-    if (this._options.interceptor) {
-      return await this._options.interceptor(this._context, policyInstance as Policy<PolicyContext>, run)
+    if (this.options.interceptor) {
+      return await this.options.interceptor(this.context, policyInstance as Policy<PolicyContext>, run)
     }
     return await run()
   }

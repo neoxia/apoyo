@@ -91,7 +91,9 @@ module.exports = {
           '/guide/policies/getting-started.md',
           '/guide/policies/policies.md',
           '/guide/policies/middlewares.md',
-          '/guide/policies/interceptors.md'
+          '/guide/policies/interceptors.md',
+          '/guide/policies/multiple-user-types.md',
+          '/guide/policies/recipes.md'
         ]
       },
       {
