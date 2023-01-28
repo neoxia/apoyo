@@ -1,4 +1,4 @@
-import { NotAuthenticatedException, PolicyContext, UserContext } from '../../src'
+import { NotAuthenticatedException, UserContext } from '../../src'
 import { User } from './types'
 
 export enum Acl {
@@ -12,7 +12,7 @@ export class AclRepository {
   }
 }
 
-export class CommonPolicyContext implements PolicyContext<User> {
+export class CommonPolicyContext {
   constructor(private readonly _userContext: UserContext<User>, private readonly _aclRepository: AclRepository) {}
 
   public getCurrentUser(): User

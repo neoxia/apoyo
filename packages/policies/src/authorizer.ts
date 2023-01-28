@@ -1,21 +1,18 @@
-import { PolicyContext } from './policy-context'
 import { Policy, PolicyType } from './policy'
 import { NotAuthorizedException } from './exceptions'
-
-type UserType<T extends PolicyContext<unknown>> = PolicyContext.UserType<T>
-
-export interface AuthorizerOptions<User> {
+export interface AuthorizerOptions<PolicyContext> {
   /**
    * Interceptor to execute when authorizing a policy.
    *
-   * @param user - The current user
+   * @param ctx - The current policy context
    * @param policy - The name of the executed policy
    * @param authorize - The function to execute the policy
    *
    * @example
    * ```ts
    * const authorizer = new Authorizer(myPolicyContext, {
-   *   async interceptor(user, action, authorize) {
+   *   async interceptor(ctx, action, authorize) {
+   *     const user = ctx.getCurrentUser({ allowGuest: true });
    *     try {
    *       await authorize()
    *       console.log(`${action} was authorized for ${user?.email ?? 'Guest' }`)
@@ -27,23 +24,17 @@ export interface AuthorizerOptions<User> {
    * })
    * ```
    */
-  interceptor?(user: User | null, policy: Policy, authorize: () => Promise<void>): Promise<void>
+  interceptor?(user: PolicyContext, policy: Policy<PolicyContext>, authorize: () => Promise<void>): Promise<void>
 }
 
-export class Authorizer<ContextType extends PolicyContext<unknown>> {
+export class Authorizer<PolicyContext> {
   constructor(
-    private readonly _context: ContextType,
-    private readonly _options: AuthorizerOptions<UserType<ContextType>> = {}
+    private readonly _context: PolicyContext,
+    private readonly _options: AuthorizerOptions<PolicyContext> = {}
   ) {}
 
-  public getCurrentUser(): UserType<ContextType>
-  public getCurrentUser(options: { allowGuest: false }): UserType<ContextType>
-  public getCurrentUser(options: { allowGuest: true }): UserType<ContextType> | null
-  public getCurrentUser(options?: any) {
-    return this._context.getCurrentUser(options)
-  }
-
-  public async authorize<Args extends any[]>(policy: PolicyType<ContextType, Args>, ...args: Args): Promise<void> {
+  public async authorize<Args extends any[]>(policy: PolicyType<PolicyContext, Args>, ...args: Args): Promise<void> {
+    // Improve debugging by adding the class name to the policy class prototype as a readonly property, to make it accessible using policy.name
     if (typeof policy === 'function' && !policy.prototype.name) {
       Object.defineProperty(policy.prototype, 'name', {
         value: policy.name,
@@ -61,18 +52,18 @@ export class Authorizer<ContextType extends PolicyContext<unknown>> {
     }
 
     if (this._options.interceptor) {
-      return await this._options.interceptor(this.getCurrentUser({ allowGuest: true }), policyInstance as Policy, run)
+      return await this._options.interceptor(this._context, policyInstance as Policy<PolicyContext>, run)
     }
     return await run()
   }
 
-  public async allows<Args extends any[]>(policy: PolicyType<ContextType, Args>, ...args: Args): Promise<boolean> {
+  public async allows<Args extends any[]>(policy: PolicyType<PolicyContext, Args>, ...args: Args): Promise<boolean> {
     return this.authorize(policy, ...args)
       .then(() => true)
       .catch(() => false)
   }
 
-  public async denies<Args extends any[]>(policy: PolicyType<ContextType, Args>, ...args: Args): Promise<boolean> {
+  public async denies<Args extends any[]>(policy: PolicyType<PolicyContext, Args>, ...args: Args): Promise<boolean> {
     return this.allows(policy, ...args).then((allowed) => !allowed)
   }
 }
