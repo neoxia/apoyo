@@ -31,7 +31,7 @@ Before writing policies, you **will** need to define a policy context, which wil
 The most basic policy context can be:
 
 ```ts
-export class CommonPolicyContext implements PolicyContext<User> {
+export class MyPolicyContext implements PolicyContext<User> {
   getCurrentUser(): User | null {
     return null
   }
@@ -54,7 +54,7 @@ export class AclRepository {
   }
 }
 
-export class CommonPolicyContext implements PolicyContext<User> {
+export class MyPolicyContext implements PolicyContext<User> {
   constructor(
     private readonly _userContext: UserContext<User>, 
     private readonly _aclRepository: AclRepository) {}
@@ -81,28 +81,28 @@ export class CommonPolicyContext implements PolicyContext<User> {
 
 It is recommended to always start by creating a common base logic for all your policies. This will make it very easy to add global authorization middlewares if necessary.
 
-*src/policies/common.policy.ts*:
+*src/policies/base.policy.ts*:
 
 ```ts
-export namespace CommonPolicy {
+export namespace BasePolicy {
   /**
    * For now, this function is empty right now.
    * However, this will allow us later on to easily add additional authorization logic to all policies using this middleware.
    *
    * Middlewares will be described in more details on the next page.
    */
-  export async function* before(_ctx: CommonPolicyContext) {}
+  export async function* before(_ctx: MyPolicyContext) {}
 }
 ```
 
 You can then create custom policies using this base policy:
 
-*src/policies/posts/edit-post.policy.ts*:
+*src/policies/posts.policy.ts*:
 
 ```ts
 export class EditPostPolicy implements BasePolicy {
-  public async *authorize(ctx: CommonPolicyContext, post: Post) {
-    yield* CommonPolicy.before(ctx)
+  public async *authorize(ctx: MyPolicyContext, post: Post) {
+    yield* BasePolicy.before(ctx)
 
     const user = ctx.getCurrentUser()
     return user.id === post.authorId

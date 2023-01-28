@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/policies",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Utils focused around authorization logic and policies",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

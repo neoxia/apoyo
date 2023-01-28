@@ -1,4 +1,4 @@
-import { Authorizer, NotAuthenticatedException, NotAuthorizedException, PolicyContext, UserContext } from '../src'
+import { Authorizer, NotAuthenticatedException, NotAuthorizedException, UserContext } from '../src'
 import { CommonPolicyContext, AclRepository } from './setup/context'
 import { EditPostPolicy } from './setup/policies'
 import { Post, User } from './setup/types'
@@ -20,39 +20,9 @@ describe('Authorizer', () => {
     authorizer = new Authorizer(policyContext)
   })
 
-  describe('getCurrentUser', () => {
-    it('should be able to get current user', async () => {
-      const user: User = {
-        id: 'user_id_1',
-        email: 'test@example.com',
-        role: 'admin'
-      }
-
-      await userContext.forUser(user, async () => {
-        expect(authorizer.getCurrentUser()).toEqual(user)
-      })
-    })
-
-    it('should throw when no user is authenticated', async () => {
-      const userContext = new UserContext<User>()
-
-      await userContext.forUser(null, async () => {
-        expect(() => authorizer.getCurrentUser()).toThrowError(NotAuthenticatedException)
-      })
-    })
-
-    it('should not throw when allowing guests', async () => {
-      const userContext = new UserContext<User>()
-
-      await userContext.forUser(null, async () => {
-        expect(authorizer.getCurrentUser({ allowGuest: true })).toEqual(null)
-      })
-    })
-  })
-
   describe('authorize', () => {
     it('should throw typescript error on invalid authorizer policy context', async () => {
-      class AnotherPolicyContext implements PolicyContext<User> {
+      class AnotherPolicyContext {
         getCurrentUser(): User
         getCurrentUser(options: { allowGuest: false }): User
         getCurrentUser(options: { allowGuest: true }): User | null
@@ -199,7 +169,8 @@ describe('Authorizer', () => {
       const onSuccess = jest.fn()
 
       const authorizer = new Authorizer(policyContext, {
-        async interceptor(user, policy, authorize) {
+        async interceptor(ctx, policy, authorize) {
+          const user = ctx.getCurrentUser({ allowGuest: true })
           const username = user?.email ?? 'Guest'
           const action = policy.name ?? 'UnknownPolicy'
           try {

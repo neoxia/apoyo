@@ -6,7 +6,8 @@ In those cases, you can use the specify an `interceptor` when creating your `Aut
 
 ```ts
 const authorizer = new Authorizer(policyContext, {
-  async interceptor(user, policy, authorize) {
+  async interceptor(ctx, policy, authorize) {
+    const user = ctx.getCurrentUser({ allowGuest: true })
     try {
       await authorize()
       console.log(`${policy.name} was authorized for ${user?.email ?? 'Guest' }`)
