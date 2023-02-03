@@ -1,4 +1,4 @@
-import { Err, pipe, Prom, Result } from '../src'
+import { pipe, Prom, Result } from '../src'
 
 describe('Promise.of', () => {
   it('should return expected value', async () => {
@@ -245,10 +245,10 @@ describe('Promise.tapError', () => {
       Prom.reject(new Error('Internal error')),
       Prom.tapError((err) => mock('An error occured', err)),
       Prom.tryCatch,
-      Prom.map(Result.mapError(Err.toError)),
       Prom.map(Result.tuple)
     )
-    expect(error?.message).toBe('Internal error')
+    expect(error).toBeInstanceOf(Error)
+    expect((error as Error)?.message).toBe('Internal error')
     expect(mock.mock.calls.length).toBe(1)
     expect(mock.mock.calls[0][1]?.message).toBe('Internal error')
   })
@@ -259,10 +259,10 @@ describe('Promise.tapError', () => {
       Prom.reject(new Error('Internal error')),
       Prom.tapError(async (err) => mock('An error occured', err)),
       Prom.tryCatch,
-      Prom.map(Result.mapError(Err.toError)),
       Prom.map(Result.tuple)
     )
-    expect(error?.message).toBe('Internal error')
+    expect(error).toBeInstanceOf(Error)
+    expect((error as Error)?.message).toBe('Internal error')
     expect(mock.mock.calls.length).toBe(1)
     expect(mock.mock.calls[0][1]?.message).toBe('Internal error')
   })

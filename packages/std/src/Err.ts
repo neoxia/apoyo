@@ -111,6 +111,8 @@ export const omitStack = omit<FormattedError, 'stack'>(['stack'])
 /**
  * @namespace Err
  *
+ * @deprecated Prefer creating custom exception classes using the provided `Exception` class.
+ *
  * @description
  * This namespace contains utilities to create custom errors.
  *
