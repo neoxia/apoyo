@@ -262,7 +262,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@apoyo/std@0.0.15, @apoyo/std@^0.0.15, @apoyo/std@workspace:packages/std":
+"@apoyo/std@npm:0.0.15, @apoyo/std@npm:^0.0.15":
+  version: 0.0.15
+  resolution: "@apoyo/std@npm:0.0.15"
+  checksum: 27ad01c4bf8ec61cf884b5b43249e43ef0f191012adb096ba0c5f064aacc1294aaff9b77cebf950ad0643e8740bff5773c7733b1088320be0d2199b4ba975ee6
+  languageName: node
+  linkType: hard
+
+"@apoyo/std@workspace:packages/std":
   version: 0.0.0-use.local
   resolution: "@apoyo/std@workspace:packages/std"
   dependencies:

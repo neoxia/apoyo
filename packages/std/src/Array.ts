@@ -3,7 +3,6 @@ import type { Dict } from './Dict'
 import type { Option } from './Option'
 import type { Ord } from './Ord'
 import type { Result } from './Result'
-import type { Seq } from './Seq'
 
 import * as D from './Dict'
 import {
@@ -42,7 +41,7 @@ export const length = <A>(arr: A[]) => arr.length
 
 export const of = <A>(value: A): NonEmptyArray<A> => [value]
 
-export const from = <A>(value: A[] | Seq<A>) => Array.from(value)
+export const from = <A>(value: A[] | Iterable<A>) => Array.from(value)
 
 export const head = <A>(arr: A[]): Option<A> => (arr.length > 0 ? arr[0] : undefined)
 
@@ -141,7 +140,7 @@ export const chunksOf = (size: number) => <A>(arr: A[]) => {
 }
 
 export function uniq<T>(arr: T[] | readonly T[]): T[] {
-  return from(new Set(arr))
+  return from(new Set<T>(arr))
 }
 
 export const uniqBy = <A>(fn: (value: A) => string | number) => (arr: A[]): A[] =>

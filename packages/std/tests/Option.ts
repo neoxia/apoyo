@@ -1,4 +1,4 @@
-import { Err, isNull, not, Option, pipe, throwError } from '../src'
+import { isNull, not, Option, pipe, throwError } from '../src'
 
 describe('Option.isSome', () => {
   it('should be true for any other value than undefined', () => {
@@ -193,15 +193,15 @@ describe('Option.get', () => {
 
 describe('Option.throwError', () => {
   it('should throw if undefined', () => {
-    expect(() => pipe(undefined, Option.throwError(Err.of('Undefined variable')))).toThrowError('Undefined variable')
+    expect(() => pipe(undefined, Option.throwError(new Error('Undefined variable')))).toThrowError('Undefined variable')
     expect(() =>
       pipe(
         undefined,
-        Option.throwError(() => Err.of('Undefined variable'))
+        Option.throwError(() => new Error('Undefined variable'))
       )
     ).toThrowError('Undefined variable')
   })
   it('should return value if defined', () => {
-    expect(pipe(0, Option.throwError(Err.of('Undefined variable')))).toBe(0)
+    expect(pipe(0, Option.throwError(new Error('Undefined variable')))).toBe(0)
   })
 })

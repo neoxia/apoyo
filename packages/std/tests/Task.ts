@@ -1,9 +1,14 @@
-import { Err, isNumber, pipe, Prom, Result, Task } from '../src'
+import { Exception, isNumber, pipe, Result, Task } from '../src'
 
 describe('Task.of', () => {
   it('should return expected value', async () => {
     const result = Task.of(10)
     expect(pipe(result, Task.run)).resolves.toBe(10)
+  })
+
+  it('should return void', async () => {
+    const result = Task.of()
+    expect(pipe(result, Task.run)).resolves.toBe(undefined)
   })
 })
 
@@ -92,7 +97,7 @@ describe('Task.thunk', () => {
   })
 
   it('should be able to return a promise', async () => {
-    const result = Task.thunk(() => Prom.of(10))
+    const result = Task.thunk(async () => 10)
     expect(pipe(result, Task.run)).resolves.toBe(10)
   })
 })
@@ -328,10 +333,9 @@ describe('Task.tapError', () => {
       Task.reject(new Error('Internal error')),
       Task.tapError((err) => mock('An error occured', err)),
       Task.tryCatch,
-      Task.map(Result.mapError(Err.toError)),
       Task.map(Result.tuple)
     )
-    expect(error?.message).toBe('Internal error')
+    expect((error as Error)?.message).toBe('Internal error')
     expect(mock.mock.calls.length).toBe(1)
     expect(mock.mock.calls[0][1]?.message).toBe('Internal error')
   })
@@ -342,10 +346,9 @@ describe('Task.tapError', () => {
       Task.reject(new Error('Internal error')),
       Task.tapError(async (err) => mock('An error occured', err)),
       Task.tryCatch,
-      Task.map(Result.mapError(Err.toError)),
       Task.map(Result.tuple)
     )
-    expect(error?.message).toBe('Internal error')
+    expect((error as Error)?.message).toBe('Internal error')
     expect(mock.mock.calls.length).toBe(1)
     expect(mock.mock.calls[0][1]?.message).toBe('Internal error')
   })
@@ -362,8 +365,8 @@ describe('Task.taskify', () => {
 describe('Task.retry', () => {
   it('should work', async () => {
     const mock = jest.fn()
-    const result = await pipe(
-      Task.reject(Err.of('test')),
+    const promise = pipe(
+      Task.reject(new Error('test')),
       Task.retry((err, attempt) => {
         mock(`attempt ${attempt} failed`, attempt)
         if (attempt >= 3) {
@@ -371,17 +374,15 @@ describe('Task.retry', () => {
         }
         return
       }),
-      Task.tryCatch
+      Task.run
     )
-    expect(pipe(result, Result.isKo)).toBe(true)
-    expect(
-      pipe(
-        result,
-        Result.mapError((e: any) => e.message),
-        Result.swap,
-        Result.get
-      )
-    ).toBe('test')
+
+    await expect(promise).rejects.toThrow(Error)
+    await expect(promise).rejects.toEqual(
+      expect.objectContaining({
+        message: 'test'
+      })
+    )
 
     expect(mock.mock.calls.length).toBe(3)
     expect(mock.mock.calls[0][1]).toBe(1)
@@ -391,7 +392,7 @@ describe('Task.retry', () => {
 
   it('should not retry when task resolves', async () => {
     const mock = jest.fn()
-    const result = await pipe(
+    const promise = pipe(
       Task.resolve(42),
       Task.retry((err, attempt) => {
         mock(`attempt ${attempt} failed`, attempt)
@@ -400,105 +401,119 @@ describe('Task.retry', () => {
         }
         return
       }),
-      Task.tryCatch
+      Task.run
     )
-    expect(pipe(result, Result.isOk)).toBe(true)
-    expect(pipe(result, Result.get)).toBe(42)
+
+    await expect(promise).resolves.toBe(42)
 
     expect(mock.mock.calls.length).toBe(0)
   })
 })
 
 describe('Task.retryBy', () => {
+  class CustomException extends Exception {
+    public readonly code = 'E_CUSTOM'
+    constructor() {
+      super('A custom error')
+    }
+  }
+
   it('should attempt N times', async () => {
     const mock = jest.fn()
-    const result = await pipe(
-      Task.reject(Err.of('test')),
+    const promise = pipe(
+      Task.reject(new CustomException()),
       Task.tapError(() => mock()),
       Task.retryBy({
         attempts: 3
       }),
-      Task.tryCatch
+      Task.run
     )
-    expect(pipe(result, Result.isKo)).toBe(true)
-    expect(
-      pipe(
-        result,
-        Result.mapError((e: any) => e.message),
-        Result.swap,
-        Result.get
-      )
-    ).toBe('test')
+
+    await expect(promise).rejects.toThrow(CustomException)
 
     expect(mock.mock.calls.length).toBe(3)
+  })
+
+  it('should delay with function', async () => {
+    const mock = jest.fn()
+    const mockDelay = jest.fn((attempt: number) => attempt)
+    const promise = pipe(
+      Task.reject(new CustomException()),
+      Task.tapError(() => mock()),
+      Task.retryBy({
+        attempts: 3,
+        delay: mockDelay
+      }),
+      Task.run
+    )
+
+    await expect(promise).rejects.toThrow(CustomException)
+
+    expect(mock).toHaveBeenCalledTimes(3)
+
+    // delay is only called twice:
+    // Execute task => Fail => Delay => Retry task => Fail => Delay => Retry task => Fail => Stop retrying and throw error
+    expect(mockDelay).toHaveBeenCalledTimes(2)
+    expect(mockDelay).toHaveBeenNthCalledWith(1, 1)
+    expect(mockDelay).toHaveBeenNthCalledWith(2, 2)
   })
 
   it('should only retry when condition is fullfilled', async () => {
     const mock = jest.fn()
-    const result = await pipe(
-      Task.reject(Err.of('test', { code: 'test' })),
+    const promise = pipe(
+      Task.reject(new CustomException()),
       Task.tapError(() => mock()),
       Task.retryBy({
         attempts: 3,
         delay: 0,
-        when: (err) => err.code === 'test'
+        when: (err) => err instanceof CustomException
       }),
-      Task.tryCatch
+      Task.run
     )
-    expect(pipe(result, Result.isKo)).toBe(true)
-    expect(
-      pipe(
-        result,
-        Result.mapError((e: any) => e.message),
-        Result.swap,
-        Result.get
-      )
-    ).toBe('test')
 
-    expect(mock.mock.calls.length).toBe(3)
+    await expect(promise).rejects.toThrow(CustomException)
+
+    expect(mock).toHaveBeenCalledTimes(3)
   })
 
   it('should not retry when condition is not fullfilled', async () => {
     const mock = jest.fn()
-    const result = await pipe(
-      Task.reject(Err.of('test')),
+    const promise = pipe(
+      Task.reject(new Error('test')),
       Task.tapError(() => mock()),
       Task.retryBy({
         attempts: 3,
         delay: 0,
-        when: (err) => err.code === 'test'
+        when: (err) => err instanceof CustomException
       }),
-      Task.tryCatch
+      Task.run
     )
-    expect(pipe(result, Result.isKo)).toBe(true)
-    expect(
-      pipe(
-        result,
-        Result.mapError((e: any) => e.message),
-        Result.swap,
-        Result.get
-      )
-    ).toBe('test')
 
-    expect(mock.mock.calls.length).toBe(1)
+    await expect(promise).rejects.not.toThrow(CustomException)
+    await expect(promise).rejects.toThrow(Error)
+
+    expect(mock).toHaveBeenCalledTimes(1)
   })
 
   it('should not retry when task resolves', async () => {
     const mock = jest.fn()
-    const result = await pipe(
+    const mockError = jest.fn()
+
+    const promise = pipe(
       Task.resolve(42),
       Task.tap(() => mock()),
-      Task.tapError(() => mock()),
+      Task.tapError(() => mockError()),
       Task.retryBy({
         attempts: 3,
         delay: 0,
         when: (err) => err.code === 'test'
       }),
-      Task.tryCatch
+      Task.run
     )
-    expect(pipe(result, Result.isOk)).toBe(true)
-    expect(pipe(result, Result.get)).toBe(42)
 
-    expect(mock.mock.calls.length).toBe(1)
+    await expect(promise).resolves.toBe(42)
+
+    expect(mock).toHaveBeenCalledTimes(1)
+    expect(mockError).toHaveBeenCalledTimes(0)
   })
 })

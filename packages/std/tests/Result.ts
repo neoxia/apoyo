@@ -1,4 +1,4 @@
-import { Arr, Err, NonEmptyArray, pipe, Result, throwError } from '../src'
+import { Arr, Exception, NonEmptyArray, pipe, Result, throwError } from '../src'
 
 describe('Result.ok', () => {
   it('should create ok', () => {
@@ -225,12 +225,19 @@ describe('Result.tryCatch', () => {
 })
 
 describe('Result.tryCatchFn', () => {
-  const divide = (a: number, b: number) => (b === 0 ? throwError(Err.of('cannot divide by zero')) : a / b)
+  class DivideByZeroException extends Exception {
+    constructor() {
+      super('cannot divide by zero')
+    }
+  }
+
+  const divide = (a: number, b: number) => (b === 0 ? throwError(new DivideByZeroException()) : a / b)
   const divideBy = (b: number) => (a: number) => divide(a, b)
 
   it('should work in pipe', () => {
     const [, ko] = pipe([1, 2, 3], Arr.map(Result.tryCatchFn(divideBy(0))), Arr.separate)
     expect(ko.length).toEqual(3)
+    expect(ko[0]).toBeInstanceOf(DivideByZeroException)
   })
   it('should work with multiple arguments', () => {
     const safeDivide = Result.tryCatchFn(divide)

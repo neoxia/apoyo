@@ -3,7 +3,7 @@
  *
  * @example
  * ```ts
- * class AccessException extends Exception {}
+ * class CustomException extends Exception {}
  * ```
  */
 export class Exception extends Error {
