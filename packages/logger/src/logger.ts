@@ -5,6 +5,8 @@ import pinoPretty from 'pino-pretty'
 import { LoggerOptions } from './config'
 import { LoggerContext } from './context'
 
+export type { Logger } from 'pino'
+
 export function createLogger(config: LoggerOptions, context?: LoggerContext) {
   const prettyEnabled = config.prettyPrint === false ? false : config.prettyPrint
 
