@@ -30,8 +30,12 @@ export class LocalFileSystem implements IFileSystem {
   }
 
   public async exists(path: string): Promise<boolean> {
-    const stat = await fs.stat(this._makePath(path))
-    return stat.isFile()
+    try {
+      const stat = await fs.stat(this._makePath(path))
+      return stat.isFile()
+    } catch (err) {
+      return false
+    }
   }
 
   public async get(path: string): Promise<string> {

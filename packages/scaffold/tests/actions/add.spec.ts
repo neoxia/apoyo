@@ -22,6 +22,22 @@ describe('AddAction', () => {
       )
     })
 
+    it('should allow dynamic destination path', async () => {
+      const action = new AddAction({
+        from: 'add-hello-world.ejs',
+        to: 'hello-world/<%= h.changeCase.paramCase(name) %>.ts',
+        parameters: {
+          name: 'John Doe'
+        }
+      })
+
+      await action.execute(scaffolder)
+
+      expect(await scaffolder.destination.get('hello-world/john-doe.ts')).toMatchInlineSnapshot(
+        `"console.log('Hello John Doe');"`
+      )
+    })
+
     it('should skip file if already exists', async () => {
       await scaffolder.destination.write('hello-world.ts', `console.log('Hello world');`)
 
