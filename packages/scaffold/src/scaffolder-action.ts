@@ -1,3 +1,5 @@
+import { Scaffolder } from './scaffolder'
+
 export interface IScaffolderAction {
-  execute(app: Scafolder): Promise<void>
+  execute(app: Scaffolder): Promise<void>
 }
