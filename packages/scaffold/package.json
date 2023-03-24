@@ -1,0 +1,54 @@
+{
+  "name": "@apoyo/scaffold",
+  "version": "0.0.1",
+  "description": "Utils focused around creating code generators and scaffolders",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
+  "sideEffects": false,
+  "author": "Sascha Braun",
+  "license": "MIT",
+  "tags": [
+    "utils",
+    "generators",
+    "scaffold"
+  ],
+  "keywords": [
+    "utils",
+    "generators",
+    "scaffold"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neoxia/apoyo"
+  },
+  "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/scaffold",
+  "scripts": {
+    "test": "jest --verbose --runInBand --passWithNoTests",
+    "build": "tsup"
+  },
+  "devDependencies": {
+    "@types/ejs": "^3.1.2",
+    "@types/jest": "^26.0.23",
+    "@types/node": "^16.18.0",
+    "@types/rimraf": "^3",
+    "jest": "^26.4.2",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^26.3.0",
+    "ts-node": "^8.0.2",
+    "tsup": "^6.1.2",
+    "typescript": "^4.7.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "ejs": "^3.1.9"
+  }
+}
