@@ -6,20 +6,24 @@ import * as changeCase from 'change-case'
 import * as inflection from 'inflection'
 
 export interface ScaffolderOptions {
-  fs: IFileSystem
+  templates: IFileSystem
+  destination: IFileSystem
   renderer: ITemplateEngine
-  dist: string
   parameters?: Record<string, unknown>
 }
 
 export class Scaffolder {
   constructor(private readonly options: ScaffolderOptions) {}
 
-  public getFileSystem() {
-    return this.options.fs
+  public get templates() {
+    return this.options.templates
   }
 
-  public getRenderer() {
+  public get destination() {
+    return this.options.destination
+  }
+
+  public get renderer() {
     return this.options.renderer
   }
 
@@ -32,10 +36,6 @@ export class Scaffolder {
 
   public getParameters() {
     return this.options.parameters ?? {}
-  }
-
-  public getDist() {
-    return this.options.dist
   }
 
   public child(options: Partial<ScaffolderOptions>) {
@@ -55,10 +55,11 @@ export class Scaffolder {
     }
   }
 
-  public async render(content: string): Promise<string> {
-    return this.getRenderer().render(content, {
+  public async render(content: string, parameters?: Record<string, unknown>): Promise<string> {
+    return this.renderer.render(content, {
       h: this.getHelpers(),
-      ...this.getParameters()
+      ...this.getParameters(),
+      ...parameters
     })
   }
 }

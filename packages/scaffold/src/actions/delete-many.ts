@@ -9,12 +9,10 @@ export class DeleteManyAction implements IScaffolderAction {
   constructor(private readonly options: DeleteManyActionOptions) {}
 
   public async execute(app: Scaffolder): Promise<void> {
-    const fs = app.getFileSystem()
-
-    const files = await fs.list(this.options.paths)
+    const files = await app.destination.list(this.options.paths)
 
     for (const file of files) {
-      await fs.delete(file)
+      await app.destination.delete(file)
     }
   }
 }

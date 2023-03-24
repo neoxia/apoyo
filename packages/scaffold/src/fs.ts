@@ -4,6 +4,7 @@ import { resolve, dirname } from 'path'
 
 export interface IFileSystem {
   list(globs: string[]): Promise<string[]>
+  exists(path: string): Promise<boolean>
   get(path: string): Promise<string>
   write(path: string, content: string): Promise<void>
   delete(path: string): Promise<void>
@@ -26,6 +27,11 @@ export class LocalFileSystem implements IFileSystem {
       nodir: true,
       cwd: this.options.rootDir
     })
+  }
+
+  public async exists(path: string): Promise<boolean> {
+    const stat = await fs.stat(this._makePath(path))
+    return stat.isFile()
   }
 
   public async get(path: string): Promise<string> {
