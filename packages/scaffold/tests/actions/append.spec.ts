@@ -1,5 +1,5 @@
 import { AppendAction } from '../../src'
-import { clear, scaffolder } from './setup'
+import { clear, scaffolder } from '../setup'
 
 describe('AppendAction', () => {
   beforeEach(clear)

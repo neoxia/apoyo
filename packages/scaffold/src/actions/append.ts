@@ -14,6 +14,7 @@ export interface AppendActionOptions {
   from: string
   to: string
   after: string
+  skipIf?: string
 
   /**
    * Additional parameters
@@ -28,6 +29,9 @@ export class AppendAction implements IScaffolderAction {
     const from = this.options.from
     const to = await app.render(this.options.to, this.options.parameters)
     const after = new RegExp(Str.regexpEscape(await app.render(this.options.after, this.options.parameters)))
+    const skipIf = this.options.skipIf
+      ? new RegExp(Str.regexpEscape(await app.render(this.options.skipIf, this.options.parameters)))
+      : null
 
     const exists = await app.destination.exists(to)
     if (!exists) {
@@ -38,10 +42,17 @@ export class AppendAction implements IScaffolderAction {
     const rendered = await app.render(template)
 
     const source = await app.destination.get(to)
-    const lines = source.split(/(\n|\r\n)/)
+    const lines = source.split('\n')
 
     const idx = lines.findIndex((line) => after.test(line))
-    if (idx !== -1) {
+    const skip = skipIf ? skipIf.test(source) : false
+
+    if (skip) {
+      // eslint-disable-next-line no-console
+      console.log(`skip append ${to}`)
+    }
+
+    if (idx !== -1 && skip === false) {
       lines.splice(idx + 1, 0, rendered)
     }
 

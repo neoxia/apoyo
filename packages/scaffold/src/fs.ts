@@ -8,6 +8,7 @@ export interface IFileSystem {
   get(path: string): Promise<string>
   write(path: string, content: string): Promise<void>
   delete(path: string): Promise<void>
+  cd(directory: string): IFileSystem
 }
 
 export interface LocalFileSystemOptions {
@@ -56,6 +57,12 @@ export class LocalFileSystem implements IFileSystem {
 
   public async delete(path: string): Promise<void> {
     await fs.unlink(this._makePath(path))
+  }
+
+  public cd(directory: string): LocalFileSystem {
+    return new LocalFileSystem({
+      rootDir: resolve(this.options.rootDir, directory)
+    })
   }
 
   private _makePath(path: string) {

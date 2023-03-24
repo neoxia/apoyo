@@ -1,5 +1,5 @@
 import { DeleteManyAction } from '../../src'
-import { clear, scaffolder } from './setup'
+import { clear, scaffolder } from '../setup'
 
 describe('DeleteManyAction', () => {
   beforeEach(clear)
