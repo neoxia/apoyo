@@ -40,11 +40,12 @@ export class Scaffolder {
 
   public child(options: Partial<ScaffolderOptions>) {
     return new Scaffolder({
-      ...this.options,
-      ...options,
+      templates: options.templates ?? this.templates,
+      destination: options.destination ?? this.destination,
+      renderer: options.renderer ?? this.renderer,
       parameters: {
         ...this.options.parameters,
-        ...options?.parameters
+        ...options.parameters
       }
     })
   }

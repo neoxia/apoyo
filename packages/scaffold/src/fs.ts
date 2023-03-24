@@ -24,10 +24,13 @@ export class LocalFileSystem implements IFileSystem {
    * @param pattern - Check out the [glob](https://www.npmjs.com/package/glob) package for more information
    */
   public async list(pattern: string | string[]): Promise<string[]> {
-    return glob(pattern, {
+    const files = await glob(pattern, {
+      dot: true,
       nodir: true,
       cwd: this.options.rootDir
     })
+
+    return files.map((file) => file.replace(/\\/g, '/'))
   }
 
   public async exists(path: string): Promise<boolean> {
