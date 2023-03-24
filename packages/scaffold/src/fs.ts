@@ -1,3 +1,7 @@
+import * as fs from 'fs/promises'
+import { glob } from 'glob'
+import { resolve, dirname } from 'path'
+
 export interface IFileSystem {
   list(globs: string[]): Promise<string[]>
   get(path: string): Promise<string>
@@ -15,19 +19,36 @@ export class LocalFileSystem implements IFileSystem {
   /**
    * List files using the specified glob patterns
    *
-   * @param glob - Check out the [glob](https://www.npmjs.com/package/glob) package for more information
+   * @param pattern - Check out the [glob](https://www.npmjs.com/package/glob) package for more information
    */
-  list(globs: string[]): Promise<string[]> {
-    throw new Error('Method not implemented.')
+  public async list(pattern: string | string[]): Promise<string[]> {
+    return glob(pattern, {
+      nodir: true,
+      cwd: this.options.rootDir
+    })
   }
 
-  get(path: string): Promise<string> {
-    throw new Error('Method not implemented.')
+  public async get(path: string): Promise<string> {
+    return fs.readFile(this._makePath(path), {
+      encoding: 'utf-8'
+    })
   }
-  write(path: string, content: string): Promise<void> {
-    throw new Error('Method not implemented.')
+
+  public async write(path: string, content: string): Promise<void> {
+    const dest = this._makePath(path)
+    await fs.mkdir(dirname(dest), {
+      recursive: true
+    })
+    await fs.writeFile(dest, content, {
+      encoding: 'utf-8'
+    })
   }
-  delete(path: string): Promise<void> {
-    throw new Error('Method not implemented.')
+
+  public async delete(path: string): Promise<void> {
+    await fs.unlink(this._makePath(path))
+  }
+
+  private _makePath(path: string) {
+    return resolve(this.options.rootDir, path)
   }
 }

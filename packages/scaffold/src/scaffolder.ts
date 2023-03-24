@@ -2,6 +2,9 @@ import { IFileSystem } from './fs'
 import { IScaffolderAction } from './scaffolder-action'
 import { ITemplateEngine } from './template-engine'
 
+import * as changeCase from 'change-case'
+import * as inflection from 'inflection'
+
 export interface ScaffolderOptions {
   fs: IFileSystem
   renderer: ITemplateEngine
@@ -20,8 +23,19 @@ export class Scaffolder {
     return this.options.renderer
   }
 
+  public getHelpers() {
+    return {
+      changeCase,
+      inflection
+    }
+  }
+
   public getParameters() {
     return this.options.parameters ?? {}
+  }
+
+  public getDist() {
+    return this.options.dist
   }
 
   public child(options: Partial<ScaffolderOptions>) {
@@ -39,5 +53,12 @@ export class Scaffolder {
     for (const action of actions) {
       await action.execute(this)
     }
+  }
+
+  public async render(content: string): Promise<string> {
+    return this.getRenderer().render(content, {
+      h: this.getHelpers(),
+      ...this.getParameters()
+    })
   }
 }
