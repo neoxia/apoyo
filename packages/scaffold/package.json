@@ -1,15 +1,15 @@
 {
   "name": "@apoyo/scaffold",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Utils focused around creating code generators and scaffolders",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "typings": "dist/index.d.ts",
   "files": [
-    "dist",
-    "LICENSE",
-    "README.md",
-    "package.json"
+    "./dist",
+    "./LICENSE",
+    "./README.md",
+    "./package.json"
   ],
   "sideEffects": false,
   "author": "Sascha Braun",
