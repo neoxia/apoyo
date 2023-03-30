@@ -14,14 +14,14 @@ describe('LocalFileSystem', () => {
         'prepend-hello-world.ejs',
         'append-hello-world.ejs',
         'add-hello-world.ejs',
-        'static/README.md',
+        'static/README.md.ejs',
         'static/.gitignore',
         'static/.env.development'
       ])
 
       const staticFiles = await fs.cd('static').list('**/*')
 
-      expect(staticFiles).toEqual(['README.md', '.gitignore', '.env.development'])
+      expect(staticFiles).toEqual(['README.md.ejs', '.gitignore', '.env.development'])
     })
 
     it('should list only files matching the patterns', async () => {

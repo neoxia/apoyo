@@ -1,16 +1,21 @@
-import { CopyFilesAction } from '../../src'
+import { AddManyAction } from '../../src'
 import { clear, scaffolder } from '../setup'
 
-describe('CopyFilesAction', () => {
+describe('AddManyAction', () => {
   beforeEach(clear)
   afterEach(clear)
 
   describe('execute', () => {
     it('should execute action correctly', async () => {
-      const action = new CopyFilesAction({
+      const action = new AddManyAction({
         patterns: ['**/*'],
         from: './static',
-        to: './'
+        to: './',
+        parameters: {
+          project: {
+            name: 'Test'
+          }
+        }
       })
 
       await action.execute(scaffolder)
