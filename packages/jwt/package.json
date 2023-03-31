@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/jwt",
   "scripts": {
-    "test": "jest --verbose --runInBand",
+    "test": "jest --runInBand --passWithNoTests",
     "build": "tsup"
   },
   "devDependencies": {
