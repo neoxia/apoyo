@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/process",
   "scripts": {
-    "test": "jest --verbose --runInBand",
+    "test": "jest --runInBand",
     "build": "tsup"
   },
   "devDependencies": {
