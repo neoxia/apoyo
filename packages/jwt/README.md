@@ -18,32 +18,28 @@ A more complete documentation will be made available once the API has stabilized
 
 ## Usage
 
-```ts
-import { 
-  IJwtVerifier, 
-  JwtInvalidPayloadException, 
-  LocalJwtManager, 
-  CognitoJwtManager
-} from '@apoyo/jwt'
+### Local JWT
 
-const localDriver = new LocalJwtManager({
-  secretOrPublicKey: 'mysecret',
-  secretOrPrivateKey: 'mysecret',
-  issuer: 'Me',
-  expiresIn: '1h',
-  async encode(user: User): Promise<unknown> {
+1. Define your strategy:
+
+```ts
+export class LocalJwtStrategy implements ILocalJwtStrategy<User, User> {
+  constructor(private readonly userRepository: UserRepository) {}
+
+  public async build(user): Promise<unknown> {
     return {
       sub: user.id,
       email: user.email
     }
   }
-  async decode({ header, payload, jwk }): Promise<User> {
+
+  public async authenticate(payload): Promise<User> {
     if (typeof payload !== 'object' || payload === null) {
       throw new JwtInvalidPayloadException()
     }
 
     const userId = payload?.sub ?? null
-    const user = await userRepository.findById(userId)
+    const user = await this.userRepository.findById(userId)
 
     if (user === null) {
       throw new JwtInvalidPayloadException()
@@ -51,17 +47,57 @@ const localDriver = new LocalJwtManager({
 
     return user
   }
-})
+}
+```
 
-const cognitoDriver = new CognitoJwtManager({
-  cognitoPoolId: 'string',
-  async decode ({ header, payload, jwk }): Promise<User> {
-    // ...
+2. Create your JWT Manager:
+
+```ts
+const localConfig: ILocalJwtConfig = {
+  secretOrPublicKey: 'mysecret',
+  secretOrPrivateKey: 'mysecret',
+  issuer: 'Me',
+  expiresIn: '1h',
+}
+const localStrategy = new LocalJwtStrategy(...)
+const localJwt = new LocalJwtManager(localConfig, localStrategy)
+```
+
+### Cognito
+
+1. Define your strategy:
+
+```ts
+export class CognitoJwtStrategy implements ICognitoJwtStrategy<User, User> {
+  constructor(private readonly userRepository: UserRepository) {}
+
+  public async authenticate(payload): Promise<User> {
+    const userId = payload?.sub ?? null
+    const user = await this.userRepository.findById(userId)
+
+    if (user === null) {
+      throw new JwtInvalidPayloadException()
+    }
+
+    return user
   }
-})
+}
+```
 
-// Somewhere else
+2. Create your JWT Manager:
 
+```ts
+const cognitoConfig: ICognitoJwtConfig = {
+  userPoolId: 'my-user-pool',
+  clientId: 'my-client-id'
+}
+const cognitoStrategy = new CognitoJwtStrategy(...)
+const cognitoJwt = new CognitoJwtManager(cognitoConfig, cognitoStrategy)
+```
+
+### Authentication
+
+```ts
 export class AuthContext {
   private readonly context = new AsyncLocalStorage<User>()
 
@@ -82,6 +118,8 @@ export class AuthContext {
   }
 }
 ```
+
+**Note**: This code is exactly the same as for the local JWT manager.
 
 ## License
 

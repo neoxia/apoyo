@@ -3,30 +3,33 @@ import { Algorithm, JwtPayload, sign, verify } from 'jsonwebtoken'
 import { IJwtSigner, IJwtVerifier } from '../contracts'
 import { JwtInvalidPayloadException, JwtVerifyException } from '../exceptions'
 
-export interface LocalJwtVerifierConfig<O extends object> {
+export interface ILocalJwtVerifierConfig {
   algorithm?: Algorithm
   issuer?: string
   audience?: string
   secretOrPublicKey: string
-  decode(payload: JwtPayload): Promise<O>
 }
 
-export interface LocalJwtSignerConfig<I extends object> {
+export interface ILocalJwtSignerConfig {
   algorithm?: Algorithm
   expiresIn?: string | number
   issuer?: string
   audience?: string
   secretOrPrivateKey: string
-  encode(input: I): Promise<JwtPayload>
 }
 
-export type LocalJwtConfig<I extends object, O extends object> = LocalJwtSignerConfig<I> & LocalJwtVerifierConfig<O>
+export type ILocalJwtConfig = ILocalJwtSignerConfig & ILocalJwtVerifierConfig
+
+export interface ILocalJwtStrategy<I extends object, O extends object> {
+  build(input: I): Promise<JwtPayload>
+  authenticate(payload: JwtPayload): Promise<O>
+}
 
 export class LocalJwtManager<I extends object, O extends object> implements IJwtVerifier<O>, IJwtSigner<I> {
-  constructor(private readonly config: LocalJwtConfig<I, O>) {}
+  constructor(private readonly config: ILocalJwtConfig, private readonly strategy: ILocalJwtStrategy<I, O>) {}
 
   public async sign(input: I): Promise<string> {
-    const payload = await this.config.encode(input)
+    const payload = await this.strategy.build(input)
 
     return sign(payload, this.config.secretOrPrivateKey, {
       algorithm: this.config.algorithm,
@@ -43,7 +46,7 @@ export class LocalJwtManager<I extends object, O extends object> implements IJwt
       throw new JwtInvalidPayloadException()
     }
 
-    return this.config.decode(payload)
+    return this.strategy.authenticate(payload)
   }
 
   private _verify(token: string) {
