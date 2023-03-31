@@ -4,17 +4,17 @@ import { IJwtSigner, IJwtVerifier } from '../contracts'
 import { JwtInvalidPayloadException, JwtVerifyException } from '../exceptions'
 
 export interface ILocalJwtVerifierConfig {
-  algorithm?: Algorithm
-  issuer?: string
-  audience?: string
+  algorithm: Algorithm
+  issuer: string
+  audience: string
   secretOrPublicKey: string
 }
 
 export interface ILocalJwtSignerConfig {
-  algorithm?: Algorithm
-  expiresIn?: string | number
-  issuer?: string
-  audience?: string
+  algorithm: Algorithm
+  expiresIn: string | number
+  issuer: string
+  audience: string
   secretOrPrivateKey: string
 }
 

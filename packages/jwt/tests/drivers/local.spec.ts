@@ -1,4 +1,4 @@
-import { decode } from 'jsonwebtoken'
+import { decode, sign } from 'jsonwebtoken'
 import { LocalJwtManager, ILocalJwtStrategy, ILocalJwtConfig, JwtInvalidPayloadException } from '../../src'
 
 interface User {
@@ -14,6 +14,15 @@ describe('LocalJwtManager', () => {
     email: 'test@example.com'
   }
 
+  const options: ILocalJwtConfig = {
+    algorithm: 'HS256',
+    issuer: 'my-app',
+    audience: 'my-app',
+    secretOrPrivateKey: 'my-secret',
+    secretOrPublicKey: 'my-secret',
+    expiresIn: '1h'
+  }
+
   beforeEach(async () => {
     const userRepository = {
       async findById(_id: string) {
@@ -21,10 +30,6 @@ describe('LocalJwtManager', () => {
       }
     }
 
-    const options: ILocalJwtConfig = {
-      secretOrPrivateKey: 'my-secret',
-      secretOrPublicKey: 'my-secret'
-    }
     const strategy: ILocalJwtStrategy<User, User> = {
       async build(input) {
         return {
@@ -54,14 +59,30 @@ describe('LocalJwtManager', () => {
 
       expect(payload).toEqual({
         sub: user.id,
-        email: user.email
+        email: user.email,
+        aud: options.audience,
+        iss: options.issuer,
+        exp: expect.any(Number),
+        iat: expect.any(Number)
       })
     })
   })
 
   describe('authenticate', () => {
     it('should return authenticated user correctly', async () => {
-      const token = await manager.sign(user)
+      const token = sign(
+        {
+          sub: user.id,
+          email: user.email
+        },
+        options.secretOrPrivateKey,
+        {
+          algorithm: options.algorithm,
+          issuer: options.issuer,
+          audience: options.audience,
+          expiresIn: options.expiresIn
+        }
+      )
 
       const authenticated = await manager.authenticate(token)
 
