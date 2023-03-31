@@ -1,4 +1,4 @@
-import { IJwtVerifier } from '../contracts'
+import { IJwtVerifier } from '@apoyo/jwt'
 import { CognitoJwtPayload } from 'aws-jwt-verify/jwt-model'
 import { CognitoJwtVerifierProperties, CognitoJwtVerifier } from 'aws-jwt-verify/cognito-verifier'
 

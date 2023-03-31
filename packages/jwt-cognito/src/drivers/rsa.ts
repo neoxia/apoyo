@@ -1,4 +1,4 @@
-import { IJwtVerifier } from '../contracts'
+import { IJwtVerifier } from '@apoyo/jwt'
 import { JwtRsaVerifier, JwtRsaVerifierProperties, VerifyProperties } from 'aws-jwt-verify/jwt-rsa'
 import { JwtPayload } from 'aws-jwt-verify/jwt-model'
 

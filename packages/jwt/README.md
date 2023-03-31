@@ -20,7 +20,7 @@ A more complete documentation will be made available once the API has stabilized
 
 ### Local JWT
 
-1. Define your strategy:
+Define your strategy:
 
 ```ts
 export class LocalJwtStrategy implements ILocalJwtStrategy<User, User> {
@@ -50,7 +50,7 @@ export class LocalJwtStrategy implements ILocalJwtStrategy<User, User> {
 }
 ```
 
-2. Create your JWT Manager:
+Create your JWT Manager:
 
 ```ts
 const localConfig: ILocalJwtConfig = {
@@ -65,10 +65,16 @@ const localJwt = new LocalJwtManager(localConfig, localStrategy)
 
 ### Cognito
 
-1. Define your strategy:
+Install JWT driver:
+
+```sh
+npm i @apoyo/jwt-cognito
+```
+
+Define your strategy:
 
 ```ts
-export class CognitoJwtStrategy implements ICognitoJwtStrategy<User, User> {
+export class CognitoJwtStrategy implements ICognitoJwtStrategy<User> {
   constructor(private readonly userRepository: UserRepository) {}
 
   public async authenticate(payload): Promise<User> {
@@ -84,7 +90,7 @@ export class CognitoJwtStrategy implements ICognitoJwtStrategy<User, User> {
 }
 ```
 
-2. Create your JWT Manager:
+Create your JWT manager instance:
 
 ```ts
 const cognitoConfig: ICognitoJwtConfig = {
