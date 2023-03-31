@@ -198,6 +198,67 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@apoyo/jwt-azure@workspace:packages/jwt-azure":
+  version: 0.0.0-use.local
+  resolution: "@apoyo/jwt-azure@workspace:packages/jwt-azure"
+  dependencies:
+    "@apoyo/jwt": ^0.0.1
+    "@apoyo/std": ^0.0.15
+    "@types/jest": ^26.0.23
+    "@types/jsonwebtoken": ^9
+    "@types/node": ^16.18.0
+    azure-ad-jwt-lite: ^1.2.1
+    jest: ^26.4.2
+    jsonwebtoken: ^9.0.0
+    ts-jest: ^26.3.0
+    ts-node: ^8.0.2
+    tsup: ^6.1.2
+    typescript: ^4.7.4
+  peerDependencies:
+    "@apoyo/jwt": ^0.0.1
+    "@apoyo/std": ^0.0.15
+  languageName: unknown
+  linkType: soft
+
+"@apoyo/jwt-cognito@workspace:packages/jwt-cognito":
+  version: 0.0.0-use.local
+  resolution: "@apoyo/jwt-cognito@workspace:packages/jwt-cognito"
+  dependencies:
+    "@apoyo/jwt": ^0.0.1
+    "@apoyo/std": ^0.0.15
+    "@types/jest": ^26.0.23
+    "@types/node": ^16.18.0
+    aws-jwt-verify: ^4.0.0
+    jest: ^26.4.2
+    ts-jest: ^26.3.0
+    ts-node: ^8.0.2
+    tsup: ^6.1.2
+    typescript: ^4.7.4
+  peerDependencies:
+    "@apoyo/jwt": ^0.0.1
+    "@apoyo/std": ^0.0.15
+  languageName: unknown
+  linkType: soft
+
+"@apoyo/jwt@^0.0.1, @apoyo/jwt@workspace:packages/jwt":
+  version: 0.0.0-use.local
+  resolution: "@apoyo/jwt@workspace:packages/jwt"
+  dependencies:
+    "@apoyo/std": ^0.0.15
+    "@types/jest": ^26.0.23
+    "@types/jsonwebtoken": ^9
+    "@types/node": ^16.18.0
+    jest: ^26.4.2
+    jsonwebtoken: ^9.0.0
+    ts-jest: ^26.3.0
+    ts-node: ^8.0.2
+    tsup: ^6.1.2
+    typescript: ^4.7.4
+  peerDependencies:
+    "@apoyo/std": ^0.0.15
+  languageName: unknown
+  linkType: soft
+
 "@apoyo/logger@workspace:packages/logger":
   version: 0.0.0-use.local
   resolution: "@apoyo/logger@workspace:packages/logger"
@@ -3449,6 +3510,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/jsonwebtoken@npm:^9":
+  version: 9.0.1
+  resolution: "@types/jsonwebtoken@npm:9.0.1"
+  dependencies:
+    "@types/node": "*"
+  checksum: a7f0925e9a42ad3ae970364c63c5986d40da5c83d51d3f4e624eb0f064a380376f9e3fb3f2f837390a9ab80143f5d75fd51866da30e110f6b486a3379e1c768f
+  languageName: node
+  linkType: hard
+
 "@types/minimatch@npm:*":
   version: 5.1.1
   resolution: "@types/minimatch@npm:5.1.1"
@@ -4021,6 +4091,22 @@ __metadata:
   version: 1.0.0
   resolution: "atomic-sleep@npm:1.0.0"
   checksum: b95275afb2f80732f22f43a60178430c468906a415a7ff18bcd0feeebc8eec3930b51250aeda91a476062a90e07132b43a1794e8d8ffcf9b650e8139be75fa36
+  languageName: node
+  linkType: hard
+
+"aws-jwt-verify@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "aws-jwt-verify@npm:4.0.0"
+  checksum: 9c95829504b2ed9ec0b595f4e5f39e28c6fed3d494c32667f1382d10b80b4a0abe5f13450fff3d3522f4eb8e72508aa5e704012d2ea5f7637af34b04ad2f08d5
+  languageName: node
+  linkType: hard
+
+"azure-ad-jwt-lite@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "azure-ad-jwt-lite@npm:1.2.1"
+  dependencies:
+    jsonwebtoken: ^9.0.0
+  checksum: 1461e85f305bceb093b440eddd39e861dea404d6d5b710ba9e2d94e724eabc80b06d82d7e6ab593d0dcc25844e896db220fcb601d4ed43e49522bd3ee795e132
   languageName: node
   linkType: hard
 
@@ -7619,6 +7705,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jsonwebtoken@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "jsonwebtoken@npm:9.0.0"
+  dependencies:
+    jws: ^3.2.2
+    lodash: ^4.17.21
+    ms: ^2.1.1
+    semver: ^7.3.8
+  checksum: b9181cecf9df99f1dc0253f91ba000a1aa4d91f5816d1608c0dba61a5623726a0bfe200b51df25de18c1a6000825d231ad7ce2788aa54fd48dcb760ad9eb9514
+  languageName: node
+  linkType: hard
+
 "jwa@npm:^1.4.1":
   version: 1.4.1
   resolution: "jwa@npm:1.4.1"
@@ -7871,7 +7969,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.x, lodash@npm:^4.7.0":
+"lodash@npm:4.x, lodash@npm:^4.17.21, lodash@npm:^4.7.0":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
@@ -9497,6 +9595,17 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: 2fa3e877568cd6ce769c75c211beaed1f9fce80b28338cadd9d0b6c40f2e2862bafd62c19a6cff42f3d54292b7c623277bcab8816a2b5521cf15210d43e75232
+  languageName: node
+  linkType: hard
+
+"semver@npm:^7.3.8":
+  version: 7.3.8
+  resolution: "semver@npm:7.3.8"
+  dependencies:
+    lru-cache: ^6.0.0
+  bin:
+    semver: bin/semver.js
+  checksum: ba9c7cbbf2b7884696523450a61fee1a09930d888b7a8d7579025ad93d459b2d1949ee5bbfeb188b2be5f4ac163544c5e98491ad6152df34154feebc2cc337c1
   languageName: node
   linkType: hard
 
