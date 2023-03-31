@@ -1,4 +1,4 @@
-import { IJwtVerifier } from '@apoyo/jwt'
+import { IJwtVerifier, JwtVerifyException } from '@apoyo/jwt'
 import { JwtRsaVerifier, JwtRsaVerifierProperties, VerifyProperties } from 'aws-jwt-verify/jwt-rsa'
 import { JwtPayload } from 'aws-jwt-verify/jwt-model'
 
@@ -21,6 +21,13 @@ export class RsaJwtManager<O extends object> implements IJwtVerifier<O> {
   }
 
   private async _verify(token: string) {
-    return this._verifier.verify(token)
+    try {
+      return this._verifier.verify(token)
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        throw new JwtVerifyException(err)
+      }
+      throw new JwtVerifyException()
+    }
   }
 }

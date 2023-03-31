@@ -198,7 +198,49 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@apoyo/jwt@workspace:packages/jwt":
+"@apoyo/jwt-azure@workspace:packages/jwt-azure":
+  version: 0.0.0-use.local
+  resolution: "@apoyo/jwt-azure@workspace:packages/jwt-azure"
+  dependencies:
+    "@apoyo/jwt": ^0.0.1
+    "@apoyo/std": ^0.0.15
+    "@types/jest": ^26.0.23
+    "@types/jsonwebtoken": ^9
+    "@types/node": ^16.18.0
+    azure-ad-jwt-lite: ^1.2.1
+    jest: ^26.4.2
+    jsonwebtoken: ^9.0.0
+    ts-jest: ^26.3.0
+    ts-node: ^8.0.2
+    tsup: ^6.1.2
+    typescript: ^4.7.4
+  peerDependencies:
+    "@apoyo/jwt": ^0.0.1
+    "@apoyo/std": ^0.0.15
+  languageName: unknown
+  linkType: soft
+
+"@apoyo/jwt-cognito@workspace:packages/jwt-cognito":
+  version: 0.0.0-use.local
+  resolution: "@apoyo/jwt-cognito@workspace:packages/jwt-cognito"
+  dependencies:
+    "@apoyo/jwt": ^0.0.1
+    "@apoyo/std": ^0.0.15
+    "@types/jest": ^26.0.23
+    "@types/node": ^16.18.0
+    aws-jwt-verify: ^4.0.0
+    jest: ^26.4.2
+    ts-jest: ^26.3.0
+    ts-node: ^8.0.2
+    tsup: ^6.1.2
+    typescript: ^4.7.4
+  peerDependencies:
+    "@apoyo/jwt": ^0.0.1
+    "@apoyo/std": ^0.0.15
+  languageName: unknown
+  linkType: soft
+
+"@apoyo/jwt@^0.0.1, @apoyo/jwt@workspace:packages/jwt":
   version: 0.0.0-use.local
   resolution: "@apoyo/jwt@workspace:packages/jwt"
   dependencies:
@@ -206,7 +248,6 @@ __metadata:
     "@types/jest": ^26.0.23
     "@types/jsonwebtoken": ^9
     "@types/node": ^16.18.0
-    aws-jwt-verify: ^4.0.0
     jest: ^26.4.2
     jsonwebtoken: ^9.0.0
     ts-jest: ^26.3.0
@@ -4057,6 +4098,15 @@ __metadata:
   version: 4.0.0
   resolution: "aws-jwt-verify@npm:4.0.0"
   checksum: 9c95829504b2ed9ec0b595f4e5f39e28c6fed3d494c32667f1382d10b80b4a0abe5f13450fff3d3522f4eb8e72508aa5e704012d2ea5f7637af34b04ad2f08d5
+  languageName: node
+  linkType: hard
+
+"azure-ad-jwt-lite@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "azure-ad-jwt-lite@npm:1.2.1"
+  dependencies:
+    jsonwebtoken: ^9.0.0
+  checksum: 1461e85f305bceb093b440eddd39e861dea404d6d5b710ba9e2d94e724eabc80b06d82d7e6ab593d0dcc25844e896db220fcb601d4ed43e49522bd3ee795e132
   languageName: node
   linkType: hard
 
