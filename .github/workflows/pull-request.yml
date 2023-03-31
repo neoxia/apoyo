@@ -27,9 +27,19 @@ jobs:
 
       - run: yarn install --immutable
 
-      - run: yarn build
+      - run: yarn lint
+
+      - name: Build affected packages
+        run: |
+          git fetch origin master
+          yarn jill each build --no-private --affected origin/master
 
       - run: docker-compose up -d
-      - run: yarn test-affected
+
+      - name: Test affected packages
+        run: |
+          git fetch origin master
+          yarn jill each test --no-private --affected origin/master
+
       - run: docker-compose down
 
