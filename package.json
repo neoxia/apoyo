@@ -13,12 +13,12 @@
   "scripts": {
     "lint": "yarn run eslint --ext ts,tsx .",
     "lint:fix": "yarn run eslint --fix --ext ts,tsx .",
-    "test": "yarn lint && yarn workspaces foreach --no-private run test",
-    "test-affected": "yarn lint && yarn jill each test --no-private --affected origin/master -- --runInBand",
+    "test": "yarn lint && yarn jill each test --no-private",
     "build": "yarn jill each build --no-private",
     "postinstall": "husky install"
   },
   "devDependencies": {
+    "@jujulego/jill": "^1.2.1",
     "@types/node": "^16.18.0",
     "@types/prettier": "1.10.0",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
@@ -39,8 +39,5 @@
   },
   "resolutions": {
     "@types/superagent": "4.1.14"
-  },
-  "dependencies": {
-    "@jujulego/jill": "^1.2.1"
   }
 }

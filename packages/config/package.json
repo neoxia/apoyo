@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/config",
   "scripts": {
-    "test": "jest --verbose --runInBand",
+    "test": "jest --runInBand",
     "build": "tsup"
   },
   "devDependencies": {

@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/neoxia/apoyo/tree/master/packages/files-gcs",
   "scripts": {
-    "test": "jest --verbose --runInBand --passWithNoTests",
+    "test": "jest --runInBand --passWithNoTests",
     "build": "tsup"
   },
   "devDependencies": {
