@@ -34,10 +34,6 @@ export class LocalJwtStrategy implements ILocalJwtStrategy<User, User> {
   }
 
   public async authenticate(payload): Promise<User> {
-    if (typeof payload !== 'object' || payload === null) {
-      throw new JwtInvalidPayloadException()
-    }
-
     const userId = payload?.sub ?? null
     const user = await this.userRepository.findById(userId)
 
