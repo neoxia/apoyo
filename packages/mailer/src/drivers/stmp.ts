@@ -1,5 +1,6 @@
 import { createTransport, Transporter } from 'nodemailer'
 import { IMailerDriver, IMail } from '../contracts'
+import { SendMailFailedException } from '../exceptions'
 
 export interface StmpMailerConfig {
   /** the hostname or IP address to connect to (defaults to ‘localhost’) */
@@ -32,6 +33,10 @@ export class StmpMailerDriver implements IMailerDriver {
   }
 
   public async send(mail: IMail): Promise<void> {
-    await this._transporter.sendMail(mail)
+    try {
+      await this._transporter.sendMail(mail)
+    } catch (err) {
+      throw new SendMailFailedException(err)
+    }
   }
 }
