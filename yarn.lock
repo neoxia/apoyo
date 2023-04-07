@@ -306,10 +306,12 @@ __metadata:
   resolution: "@apoyo/mailer@workspace:packages/mailer"
   dependencies:
     "@apoyo/std": ^0.0.15
+    "@types/ejs": ^3.1.2
     "@types/jest": ^26.0.23
     "@types/jsonwebtoken": ^9
     "@types/node": ^16.18.0
     "@types/nodemailer": ^6
+    ejs: ^3.1.9
     jest: ^26.4.2
     nodemailer: ^6.9.1
     ts-jest: ^26.3.0
