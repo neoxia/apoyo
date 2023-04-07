@@ -22,6 +22,24 @@ describe('AddAction', () => {
       )
     })
 
+    it('should execute action correctly from inline template', async () => {
+      const action = new AddAction({
+        from: {
+          content: `console.log('Hello <%= name %>');`
+        },
+        to: 'hello-world.ts',
+        parameters: {
+          name: 'John Doe'
+        }
+      })
+
+      await action.execute(scaffolder)
+
+      expect(await scaffolder.destination.get('hello-world.ts')).toMatchInlineSnapshot(
+        `"console.log('Hello John Doe');"`
+      )
+    })
+
     it('should allow dynamic destination path', async () => {
       const action = new AddAction({
         from: 'add-hello-world.ejs',
