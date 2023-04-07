@@ -11,9 +11,12 @@ export class AppendFileNotFoundException extends FileNotFoundException {
 }
 
 export interface AppendActionOptions {
-  from: string
+  /**
+   * Path to the template file or text content of the template
+   */
+  from: string | { content: string }
   to: string
-  after: string
+  after?: string
   skipIf?: string
 
   /**
@@ -28,7 +31,9 @@ export class AppendAction implements IScaffolderAction {
   public async execute(app: Scaffolder): Promise<void> {
     const from = this.options.from
     const to = await app.render(this.options.to, this.options.parameters)
-    const after = new RegExp(Str.regexpEscape(await app.render(this.options.after, this.options.parameters)))
+    const after = this.options.after
+      ? new RegExp(Str.regexpEscape(await app.render(this.options.after, this.options.parameters)))
+      : null
     const skipIf = this.options.skipIf
       ? new RegExp(Str.regexpEscape(await app.render(this.options.skipIf, this.options.parameters)))
       : null
@@ -38,19 +43,14 @@ export class AppendAction implements IScaffolderAction {
       throw new AppendFileNotFoundException(to)
     }
 
-    const template = await app.templates.get(from)
-    const rendered = await app.render(template)
+    const template = typeof from === 'string' ? await app.templates.get(from) : from.content
+    const rendered = await app.render(template, this.options.parameters)
 
     const source = await app.destination.get(to)
     const lines = source.split('\n')
 
-    const idx = lines.findIndex((line) => after.test(line))
+    const idx = after ? lines.findIndex((line) => after.test(line)) : lines.length - 1
     const skip = skipIf ? skipIf.test(source) : false
-
-    if (skip) {
-      // eslint-disable-next-line no-console
-      console.log(`skip append ${to}`)
-    }
 
     if (idx !== -1 && skip === false) {
       lines.splice(idx + 1, 0, rendered)

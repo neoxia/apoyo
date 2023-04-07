@@ -27,6 +27,8 @@ Here a list of features that Apoyo covers:
 
 - **File drivers**: Upload and download files for most commonly used providers, such as AWS S3, GCS and Azure Blobs
 
+- **JWT drivers**: Create JWT authentication strategies from multiple drivers provided, such as local JWTs, Cognito JWTs and Azure JWTs.
+
 - **Authorization**: Use policies to define your business authorization logic in a more consistent way.
 
 - **IoC**: Use a simple and fully type-safe IoC container without polluting your code with decorators.
@@ -49,6 +51,8 @@ Before using a package, check if the version is ^1.0.0. If not, the package is s
 - [Config](packages/config) (`@apoyo/config`): Contains utils to help you configure your application.
 
 - [Files](packages/files) (`@apoyo/files`): Contains file drivers for most commonly used providers.
+
+- [JWT](packages/jwt) (`@apoyo/jwt`): Contains JWT drivers for most commonly used providers.
 
 - [Policies](packages/policies) (`@apoyo/policies`): Contains utils to better separate and write authorization logic.
 

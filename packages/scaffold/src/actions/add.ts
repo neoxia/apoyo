@@ -2,7 +2,10 @@ import { Scaffolder } from '../scaffolder'
 import { IScaffolderAction } from '../scaffolder-action'
 
 export interface AddActionOptions {
-  from: string
+  /**
+   * Path to the template file or text content of the template
+   */
+  from: string | { content: string }
   to: string
 
   /**
@@ -33,7 +36,7 @@ export class AddAction implements IScaffolderAction {
       }
     }
 
-    const template = await app.templates.get(from)
+    const template = typeof from === 'string' ? await app.templates.get(from) : from.content
     const rendered = await app.render(template, this.options.parameters)
 
     await app.destination.write(to, rendered)

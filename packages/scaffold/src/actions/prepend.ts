@@ -10,9 +10,12 @@ export class PrependFileNotFoundException extends FileNotFoundException {
 }
 
 export interface PrependActionOptions {
-  from: string
+  /**
+   * Path to the template file or text content of the template
+   */
+  from: string | { content: string }
   to: string
-  before: string
+  before?: string
   skipIf?: string
 
   /**
@@ -27,7 +30,9 @@ export class PrependAction implements IScaffolderAction {
   public async execute(app: Scaffolder): Promise<void> {
     const from = this.options.from
     const to = await app.render(this.options.to, this.options.parameters)
-    const before = new RegExp(Str.regexpEscape(await app.render(this.options.before, this.options.parameters)))
+    const before = this.options.before
+      ? new RegExp(Str.regexpEscape(await app.render(this.options.before, this.options.parameters)))
+      : null
     const skipIf = this.options.skipIf
       ? new RegExp(Str.regexpEscape(await app.render(this.options.skipIf, this.options.parameters)))
       : null
@@ -37,13 +42,13 @@ export class PrependAction implements IScaffolderAction {
       throw new PrependFileNotFoundException(to)
     }
 
-    const template = await app.templates.get(from)
-    const rendered = await app.render(template)
+    const template = typeof from === 'string' ? await app.templates.get(from) : from.content
+    const rendered = await app.render(template, this.options.parameters)
 
     const source = await app.destination.get(to)
     const lines = source.split('\n')
 
-    const idx = lines.findIndex((line) => line.match(before))
+    const idx = before ? lines.findIndex((line) => line.match(before)) : 0
     const skip = skipIf ? skipIf.test(source) : false
 
     if (idx !== -1 && skip === false) {
