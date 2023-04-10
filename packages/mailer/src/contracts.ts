@@ -1,13 +1,13 @@
-import { Options } from 'nodemailer/lib/mailer'
+import { FileAttachment, IcalAttachment, IContent, IEnvelope, IHeaders, IPreparedMail } from './types'
 
-export interface IMail extends Options {}
-
-export {
-  Address as IMailAddress,
-  Attachment as IMailAttachment,
-  IcalAttachment as IMailIcalAttachment
-} from 'nodemailer/lib/mailer'
+export interface IMail {
+  envelope(): IEnvelope
+  content(): IContent
+  headers?(): IHeaders
+  ical?(): IcalAttachment
+  attachments?(): FileAttachment[]
+}
 
 export interface IMailerDriver {
-  send(mail: IMail): Promise<void>
+  send(mail: IPreparedMail): Promise<void>
 }

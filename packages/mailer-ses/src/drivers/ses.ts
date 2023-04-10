@@ -1,5 +1,5 @@
 import { createTransport, Transporter } from 'nodemailer'
-import { IMailerDriver, IMail, SendMailFailedException } from '@apoyo/mailer'
+import { IMailerDriver, IPreparedMail, SendMailFailedException } from '@apoyo/mailer'
 
 import { SES } from '@aws-sdk/client-ses'
 
@@ -33,7 +33,7 @@ export class SesMailerDriver implements IMailerDriver {
     })
   }
 
-  public async send(mail: IMail): Promise<void> {
+  public async send(mail: IPreparedMail): Promise<void> {
     try {
       await this._transporter.sendMail(mail)
     } catch (err) {
