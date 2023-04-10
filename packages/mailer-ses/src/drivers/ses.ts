@@ -3,16 +3,16 @@ import { IMailerDriver, IPreparedMail, SendMailFailedException } from '@apoyo/ma
 
 import { SES } from '@aws-sdk/client-ses'
 
-export interface SesMailerConfig {
+export interface SesConfig {
   region: string
   key?: string
   secret?: string
 }
 
-export class SesMailerDriver implements IMailerDriver {
+export class SesDriver implements IMailerDriver {
   private readonly _transporter: Transporter
 
-  constructor(config: SesMailerConfig) {
+  constructor(config: SesConfig) {
     const credentials =
       config.key && config.secret
         ? {

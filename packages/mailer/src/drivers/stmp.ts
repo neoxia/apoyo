@@ -3,7 +3,7 @@ import { IMailerDriver } from '../contracts'
 import { SendMailFailedException } from '../exceptions'
 import { IPreparedMail } from '../types'
 
-export interface StmpMailerConfig {
+export interface StmpConfig {
   /** the hostname or IP address to connect to (defaults to ‘localhost’) */
   host: string
 
@@ -18,10 +18,10 @@ export interface StmpMailerConfig {
   ssl?: boolean
 }
 
-export class StmpMailerDriver implements IMailerDriver {
+export class StmpDriver implements IMailerDriver {
   private readonly _transporter: Transporter
 
-  constructor(config: StmpMailerConfig) {
+  constructor(config: StmpConfig) {
     this._transporter = createTransport({
       host: config.host,
       port: config.port,
