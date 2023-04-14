@@ -80,10 +80,9 @@ export class Mailer {
   }
 
   private async _render(view: View, mail: IMail) {
-    return this.renderer.renderFile(view.view, {
+    return this.renderer.renderFile(view.name, {
       ...this.config?.globals,
-      ...mail,
-      ...view.data
+      ...mail
     })
   }
 

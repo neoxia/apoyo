@@ -5,7 +5,7 @@ export class Address {
 }
 
 export class View {
-  constructor(public readonly view: string, public readonly data: Record<string, unknown> = {}) {}
+  constructor(public readonly name: string) {}
 }
 
 export class FileAttachment {

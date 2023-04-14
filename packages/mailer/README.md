@@ -16,35 +16,45 @@ The `mailer` package series contains different drivers and abstractions for mail
 
 A more complete documentation will be made available once the API has stabilized itself.
 
+## Example
+
 ```ts
-// Create mailer
+// 1. Create mailer
 
 import { Mailer, EjsTemplateEngine, Address } from '@apoyo/mailer'
 import { SesDriver } from '@apoyo/mailer-ses'
+
+const platformConfig = {
+  routes: {
+    home() {
+      return 'localhost:8080'
+    }
+  }
+}
 
 const driver = new SesDriver({
   region: 'eu-west-1'
 })
 
 const renderer = new EjsTemplateEngine({
-  rootDir: path.resolve(__dirname, './assets/mails'),
+  rootDir: path.resolve(__dirname, './assets/emails'),
 })
 
 const mailer = new Mailer({
   from: new Address('no-reply@myapp.com', 'My App'),
   globals: {
-    platform: {
-      baseUrl: 'localhost:8080'
-    }
-  }
-}, driver, renderer)
+    platform: platformConfig
+  },
+  driver,
+  renderer,
+})
 
 
-// Define email
+// 2. Define email
 
 import { Address, View, IMail } from '@apoyo/mailer'
 
-export class ConfirmUserMail implements IMail {
+export class ConfirmAccountMail implements IMail {
   constructor(public readonly user: User) {}
 
   public envelope() {
@@ -62,9 +72,9 @@ export class ConfirmUserMail implements IMail {
   }
 }
 
-// Send out email using a mailer instance
+// 3. Send out email using a mailer instance
 
-await mailer.send(new ConfirmUserMail(user))
+await mailer.send(new ConfirmAccountMail(user))
 ```
 
 ## License
