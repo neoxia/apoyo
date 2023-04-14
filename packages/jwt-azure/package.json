@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/jwt-azure",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "JWT driver for Azure",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
