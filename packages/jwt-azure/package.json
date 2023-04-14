@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/jwt-azure",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "JWT driver for Azure",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -51,6 +51,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@types/jsonwebtoken": "^9.0.1",
     "azure-ad-jwt-lite": "^1.2.1",
     "jsonwebtoken": "^9.0.0"
   }

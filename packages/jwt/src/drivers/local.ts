@@ -25,7 +25,7 @@ export interface ILocalJwtStrategy<I extends object, O extends object> {
   authenticate(payload: LocalJwtPayload): Promise<O>
 }
 
-export { LocalJwtAlgorithm as LocalAlgorithm, LocalJwtPayload }
+export { LocalJwtAlgorithm, LocalJwtPayload }
 
 export class LocalJwtManager<I extends object, O extends object> implements IJwtVerifier<O>, IJwtSigner<I> {
   constructor(private readonly config: ILocalJwtConfig, private readonly strategy: ILocalJwtStrategy<I, O>) {}
