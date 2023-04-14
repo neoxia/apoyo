@@ -5,3 +5,4 @@ export * from './exceptions'
 export * from './template-engine'
 
 export * from './drivers/stmp'
+export * from './drivers/fake'

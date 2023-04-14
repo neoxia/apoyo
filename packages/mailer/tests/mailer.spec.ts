@@ -2,6 +2,7 @@ import path from 'path'
 import {
   Address,
   EjsTemplateEngine,
+  FakeDriver,
   IContent,
   IEnvelope,
   IMail,
@@ -47,10 +48,7 @@ describe('Mailer', () => {
       }
     }
 
-    driver = {
-      send: jest.fn().mockResolvedValue(undefined)
-    }
-
+    driver = new FakeDriver()
     renderer = new EjsTemplateEngine({
       rootDir: path.resolve(__dirname, 'assets', 'emails')
     })
