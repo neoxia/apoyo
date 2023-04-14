@@ -3,6 +3,8 @@ import { Algorithm, JwtPayload, sign, verify } from 'jsonwebtoken'
 import { IJwtSigner, IJwtVerifier } from '../contracts'
 import { JwtInvalidPayloadException, JwtVerifyException } from '../exceptions'
 
+export type { Algorithm, JwtPayload } from 'jsonwebtoken'
+
 export interface ILocalJwtVerifierConfig {
   algorithm: Algorithm
   issuer: string
