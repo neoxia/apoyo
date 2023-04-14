@@ -1,12 +1,14 @@
 import { IJwtVerifier, JwtInvalidPayloadException, JwtVerifyException } from '@apoyo/jwt'
 import { verifyAzureToken, DecodeOptions } from 'azure-ad-jwt-lite'
-import { JwtPayload } from 'jsonwebtoken'
+import { JwtPayload as AzureJwtPayload } from 'jsonwebtoken'
 
 export interface IAzureJwtConfig extends DecodeOptions {}
 
 export interface IAzureJwtStrategy<O extends object> {
-  authenticate(jwt: JwtPayload): Promise<O>
+  authenticate(jwt: AzureJwtPayload): Promise<O>
 }
+
+export { AzureJwtPayload }
 
 export class AzureJwtManager<O extends object> implements IJwtVerifier<O> {
   constructor(private readonly config: IAzureJwtConfig, private readonly strategy: IAzureJwtStrategy<O>) {}

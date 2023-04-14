@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/jwt-cognito",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "JWT driver for Cognito user pools",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
