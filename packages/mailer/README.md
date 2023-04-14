@@ -18,16 +18,17 @@ A more complete documentation will be made available once the API has stabilized
 
 ## Example
 
-```ts
-// 1. Create mailer
+1. Create mailer
 
+```ts
 import { Mailer, EjsTemplateEngine, Address } from '@apoyo/mailer'
 import { SesDriver } from '@apoyo/mailer-ses'
 
+const platformUrl = 'localhost:8080'
 const platformConfig = {
   routes: {
-    home() {
-      return 'localhost:8080'
+    confirmAccount(token: string) {
+      return `${platformUrl}/account/confirm?${encodeURIComponent(token)}`
     }
   }
 }
@@ -41,21 +42,22 @@ const renderer = new EjsTemplateEngine({
 })
 
 const mailer = new Mailer({
-  from: new Address('no-reply@myapp.com', 'My App'),
+  from: new Address('no-reply@myapp.com', 'MyApp'),
   globals: {
     platform: platformConfig
   },
   driver,
   renderer,
 })
+```
 
+2. Define mail
 
-// 2. Define email
-
+```ts
 import { Address, View, IMail } from '@apoyo/mailer'
 
 export class ConfirmAccountMail implements IMail {
-  constructor(public readonly user: User) {}
+  constructor(public readonly user: User, public readonly confirmToken: string) {}
 
   public envelope() {
     return {
@@ -71,10 +73,26 @@ export class ConfirmAccountMail implements IMail {
     }
   }
 }
+```
 
-// 3. Send out email using a mailer instance
+3. Define mail template
 
-await mailer.send(new ConfirmAccountMail(user))
+```html
+Hello <%= user.displayName %>,
+
+Please confirm your account by clicking on the link below:
+
+<a href="<%= platform.routes.confirmAccount(confirmToken) %>">Confirm account</a>
+
+Regards,
+
+MyApp
+```
+
+4. Send out email using a mailer instance
+
+```ts
+await mailer.send(new ConfirmAccountMail(user, 'my-confirmation-token'))
 ```
 
 ## License
