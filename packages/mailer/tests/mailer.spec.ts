@@ -5,7 +5,7 @@ import {
   IContent,
   IEnvelope,
   IMail,
-  IMailerDriver,
+  IMailDriver,
   ITemplateEngine,
   Mailer,
   View
@@ -34,7 +34,7 @@ export class ConfirmAccountMail implements IMail {
 }
 
 describe('Mailer', () => {
-  let driver: IMailerDriver
+  let driver: IMailDriver
   let renderer: ITemplateEngine
   let mailer: Mailer
 
@@ -55,16 +55,14 @@ describe('Mailer', () => {
       rootDir: path.resolve(__dirname, 'assets', 'emails')
     })
 
-    mailer = new Mailer(
-      {
-        from: new Address('no-reply@my-app.com', 'My App'),
-        globals: {
-          platform
-        }
+    mailer = new Mailer({
+      from: new Address('no-reply@my-app.com', 'My App'),
+      globals: {
+        platform
       },
       driver,
       renderer
-    )
+    })
   })
 
   describe('prepare', () => {

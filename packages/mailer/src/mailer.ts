@@ -1,5 +1,5 @@
 import { Arr, Dict, Option, pipe } from '@apoyo/std'
-import { IMail, IMailerDriver } from './contracts'
+import { IMail, IMailDriver } from './contracts'
 import { ITemplateEngine } from './template-engine'
 import { Address, IPreparedMail, View } from './types'
 
@@ -8,29 +8,31 @@ import Mail from 'nodemailer/lib/mailer'
 export interface MailerConfig {
   from?: Address
   globals?: Record<string, unknown>
+  driver: IMailDriver
+  renderer: ITemplateEngine
   interceptor?(prepared: IPreparedMail, send: (prepared: IPreparedMail) => Promise<void>): Promise<void>
 }
 
 export class Mailer {
-  constructor(
-    private readonly config: MailerConfig,
-    private readonly driver: IMailerDriver,
-    private readonly renderer: ITemplateEngine
-  ) {}
+  private readonly driver: IMailDriver
+  private readonly renderer: ITemplateEngine
+
+  constructor(private readonly config: MailerConfig) {
+    this.driver = config.driver
+    this.renderer = config.renderer
+  }
 
   public child(config: Partial<MailerConfig>) {
-    return new Mailer(
-      {
-        from: config.from ?? this.config.from,
-        globals: {
-          ...this.config.globals,
-          ...config.globals
-        },
-        interceptor: config.interceptor ?? this.config?.interceptor
+    return new Mailer({
+      from: config.from ?? this.config.from,
+      globals: {
+        ...this.config.globals,
+        ...config.globals
       },
-      this.driver,
-      this.renderer
-    )
+      driver: config.driver ?? this.config.driver,
+      renderer: config.renderer ?? this.config.renderer,
+      interceptor: config.interceptor ?? this.config?.interceptor
+    })
   }
 
   public async prepare(mail: IMail): Promise<IPreparedMail> {

@@ -1,5 +1,5 @@
 import { createTransport, Transporter } from 'nodemailer'
-import { IMailerDriver, IPreparedMail, SendMailFailedException } from '@apoyo/mailer'
+import { IMailDriver, IPreparedMail, SendMailFailedException } from '@apoyo/mailer'
 
 import { SES } from '@aws-sdk/client-ses'
 
@@ -9,7 +9,7 @@ export interface SesConfig {
   secret?: string
 }
 
-export class SesDriver implements IMailerDriver {
+export class SesDriver implements IMailDriver {
   private readonly _transporter: Transporter
 
   constructor(config: SesConfig) {

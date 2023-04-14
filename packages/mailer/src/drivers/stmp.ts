@@ -1,5 +1,5 @@
 import { createTransport, Transporter } from 'nodemailer'
-import { IMailerDriver } from '../contracts'
+import { IMailDriver } from '../contracts'
 import { SendMailFailedException } from '../exceptions'
 import { IPreparedMail } from '../types'
 
@@ -18,7 +18,7 @@ export interface StmpConfig {
   ssl?: boolean
 }
 
-export class StmpDriver implements IMailerDriver {
+export class StmpDriver implements IMailDriver {
   private readonly _transporter: Transporter
 
   constructor(config: StmpConfig) {

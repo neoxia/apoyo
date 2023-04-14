@@ -8,6 +8,6 @@ export interface IMail {
   attachments?(): FileAttachment[]
 }
 
-export interface IMailerDriver {
+export interface IMailDriver {
   send(mail: IPreparedMail): Promise<void>
 }
