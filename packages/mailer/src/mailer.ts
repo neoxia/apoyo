@@ -10,7 +10,6 @@ export interface MailerConfig {
   globals?: Record<string, unknown>
   driver: IMailDriver
   renderer: ITemplateEngine
-  interceptor?(prepared: IPreparedMail, send: (prepared: IPreparedMail) => Promise<void>): Promise<void>
 }
 
 export class Mailer {
@@ -30,8 +29,7 @@ export class Mailer {
         ...config.globals
       },
       driver: config.driver ?? this.config.driver,
-      renderer: config.renderer ?? this.config.renderer,
-      interceptor: config.interceptor ?? this.config?.interceptor
+      renderer: config.renderer ?? this.config.renderer
     })
   }
 
@@ -73,10 +71,7 @@ export class Mailer {
 
   public async send(mail: IMail): Promise<void> {
     const prepared = await this.prepare(mail)
-    if (!this.config.interceptor) {
-      return this.driver.send(prepared)
-    }
-    await this.config.interceptor(prepared, (prepared) => this.driver.send(prepared))
+    await this.driver.send(prepared)
   }
 
   private async _render(view: View, mail: IMail) {
