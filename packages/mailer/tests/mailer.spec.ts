@@ -18,7 +18,7 @@ export interface User {
 }
 
 export class ConfirmAccountMail implements IMail {
-  constructor(private readonly user: User, private readonly confirmToken: string) {}
+  constructor(public readonly user: User, public readonly confirmToken: string) {}
 
   envelope(): IEnvelope {
     return {
@@ -28,10 +28,7 @@ export class ConfirmAccountMail implements IMail {
   }
   content(): IContent {
     return {
-      html: new View('confirm-account', {
-        user: this.user,
-        confirmToken: this.confirmToken
-      })
+      html: new View('users/confirm-account')
     }
   }
 }

@@ -45,7 +45,7 @@ const mailer = new Mailer({
 import { Address, View, IMail } from '@apoyo/mailer'
 
 export class ConfirmUserMail implements IMail {
-  constructor(private readonly user: User) {}
+  constructor(public readonly user: User) {}
 
   public envelope() {
     return {
@@ -56,8 +56,8 @@ export class ConfirmUserMail implements IMail {
 
   public content() {
     return {
-      html: new View('users.confirm-user', { user: this.user }),
-      text: new View('users.confirm-user-text', { user: this.user })
+      html: new View('users/confirm-account'),
+      text: new View('users/confirm-account-text')
     }
   }
 }

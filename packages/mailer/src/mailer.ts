@@ -54,15 +54,15 @@ export class Mailer {
       subject: envelope.subject,
       text: await pipe(
         content.text,
-        Option.map((view) => this._render(view))
+        Option.map((view) => this._render(view, mail))
       ),
       html: await pipe(
         content.html,
-        Option.map((view) => this._render(view))
+        Option.map((view) => this._render(view, mail))
       ),
       watchHtml: await pipe(
         content.watch,
-        Option.map((view) => this._render(view))
+        Option.map((view) => this._render(view, mail))
       ),
       attachments,
       icalEvent
@@ -77,10 +77,10 @@ export class Mailer {
     await this.config.interceptor(prepared, (prepared) => this.driver.send(prepared))
   }
 
-  private async _render(view: View) {
-    const viewPath = view.view.replace(/\./g, '/')
-    return this.renderer.renderFile(viewPath, {
+  private async _render(view: View, mail: IMail) {
+    return this.renderer.renderFile(view.view, {
       ...this.config?.globals,
+      ...mail,
       ...view.data
     })
   }

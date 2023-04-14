@@ -16,7 +16,7 @@ describe('EjsTemplateEngine', () => {
 
   describe('renderFile', () => {
     it('should render file correctly', async () => {
-      const text = await renderer.renderFile('confirm-account', {
+      const text = await renderer.renderFile('users/confirm-account', {
         user: {
           firstName: 'John',
           lastName: 'Doe'
@@ -39,7 +39,7 @@ describe('EjsTemplateEngine', () => {
     })
 
     it('should render file correctly with includes', async () => {
-      const text = await renderer.renderFile('confirm-account-with-footer', {
+      const text = await renderer.renderFile('users/confirm-account-with-footer', {
         user: {
           firstName: 'John',
           lastName: 'Doe'
