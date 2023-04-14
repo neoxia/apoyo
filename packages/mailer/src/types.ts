@@ -1,7 +1,7 @@
 import Mail, { Attachment as IAttachmentOptions, IcalAttachment as IIcalAttachmentOptions } from 'nodemailer/lib/mailer'
 
 export class Address {
-  constructor(public readonly address: string, public readonly name: string) {}
+  constructor(public readonly email: string, public readonly name?: string) {}
 }
 
 export class View {
@@ -37,7 +37,7 @@ export interface IEnvelope {
 }
 
 export interface IContent {
-  text: View
+  text?: View
   html?: View
   watch?: View
 }

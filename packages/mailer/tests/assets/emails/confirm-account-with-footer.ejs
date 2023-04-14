@@ -1,0 +1,9 @@
+Hello <%= user.firstName %> <%= user.lastName %>,
+
+Please confirm your account by clicking on the link below:
+
+<a href="<%= platform.routes.confirmAccount(confirmToken) %>">Confirm account</a>
+
+Regards,
+
+<%- await include('layouts/footer') %>

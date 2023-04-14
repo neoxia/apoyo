@@ -1,4 +1,5 @@
 import { render as renderEjs, renderFile as renderFileEjs } from 'ejs'
+import path from 'path'
 
 export interface ITemplateEngine {
   readonly extension: string
@@ -17,9 +18,9 @@ export class EjsTemplateEngine implements ITemplateEngine {
     })
   }
 
-  public async renderFile(path: string, parameters: Record<string, unknown>): Promise<string> {
-    return renderFileEjs(`${path}${this.extension}`, parameters, {
-      root: this.config.rootDir,
+  public async renderFile(template: string, parameters: Record<string, unknown>): Promise<string> {
+    const p = path.resolve(this.config.rootDir, `${template}${this.extension}`)
+    return renderFileEjs(p, parameters, {
       async: true
     })
   }
