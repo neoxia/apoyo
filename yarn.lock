@@ -205,7 +205,7 @@ __metadata:
     "@apoyo/jwt": ^0.0.1
     "@apoyo/std": ^0.0.15
     "@types/jest": ^26.0.23
-    "@types/jsonwebtoken": ^9
+    "@types/jsonwebtoken": ^9.0.1
     "@types/node": ^16.18.0
     azure-ad-jwt-lite: ^1.2.1
     jest: ^26.4.2
@@ -240,13 +240,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@apoyo/jwt@^0.0.1, @apoyo/jwt@workspace:packages/jwt":
+"@apoyo/jwt@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "@apoyo/jwt@npm:0.0.1"
+  dependencies:
+    jsonwebtoken: ^9.0.0
+  peerDependencies:
+    "@apoyo/std": ^0.0.15
+  checksum: 638744238c725d3e5a1eb861128676dccf59732253323ab0662fe117c8a194ecb8007dcab9b131a7ffb1daf045f7c54b6f286edb41da18de99c07727a8a2846a
+  languageName: node
+  linkType: hard
+
+"@apoyo/jwt@workspace:packages/jwt":
   version: 0.0.0-use.local
   resolution: "@apoyo/jwt@workspace:packages/jwt"
   dependencies:
     "@apoyo/std": ^0.0.15
     "@types/jest": ^26.0.23
-    "@types/jsonwebtoken": ^9
+    "@types/jsonwebtoken": ^9.0.1
     "@types/node": ^16.18.0
     jest: ^26.4.2
     jsonwebtoken: ^9.0.0
@@ -4379,7 +4390,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jsonwebtoken@npm:^9":
+"@types/jsonwebtoken@npm:^9.0.1":
   version: 9.0.1
   resolution: "@types/jsonwebtoken@npm:9.0.1"
   dependencies:

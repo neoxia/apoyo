@@ -1,17 +1,17 @@
-import { Algorithm, JwtPayload, sign, verify } from 'jsonwebtoken'
+import { Algorithm as LocalJwtAlgorithm, JwtPayload as LocalJwtPayload, sign, verify } from 'jsonwebtoken'
 
 import { IJwtSigner, IJwtVerifier } from '../contracts'
 import { JwtInvalidPayloadException, JwtVerifyException } from '../exceptions'
 
 export interface ILocalJwtVerifierConfig {
-  algorithm: Algorithm
+  algorithm: LocalJwtAlgorithm
   issuer: string
   audience: string
   secretOrPublicKey: string
 }
 
 export interface ILocalJwtSignerConfig {
-  algorithm: Algorithm
+  algorithm: LocalJwtAlgorithm
   expiresIn: string | number
   issuer: string
   audience: string
@@ -21,9 +21,11 @@ export interface ILocalJwtSignerConfig {
 export type ILocalJwtConfig = ILocalJwtSignerConfig & ILocalJwtVerifierConfig
 
 export interface ILocalJwtStrategy<I extends object, O extends object> {
-  build(input: I): Promise<JwtPayload>
-  authenticate(payload: JwtPayload): Promise<O>
+  build(input: I): Promise<LocalJwtPayload>
+  authenticate(payload: LocalJwtPayload): Promise<O>
 }
+
+export { LocalJwtAlgorithm, LocalJwtPayload }
 
 export class LocalJwtManager<I extends object, O extends object> implements IJwtVerifier<O>, IJwtSigner<I> {
   constructor(private readonly config: ILocalJwtConfig, private readonly strategy: ILocalJwtStrategy<I, O>) {}

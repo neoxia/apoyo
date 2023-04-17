@@ -8,6 +8,8 @@ export interface ICognitoJwtStrategy<O extends object> {
   authenticate(jwt: CognitoJwtPayload): Promise<O>
 }
 
+export { CognitoJwtPayload }
+
 export class CognitoJwtManager<O extends object> implements IJwtVerifier<O> {
   private readonly _verifier: CognitoJwtVerifier<any, any, any>
 

@@ -1,12 +1,14 @@
 import { IJwtVerifier, JwtVerifyException } from '@apoyo/jwt'
 import { JwtRsaVerifier, JwtRsaVerifierProperties, VerifyProperties } from 'aws-jwt-verify/jwt-rsa'
-import { JwtPayload } from 'aws-jwt-verify/jwt-model'
+import { JwtPayload as RsaJwtPayload } from 'aws-jwt-verify/jwt-model'
 
 export interface IRsaJwtConfig extends JwtRsaVerifierProperties<VerifyProperties> {}
 
 export interface IRsaJwtStrategy<O extends object> {
-  authenticate(payload: JwtPayload): Promise<O>
+  authenticate(payload: RsaJwtPayload): Promise<O>
 }
+
+export { RsaJwtPayload }
 
 export class RsaJwtManager<O extends object> implements IJwtVerifier<O> {
   private readonly _verifier: JwtRsaVerifier<any, any, any>
