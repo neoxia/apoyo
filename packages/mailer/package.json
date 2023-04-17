@@ -37,7 +37,6 @@
     "@apoyo/std": "^0.0.15",
     "@types/ejs": "^3.1.2",
     "@types/jest": "^26.0.23",
-    "@types/jsonwebtoken": "^9",
     "@types/node": "^16.18.0",
     "@types/nodemailer": "^6",
     "jest": "^26.4.2",

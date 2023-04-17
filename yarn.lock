@@ -319,7 +319,6 @@ __metadata:
     "@apoyo/std": ^0.0.15
     "@types/ejs": ^3.1.2
     "@types/jest": ^26.0.23
-    "@types/jsonwebtoken": ^9
     "@types/node": ^16.18.0
     "@types/nodemailer": ^6
     ejs: ^3.1.9
@@ -4390,7 +4389,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jsonwebtoken@npm:^9.0.1":
+"@types/jsonwebtoken@npm:^9, @types/jsonwebtoken@npm:^9.0.1":
   version: 9.0.1
   resolution: "@types/jsonwebtoken@npm:9.0.1"
   dependencies:
