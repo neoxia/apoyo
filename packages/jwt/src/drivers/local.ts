@@ -1,7 +1,7 @@
 import { Algorithm as LocalJwtAlgorithm, JwtPayload as LocalJwtPayload, sign, verify } from 'jsonwebtoken'
 
 import { IJwtSigner, IJwtVerifier } from '../contracts'
-import { JwtInvalidPayloadException, JwtVerifyException } from '../exceptions'
+import { JwtException, JwtInvalidPayloadException, JwtVerifyException } from '../exceptions'
 
 export interface ILocalJwtVerifierConfig {
   algorithm: LocalJwtAlgorithm
@@ -22,7 +22,7 @@ export type ILocalJwtConfig = ILocalJwtSignerConfig & ILocalJwtVerifierConfig
 
 export interface ILocalJwtStrategy<I extends object, O extends object> {
   build(input: I): Promise<LocalJwtPayload>
-  authenticate(payload: LocalJwtPayload): Promise<O>
+  authenticate(payload: LocalJwtPayload): Promise<O | null>
 }
 
 export { LocalJwtAlgorithm, LocalJwtPayload }
@@ -41,14 +41,21 @@ export class LocalJwtManager<I extends object, O extends object> implements IJwt
     })
   }
 
-  public async authenticate(token: string): Promise<O> {
-    const payload = this._verify(token)
+  public async authenticate(token: string): Promise<O | null> {
+    try {
+      const payload = this._verify(token)
 
-    if (typeof payload !== 'object' || payload === null) {
-      throw new JwtInvalidPayloadException()
+      if (typeof payload !== 'object' || payload === null) {
+        throw new JwtInvalidPayloadException()
+      }
+
+      return this.strategy.authenticate(payload)
+    } catch (err) {
+      if (err instanceof JwtException) {
+        return null
+      }
+      throw err
     }
-
-    return this.strategy.authenticate(payload)
   }
 
   private _verify(token: string) {
@@ -60,10 +67,7 @@ export class LocalJwtManager<I extends object, O extends object> implements IJwt
         complete: false
       })
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        throw new JwtVerifyException(err)
-      }
-      throw new JwtVerifyException()
+      throw new JwtVerifyException(err instanceof Error ? err : undefined)
     }
   }
 }
