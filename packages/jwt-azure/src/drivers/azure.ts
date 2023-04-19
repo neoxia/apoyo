@@ -21,7 +21,7 @@ export class AzureJwtManager<O extends object> implements IJwtVerifier<O> {
         throw new JwtInvalidPayloadException()
       }
 
-      return this.strategy.authenticate(payload)
+      return await this.strategy.authenticate(payload)
     } catch (err) {
       if (err instanceof JwtException) {
         return null

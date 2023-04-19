@@ -20,7 +20,7 @@ export class CognitoJwtManager<O extends object> implements IJwtVerifier<O> {
   public async authenticate(token: string): Promise<O | null> {
     try {
       const jwt = await this._verify(token)
-      return this.strategy.authenticate(jwt)
+      return await this.strategy.authenticate(jwt)
     } catch (err) {
       if (err instanceof JwtException) {
         return null

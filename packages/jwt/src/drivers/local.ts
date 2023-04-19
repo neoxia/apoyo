@@ -49,7 +49,7 @@ export class LocalJwtManager<I extends object, O extends object> implements IJwt
         throw new JwtInvalidPayloadException()
       }
 
-      return this.strategy.authenticate(payload)
+      return await this.strategy.authenticate(payload)
     } catch (err) {
       if (err instanceof JwtException) {
         return null
