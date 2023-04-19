@@ -202,7 +202,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@apoyo/jwt-azure@workspace:packages/jwt-azure"
   dependencies:
-    "@apoyo/jwt": ^0.0.1
+    "@apoyo/jwt": ^0.1.0
     "@apoyo/std": ^0.0.15
     "@types/jest": ^26.0.23
     "@types/jsonwebtoken": ^9.0.1
@@ -215,7 +215,7 @@ __metadata:
     tsup: ^6.1.2
     typescript: ^4.7.4
   peerDependencies:
-    "@apoyo/jwt": ^0.0.1
+    "@apoyo/jwt": ^0.1.0
     "@apoyo/std": ^0.0.15
   languageName: unknown
   linkType: soft
@@ -224,7 +224,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@apoyo/jwt-cognito@workspace:packages/jwt-cognito"
   dependencies:
-    "@apoyo/jwt": ^0.0.1
+    "@apoyo/jwt": ^0.1.0
     "@apoyo/std": ^0.0.15
     "@types/jest": ^26.0.23
     "@types/node": ^16.18.0
@@ -235,23 +235,12 @@ __metadata:
     tsup: ^6.1.2
     typescript: ^4.7.4
   peerDependencies:
-    "@apoyo/jwt": ^0.0.1
+    "@apoyo/jwt": ^0.1.0
     "@apoyo/std": ^0.0.15
   languageName: unknown
   linkType: soft
 
-"@apoyo/jwt@npm:^0.0.1":
-  version: 0.0.1
-  resolution: "@apoyo/jwt@npm:0.0.1"
-  dependencies:
-    jsonwebtoken: ^9.0.0
-  peerDependencies:
-    "@apoyo/std": ^0.0.15
-  checksum: 638744238c725d3e5a1eb861128676dccf59732253323ab0662fe117c8a194ecb8007dcab9b131a7ffb1daf045f7c54b6f286edb41da18de99c07727a8a2846a
-  languageName: node
-  linkType: hard
-
-"@apoyo/jwt@workspace:packages/jwt":
+"@apoyo/jwt@^0.1.0, @apoyo/jwt@workspace:packages/jwt":
   version: 0.0.0-use.local
   resolution: "@apoyo/jwt@workspace:packages/jwt"
   dependencies:

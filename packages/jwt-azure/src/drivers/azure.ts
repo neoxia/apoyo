@@ -1,11 +1,11 @@
-import { IJwtVerifier, JwtInvalidPayloadException, JwtVerifyException } from '@apoyo/jwt'
+import { IJwtVerifier, JwtInvalidPayloadException, JwtVerifyException, JwtException } from '@apoyo/jwt'
 import { verifyAzureToken, DecodeOptions } from 'azure-ad-jwt-lite'
 import { JwtPayload as AzureJwtPayload } from 'jsonwebtoken'
 
 export interface IAzureJwtConfig extends DecodeOptions {}
 
 export interface IAzureJwtStrategy<O extends object> {
-  authenticate(jwt: AzureJwtPayload): Promise<O>
+  authenticate(jwt: AzureJwtPayload): Promise<O | null>
 }
 
 export { AzureJwtPayload }
@@ -13,24 +13,28 @@ export { AzureJwtPayload }
 export class AzureJwtManager<O extends object> implements IJwtVerifier<O> {
   constructor(private readonly config: IAzureJwtConfig, private readonly strategy: IAzureJwtStrategy<O>) {}
 
-  public async authenticate(token: string): Promise<O> {
-    const payload = await this._verify(token)
+  public async authenticate(token: string): Promise<O | null> {
+    try {
+      const payload = await this._verify(token)
 
-    if (typeof payload !== 'object' || payload === null) {
-      throw new JwtInvalidPayloadException()
+      if (typeof payload !== 'object' || payload === null) {
+        throw new JwtInvalidPayloadException()
+      }
+
+      return await this.strategy.authenticate(payload)
+    } catch (err) {
+      if (err instanceof JwtException) {
+        return null
+      }
+      throw err
     }
-
-    return this.strategy.authenticate(payload)
   }
 
   private async _verify(token: string) {
     try {
       return verifyAzureToken(token, this.config)
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        throw new JwtVerifyException(err)
-      }
-      throw new JwtVerifyException()
+      throw new JwtVerifyException(err instanceof Error ? err : undefined)
     }
   }
 }
