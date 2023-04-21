@@ -5,7 +5,7 @@ import { JwtPayload as AzureJwtPayload } from 'jsonwebtoken'
 export interface IAzureJwtConfig extends DecodeOptions {}
 
 export interface IAzureJwtStrategy<O extends object> {
-  authenticate(jwt: AzureJwtPayload): Promise<O | null>
+  verify(jwt: AzureJwtPayload): Promise<O | null>
 }
 
 export { AzureJwtPayload }
@@ -13,7 +13,7 @@ export { AzureJwtPayload }
 export class AzureJwtManager<O extends object> implements IJwtVerifier<O> {
   constructor(private readonly config: IAzureJwtConfig, private readonly strategy: IAzureJwtStrategy<O>) {}
 
-  public async authenticate(token: string): Promise<O | null> {
+  public async verify(token: string): Promise<O | null> {
     try {
       const payload = await this._verify(token)
 
@@ -21,7 +21,7 @@ export class AzureJwtManager<O extends object> implements IJwtVerifier<O> {
         throw new JwtInvalidPayloadException()
       }
 
-      return await this.strategy.authenticate(payload)
+      return await this.strategy.verify(payload)
     } catch (err) {
       if (err instanceof JwtException) {
         return null

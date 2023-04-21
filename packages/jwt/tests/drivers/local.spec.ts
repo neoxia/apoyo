@@ -31,13 +31,13 @@ describe('LocalJwtManager', () => {
     }
 
     const strategy: ILocalJwtStrategy<User, User> = {
-      async build(input) {
+      async sign(input) {
         return {
           sub: input.id,
           email: input.email
         }
       },
-      async authenticate(payload) {
+      async verify(payload) {
         const userId = payload.sub
         if (!userId) {
           throw new JwtInvalidPayloadException()
@@ -84,7 +84,7 @@ describe('LocalJwtManager', () => {
         }
       )
 
-      const authenticated = await manager.authenticate(token)
+      const authenticated = await manager.verify(token)
 
       expect(authenticated).toEqual(user)
     })

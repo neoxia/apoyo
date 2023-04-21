@@ -21,8 +21,8 @@ export interface ILocalJwtSignerConfig {
 export type ILocalJwtConfig = ILocalJwtSignerConfig & ILocalJwtVerifierConfig
 
 export interface ILocalJwtStrategy<I extends object, O extends object> {
-  build(input: I): Promise<LocalJwtPayload>
-  authenticate(payload: LocalJwtPayload): Promise<O | null>
+  sign(input: I): Promise<LocalJwtPayload>
+  verify(payload: LocalJwtPayload): Promise<O | null>
 }
 
 export { LocalJwtAlgorithm, LocalJwtPayload }
@@ -31,7 +31,7 @@ export class LocalJwtManager<I extends object, O extends object> implements IJwt
   constructor(private readonly config: ILocalJwtConfig, private readonly strategy: ILocalJwtStrategy<I, O>) {}
 
   public async sign(input: I): Promise<string> {
-    const payload = await this.strategy.build(input)
+    const payload = await this.strategy.sign(input)
 
     return sign(payload, this.config.secretOrPrivateKey, {
       algorithm: this.config.algorithm,
@@ -41,7 +41,7 @@ export class LocalJwtManager<I extends object, O extends object> implements IJwt
     })
   }
 
-  public async authenticate(token: string): Promise<O | null> {
+  public async verify(token: string): Promise<O | null> {
     try {
       const payload = this._verify(token)
 
@@ -49,7 +49,7 @@ export class LocalJwtManager<I extends object, O extends object> implements IJwt
         throw new JwtInvalidPayloadException()
       }
 
-      return await this.strategy.authenticate(payload)
+      return await this.strategy.verify(payload)
     } catch (err) {
       if (err instanceof JwtException) {
         return null

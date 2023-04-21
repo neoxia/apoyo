@@ -5,7 +5,7 @@ import { JwtPayload as RsaJwtPayload } from 'aws-jwt-verify/jwt-model'
 export interface IRsaJwtConfig extends JwtRsaVerifierProperties<VerifyProperties> {}
 
 export interface IRsaJwtStrategy<O extends object> {
-  authenticate(payload: RsaJwtPayload): Promise<O | null>
+  verify(payload: RsaJwtPayload): Promise<O | null>
 }
 
 export { RsaJwtPayload }
@@ -17,10 +17,10 @@ export class RsaJwtManager<O extends object> implements IJwtVerifier<O> {
     this._verifier = JwtRsaVerifier.create(config)
   }
 
-  public async authenticate(token: string): Promise<O | null> {
+  public async verify(token: string): Promise<O | null> {
     try {
       const jwt = await this._verify(token)
-      return await this.strategy.authenticate(jwt)
+      return await this.strategy.verify(jwt)
     } catch (err) {
       if (err instanceof JwtException) {
         return null
