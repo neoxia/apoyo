@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/jwt",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Utils and abstractions focused around JWTs",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

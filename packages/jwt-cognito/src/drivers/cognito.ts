@@ -5,7 +5,7 @@ import { CognitoJwtVerifierProperties, CognitoJwtVerifier } from 'aws-jwt-verify
 export interface ICognitoJwtConfig extends CognitoJwtVerifierProperties {}
 
 export interface ICognitoJwtStrategy<O extends object> {
-  authenticate(jwt: CognitoJwtPayload): Promise<O | null>
+  verify(jwt: CognitoJwtPayload): Promise<O | null>
 }
 
 export { CognitoJwtPayload }
@@ -17,10 +17,10 @@ export class CognitoJwtManager<O extends object> implements IJwtVerifier<O> {
     this._verifier = CognitoJwtVerifier.create(config)
   }
 
-  public async authenticate(token: string): Promise<O | null> {
+  public async verify(token: string): Promise<O | null> {
     try {
       const jwt = await this._verify(token)
-      return await this.strategy.authenticate(jwt)
+      return await this.strategy.verify(jwt)
     } catch (err) {
       if (err instanceof JwtException) {
         return null
