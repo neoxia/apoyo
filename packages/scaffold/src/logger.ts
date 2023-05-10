@@ -73,6 +73,6 @@ export class FileEventsLogger implements IEventListener {
   }
 
   private _format(type: string, filename: string) {
-    return type.toUpperCase().padEnd(10) + ' ' + path.relative(this._options.cwd, filename)
+    return type.toUpperCase().padEnd(10) + ' ' + path.relative(this._options.cwd, filename).replace(/\\/g, '/')
   }
 }
