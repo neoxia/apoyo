@@ -1,3 +1,4 @@
+import { FileCreatedEvent, FileModifiedEvent, FileSkippedEvent } from '../events'
 import { Scaffolder } from '../scaffolder'
 import { IScaffolderAction } from '../scaffolder-action'
 
@@ -29,16 +30,22 @@ export class AddAction implements IScaffolderAction {
     const from = this.options.from
     const to = await app.render(this.options.to, this.options.parameters)
 
-    if (skipIfExists) {
-      const exists = await app.destination.exists(to)
-      if (exists) {
-        return
-      }
+    const exists = await app.destination.exists(to)
+
+    if (skipIfExists && exists) {
+      app.dispatch(new FileSkippedEvent(app.templates.resolve(to)))
+      return
     }
 
     const template = typeof from === 'string' ? await app.templates.get(from) : from.content
     const rendered = await app.render(template, this.options.parameters)
 
     await app.destination.write(to, rendered)
+
+    if (exists) {
+      app.dispatch(new FileModifiedEvent(app.templates.resolve(to)))
+    } else {
+      app.dispatch(new FileCreatedEvent(app.templates.resolve(to)))
+    }
   }
 }

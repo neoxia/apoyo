@@ -1,4 +1,5 @@
 import { Str } from '@apoyo/std'
+import { FileModifiedEvent, FileSkippedEvent } from '../events'
 import { FileNotFoundException } from '../exceptions'
 import { Scaffolder } from '../scaffolder'
 import { IScaffolderAction } from '../scaffolder-action'
@@ -51,10 +52,15 @@ export class PrependAction implements IScaffolderAction {
     const idx = before ? lines.findIndex((line) => line.match(before)) : 0
     const skip = skipIf ? skipIf.test(source) : false
 
-    if (idx !== -1 && skip === false) {
-      lines.splice(idx, 0, rendered)
+    if (skip === true || idx === -1) {
+      app.dispatch(new FileSkippedEvent(app.templates.resolve(to)))
+      return
     }
 
+    lines.splice(idx, 0, rendered)
+
     await app.destination.write(to, lines.join('\n'))
+
+    app.dispatch(new FileModifiedEvent(app.templates.resolve(to)))
   }
 }

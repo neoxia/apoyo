@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/scaffold",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "Utils focused around creating code generators and scaffolders",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -53,6 +53,7 @@
     "access": "public"
   },
   "dependencies": {
+    "chalk": "^4.1.2",
     "change-case": "^4.1.2",
     "ejs": "^3.1.9",
     "glob": "^9.3.2",

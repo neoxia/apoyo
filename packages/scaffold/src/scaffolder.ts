@@ -1,6 +1,7 @@
 import { IFileSystem } from './fs'
 import { IScaffolderAction } from './scaffolder-action'
 import { ITemplateEngine } from './template-engine'
+import { Event, IEventListener } from './events'
 
 import * as changeCase from 'change-case'
 import * as inflection from 'inflection'
@@ -10,10 +11,15 @@ export interface ScaffolderOptions {
   destination: IFileSystem
   renderer: ITemplateEngine
   parameters?: Record<string, unknown>
+  listeners?: IEventListener[]
 }
 
 export class Scaffolder {
-  constructor(private readonly options: ScaffolderOptions) {}
+  private _listeners: IEventListener[]
+
+  constructor(private readonly options: ScaffolderOptions) {
+    this._listeners = options.listeners ?? []
+  }
 
   public get templates() {
     return this.options.templates
@@ -62,5 +68,11 @@ export class Scaffolder {
       ...this.getParameters(),
       ...parameters
     })
+  }
+
+  public async dispatch(event: Event) {
+    for (const listener of this._listeners) {
+      await listener.on(event)
+    }
   }
 }
