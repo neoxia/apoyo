@@ -1,4 +1,5 @@
 import { Str } from '@apoyo/std'
+import { FileModifiedEvent, FileSkippedEvent } from '../events'
 import { FileNotFoundException } from '../exceptions'
 
 import { Scaffolder } from '../scaffolder'
@@ -52,10 +53,15 @@ export class AppendAction implements IScaffolderAction {
     const idx = after ? lines.findIndex((line) => after.test(line)) : lines.length - 1
     const skip = skipIf ? skipIf.test(source) : false
 
-    if (idx !== -1 && skip === false) {
-      lines.splice(idx + 1, 0, rendered)
+    if (skip === true || idx === -1) {
+      app.dispatch(new FileSkippedEvent(app.templates.resolve(to)))
+      return
     }
 
+    lines.splice(idx + 1, 0, rendered)
+
     await app.destination.write(to, lines.join('\n'))
+
+    app.dispatch(new FileModifiedEvent(app.templates.resolve(to)))
   }
 }

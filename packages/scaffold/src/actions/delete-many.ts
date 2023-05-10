@@ -1,3 +1,4 @@
+import { FileDeletedEvent } from '../events'
 import { Scaffolder } from '../scaffolder'
 import { IScaffolderAction } from '../scaffolder-action'
 
@@ -13,6 +14,7 @@ export class DeleteManyAction implements IScaffolderAction {
 
     for (const file of files) {
       await app.destination.delete(file)
+      app.dispatch(new FileDeletedEvent(app.templates.resolve(file)))
     }
   }
 }

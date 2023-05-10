@@ -9,6 +9,7 @@ export interface IFileSystem {
   write(path: string, content: string): Promise<void>
   delete(path: string): Promise<void>
   cd(directory: string): IFileSystem
+  resolve(path: string): string
 }
 
 export interface LocalFileSystemOptions {
@@ -35,7 +36,7 @@ export class LocalFileSystem implements IFileSystem {
 
   public async exists(path: string): Promise<boolean> {
     try {
-      const stat = await fs.stat(this._makePath(path))
+      const stat = await fs.stat(this.resolve(path))
       return stat.isFile()
     } catch (err) {
       return false
@@ -43,13 +44,13 @@ export class LocalFileSystem implements IFileSystem {
   }
 
   public async get(path: string): Promise<string> {
-    return fs.readFile(this._makePath(path), {
+    return fs.readFile(this.resolve(path), {
       encoding: 'utf-8'
     })
   }
 
   public async write(path: string, content: string): Promise<void> {
-    const dest = this._makePath(path)
+    const dest = this.resolve(path)
     await fs.mkdir(dirname(dest), {
       recursive: true
     })
@@ -59,7 +60,7 @@ export class LocalFileSystem implements IFileSystem {
   }
 
   public async delete(path: string): Promise<void> {
-    await fs.unlink(this._makePath(path))
+    await fs.unlink(this.resolve(path))
   }
 
   public cd(directory: string): LocalFileSystem {
@@ -68,7 +69,7 @@ export class LocalFileSystem implements IFileSystem {
     })
   }
 
-  private _makePath(path: string) {
+  public resolve(path: string) {
     return resolve(this.options.rootDir, path)
   }
 }
