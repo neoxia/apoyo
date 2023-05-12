@@ -49,6 +49,7 @@ export class Scaffolder {
       templates: options.templates ?? this.templates,
       destination: options.destination ?? this.destination,
       renderer: options.renderer ?? this.renderer,
+      listeners: options.listeners ?? this._listeners,
       parameters: {
         ...this.options.parameters,
         ...options.parameters
