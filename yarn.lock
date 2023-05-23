@@ -371,7 +371,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@apoyo/scaffold@workspace:packages/scaffold"
   dependencies:
-    "@apoyo/std": 0.0.15
+    "@apoyo/std": 0.1.0
     "@types/ejs": ^3.1.2
     "@types/jest": ^26.0.23
     "@types/node": ^16.18.0
@@ -388,18 +388,11 @@ __metadata:
     tsup: ^6.1.2
     typescript: ^4.7.4
   peerDependencies:
-    "@apoyo/std": 0.0.15
+    "@apoyo/std": 0.1.0
   languageName: unknown
   linkType: soft
 
-"@apoyo/std@npm:0.0.15, @apoyo/std@npm:^0.0.15":
-  version: 0.0.15
-  resolution: "@apoyo/std@npm:0.0.15"
-  checksum: 27ad01c4bf8ec61cf884b5b43249e43ef0f191012adb096ba0c5f064aacc1294aaff9b77cebf950ad0643e8740bff5773c7733b1088320be0d2199b4ba975ee6
-  languageName: node
-  linkType: hard
-
-"@apoyo/std@workspace:packages/std":
+"@apoyo/std@0.1.0, @apoyo/std@workspace:packages/std":
   version: 0.0.0-use.local
   resolution: "@apoyo/std@workspace:packages/std"
   dependencies:
@@ -412,6 +405,13 @@ __metadata:
     typescript: ^4.7.4
   languageName: unknown
   linkType: soft
+
+"@apoyo/std@npm:0.0.15, @apoyo/std@npm:^0.0.15":
+  version: 0.0.15
+  resolution: "@apoyo/std@npm:0.0.15"
+  checksum: 27ad01c4bf8ec61cf884b5b43249e43ef0f191012adb096ba0c5f064aacc1294aaff9b77cebf950ad0643e8740bff5773c7733b1088320be0d2199b4ba975ee6
+  languageName: node
+  linkType: hard
 
 "@aws-crypto/crc32@npm:2.0.0":
   version: 2.0.0
