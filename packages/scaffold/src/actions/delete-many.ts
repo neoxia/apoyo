@@ -14,7 +14,7 @@ export class DeleteManyAction implements IScaffolderAction {
 
     for (const file of files) {
       await app.destination.delete(file)
-      app.dispatch(new FileDeletedEvent(app.templates.resolve(file)))
+      app.dispatch(new FileDeletedEvent(app.destination.resolve(file)))
     }
   }
 }

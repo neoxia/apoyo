@@ -54,7 +54,7 @@ export class ReplaceAction implements IScaffolderAction {
     const skip = skipIf ? skipIf.test(source) : false
 
     if (skip === true || found === false) {
-      app.dispatch(new FileSkippedEvent(app.templates.resolve(to)))
+      app.dispatch(new FileSkippedEvent(app.destination.resolve(to)))
       return
     }
 
@@ -62,6 +62,6 @@ export class ReplaceAction implements IScaffolderAction {
 
     await app.destination.write(to, transformed)
 
-    app.dispatch(new FileModifiedEvent(app.templates.resolve(to)))
+    app.dispatch(new FileModifiedEvent(app.destination.resolve(to)))
   }
 }

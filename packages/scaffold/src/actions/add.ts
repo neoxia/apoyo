@@ -33,7 +33,7 @@ export class AddAction implements IScaffolderAction {
     const exists = await app.destination.exists(to)
 
     if (skipIfExists && exists) {
-      app.dispatch(new FileSkippedEvent(app.templates.resolve(to)))
+      app.dispatch(new FileSkippedEvent(app.destination.resolve(to)))
       return
     }
 
@@ -43,9 +43,9 @@ export class AddAction implements IScaffolderAction {
     await app.destination.write(to, rendered)
 
     if (exists) {
-      app.dispatch(new FileModifiedEvent(app.templates.resolve(to)))
+      app.dispatch(new FileModifiedEvent(app.destination.resolve(to)))
     } else {
-      app.dispatch(new FileCreatedEvent(app.templates.resolve(to)))
+      app.dispatch(new FileCreatedEvent(app.destination.resolve(to)))
     }
   }
 }
