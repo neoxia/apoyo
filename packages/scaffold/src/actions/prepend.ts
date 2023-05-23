@@ -53,7 +53,7 @@ export class PrependAction implements IScaffolderAction {
     const skip = skipIf ? skipIf.test(source) : false
 
     if (skip === true || idx === -1) {
-      app.dispatch(new FileSkippedEvent(app.templates.resolve(to)))
+      app.dispatch(new FileSkippedEvent(app.destination.resolve(to)))
       return
     }
 
@@ -61,6 +61,6 @@ export class PrependAction implements IScaffolderAction {
 
     await app.destination.write(to, lines.join('\n'))
 
-    app.dispatch(new FileModifiedEvent(app.templates.resolve(to)))
+    app.dispatch(new FileModifiedEvent(app.destination.resolve(to)))
   }
 }

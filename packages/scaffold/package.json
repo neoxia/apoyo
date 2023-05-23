@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/scaffold",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Utils focused around creating code generators and scaffolders",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
