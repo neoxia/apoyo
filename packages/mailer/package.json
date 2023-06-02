@@ -1,6 +1,6 @@
 {
   "name": "@apoyo/mailer",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Utils and abstractions focused around mailers",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -38,7 +38,6 @@
     "@types/ejs": "^3.1.2",
     "@types/jest": "^26.0.23",
     "@types/node": "^16.18.0",
-    "@types/nodemailer": "^6",
     "jest": "^26.4.2",
     "ts-jest": "^26.3.0",
     "ts-node": "^8.0.2",
@@ -52,6 +51,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@types/nodemailer": "^6.4.8",
     "ejs": "^3.1.9",
     "nodemailer": "^6.9.1"
   }
