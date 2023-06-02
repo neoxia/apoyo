@@ -301,7 +301,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@apoyo/mailer@^0.0.1, @apoyo/mailer@workspace:packages/mailer":
+"@apoyo/mailer@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "@apoyo/mailer@npm:0.0.1"
+  dependencies:
+    ejs: ^3.1.9
+    nodemailer: ^6.9.1
+  peerDependencies:
+    "@apoyo/std": ^0.0.15
+  checksum: 7d28ad8dad541b4e9ad819e606eff50a4adee5083281ed99dec4a29c9fda282b927c9e66daccdbef4eb3545d09f0911290dff5fb0268d28b7e79196290ca56dc
+  languageName: node
+  linkType: hard
+
+"@apoyo/mailer@workspace:packages/mailer":
   version: 0.0.0-use.local
   resolution: "@apoyo/mailer@workspace:packages/mailer"
   dependencies:
@@ -309,7 +321,7 @@ __metadata:
     "@types/ejs": ^3.1.2
     "@types/jest": ^26.0.23
     "@types/node": ^16.18.0
-    "@types/nodemailer": ^6
+    "@types/nodemailer": ^6.4.8
     ejs: ^3.1.9
     jest: ^26.4.2
     nodemailer: ^6.9.1
@@ -4425,6 +4437,15 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: dc2a33a89135e04a5bea4921e8645e8453b90e3c3b05f0646f05071c5951ab697ea49ea1e503a690f04cb0a6abfc54967325c5a4036356793cfbb64ba64fb141
+  languageName: node
+  linkType: hard
+
+"@types/nodemailer@npm:^6.4.8":
+  version: 6.4.8
+  resolution: "@types/nodemailer@npm:6.4.8"
+  dependencies:
+    "@types/node": "*"
+  checksum: 3cc9b6a0e54f25a1b36124df413964ff5a69e8dc4558c5dfc06818917313a50f4dbfe31fc9190e4270d07a0f8678474da24a2eae42f907933ea81d983b4772d4
   languageName: node
   linkType: hard
 

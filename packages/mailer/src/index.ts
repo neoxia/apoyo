@@ -4,5 +4,5 @@ export * from './mailer'
 export * from './exceptions'
 export * from './template-engine'
 
-export * from './drivers/stmp'
+export * from './drivers/smtp'
 export * from './drivers/fake'
