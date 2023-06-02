@@ -51,7 +51,7 @@
     "typescript": "^4.7.4"
   },
   "peerDependencies": {
-    "@apoyo/mailer": "^0.0.1",
+    "@apoyo/mailer": "^0.1.0",
     "@apoyo/std": "^0.0.15"
   },
   "publishConfig": {
