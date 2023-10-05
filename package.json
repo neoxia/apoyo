@@ -13,8 +13,8 @@
   "scripts": {
     "lint": "yarn run eslint --ext ts,tsx .",
     "lint:fix": "yarn run eslint --fix --ext ts,tsx .",
-    "test": "yarn lint && yarn jill each test --no-private",
-    "build": "yarn jill each build --no-private",
+    "test": "jill each test --no-private",
+    "build": "jill each build --no-private",
     "postinstall": "husky install"
   },
   "devDependencies": {
