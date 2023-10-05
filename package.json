@@ -18,7 +18,7 @@
     "postinstall": "husky install"
   },
   "devDependencies": {
-    "@jujulego/jill": "^1.2.1",
+    "@jujulego/jill": "^2.3.2",
     "@types/node": "^16.18.0",
     "@types/prettier": "1.10.0",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
