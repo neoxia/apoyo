@@ -4124,9 +4124,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jujulego/jill@npm:^2.3.2":
-  version: 2.3.2
-  resolution: "@jujulego/jill@npm:2.3.2"
+"@jujulego/jill@npm:^2.3.3":
+  version: 2.3.3
+  resolution: "@jujulego/jill@npm:2.3.3"
   dependencies:
     "@jujulego/event-tree": ^4.1.0
     "@jujulego/tasks": ^2.0.1
@@ -4152,7 +4152,7 @@ __metadata:
     yargs: ^17.7.2
   bin:
     jill: ./bin/jill.mjs
-  checksum: f2e6a13500153bd500afc7255f1469815732a791537bfa29a8d0ccad38951f614f9e18640617810e37c6a654e13ce3815773a57beab1fcc53e16ab2dff7a88a7
+  checksum: c6aebdfd48dcaa631beb5e3188cdb27402a7872261e7c3bacd46f6b5519c454b21f043fda15575a52cb8271d84bf41bae5a1c825b165cf934fce8563716ebe58
   languageName: node
   linkType: hard
 
@@ -4868,7 +4868,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "apoyo@workspace:."
   dependencies:
-    "@jujulego/jill": ^2.3.2
+    "@jujulego/jill": ^2.3.3
     "@types/node": ^16.18.0
     "@types/prettier": 1.10.0
     "@typescript-eslint/eslint-plugin": ^5.30.0
