@@ -13,12 +13,12 @@
   "scripts": {
     "lint": "yarn run eslint --ext ts,tsx .",
     "lint:fix": "yarn run eslint --fix --ext ts,tsx .",
-    "test": "yarn lint && yarn jill each test --no-private",
-    "build": "yarn jill each build --no-private",
+    "test": "jill each test --no-private",
+    "build": "jill each build --no-private",
     "postinstall": "husky install"
   },
   "devDependencies": {
-    "@jujulego/jill": "^1.2.1",
+    "@jujulego/jill": "^2.3.3",
     "@types/node": "^16.18.0",
     "@types/prettier": "1.10.0",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
