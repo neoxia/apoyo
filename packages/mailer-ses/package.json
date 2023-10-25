@@ -38,7 +38,7 @@
     "build": "tsup"
   },
   "devDependencies": {
-    "@apoyo/mailer": "^0.0.1",
+    "@apoyo/mailer": "^0.1.0",
     "@apoyo/std": "^0.0.15",
     "@types/jest": "^26.0.23",
     "@types/jsonwebtoken": "^9",

@@ -271,7 +271,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@apoyo/mailer-ses@workspace:packages/mailer-ses"
   dependencies:
-    "@apoyo/mailer": ^0.0.1
+    "@apoyo/mailer": ^0.1.0
     "@apoyo/std": ^0.0.15
     "@aws-sdk/client-ses": ^3.306.0
     "@types/jest": ^26.0.23
@@ -290,19 +290,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@apoyo/mailer@npm:^0.0.1":
-  version: 0.0.1
-  resolution: "@apoyo/mailer@npm:0.0.1"
-  dependencies:
-    ejs: ^3.1.9
-    nodemailer: ^6.9.1
-  peerDependencies:
-    "@apoyo/std": ^0.0.15
-  checksum: 7d28ad8dad541b4e9ad819e606eff50a4adee5083281ed99dec4a29c9fda282b927c9e66daccdbef4eb3545d09f0911290dff5fb0268d28b7e79196290ca56dc
-  languageName: node
-  linkType: hard
-
-"@apoyo/mailer@workspace:packages/mailer":
+"@apoyo/mailer@^0.1.0, @apoyo/mailer@workspace:packages/mailer":
   version: 0.0.0-use.local
   resolution: "@apoyo/mailer@workspace:packages/mailer"
   dependencies:
