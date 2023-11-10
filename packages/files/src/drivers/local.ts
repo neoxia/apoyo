@@ -45,7 +45,7 @@ export class LocalDrive implements Drive {
   /**
    * Name of the driver
    */
-  public name: 'local' = 'local'
+  public name = 'local' as const
 
   constructor(private _config: LocalDriveConfig) {}
 

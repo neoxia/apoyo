@@ -79,7 +79,7 @@ export class AzureDrive implements Drive {
   /**
    * Name of the driver
    */
-  public name: 'azure' = 'azure'
+  public name = 'azure' as const
 
   constructor(private _config: AzureDriveConfig) {
     if ('connectionString' in _config) {

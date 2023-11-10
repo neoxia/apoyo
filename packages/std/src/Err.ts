@@ -45,13 +45,13 @@ const fullStack = (err: unknown) =>
 export const of = (msg: string, info: Dict<any> = {}, cause?: Err, constructorOpt?: Function): Err => {
   const data = pipe(info, D.filter(isNotReserved))
   const message = pipe(msg, template(data))
-  const e: Err = new Exception(message, cause)
+  const e = new Exception(message, cause) as Err
   Object.assign(e, data)
   Error.captureStackTrace(e, constructorOpt || of)
   return e
 }
 
-export const toError = (err: unknown): Err => (err instanceof Error ? err : of(String(err)))
+export const toError = (err: unknown): Err => (err instanceof Error ? (err as Err) : of(String(err)))
 
 export const toArray = (err: unknown): Err[] => {
   const errors: Err[] = []

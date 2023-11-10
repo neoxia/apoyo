@@ -7,7 +7,7 @@ enum TestEnum1 {
 enum TestEnum2 {
   a = 'a',
   b = 1,
-  c = 1,
+  c = 2,
   d = 'e'
 }
 enum TestEnum3 {
@@ -28,7 +28,7 @@ describe('Enum.keys', () => {
 describe('Enum.values', () => {
   it('should return enum values', () => {
     expect(Enum.values(TestEnum1).sort()).toEqual([0, 1].sort())
-    expect(Enum.values(TestEnum2).sort()).toEqual(['a', 1, 1, 'e'].sort())
+    expect(Enum.values(TestEnum2).sort()).toEqual(['a', 1, 2, 'e'].sort())
     expect(Enum.values(TestEnum3).sort()).toEqual(['b', 1, 2, 'd'].sort())
   })
 })
@@ -45,7 +45,7 @@ describe('Enum.toPairs', () => {
       [
         ['a', 'a'],
         ['b', 1],
-        ['c', 1],
+        ['c', 2],
         ['d', 'e']
       ].sort()
     )

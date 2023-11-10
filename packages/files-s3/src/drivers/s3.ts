@@ -50,7 +50,7 @@ export class S3Drive implements Drive {
   /**
    * Name of the driver
    */
-  public name: 's3' = 's3'
+  public name = 's3' as const
 
   constructor(private _config: S3DriveConfig) {
     /**

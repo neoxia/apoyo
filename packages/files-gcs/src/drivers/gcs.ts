@@ -41,7 +41,7 @@ export class GcsDrive implements Drive {
   /**
    * Name of the driver
    */
-  public name: 'gcs' = 'gcs'
+  public name = 'gcs' as const
 
   constructor(private _config: GcsDriveConfig) {
     this.adapter = new Storage(this._config)
