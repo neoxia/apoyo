@@ -7,7 +7,7 @@
   ],
   "packageManager": "yarn@3.2.4",
   "engines": {
-    "node": "^16.0.0",
+    "node": "^18.0.0",
     "npm": "Please use yarn instead of NPM to install dependencies"
   },
   "scripts": {
@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@jujulego/jill": "^2.3.3",
-    "@types/node": "^16.18.0",
+    "@types/node": "^18.0.0",
     "@types/prettier": "1.10.0",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "@typescript-eslint/parser": "^5.30.0",

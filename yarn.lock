@@ -4377,6 +4377,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^18.0.0":
+  version: 18.18.9
+  resolution: "@types/node@npm:18.18.9"
+  dependencies:
+    undici-types: ~5.26.4
+  checksum: 629ce20357586144031cb43d601617eef45e59460dea6b1e123f708e6885664f44d54f65e5b72b2614af5b8613f3652ced832649c0b991accbc6a85139befa51
+  languageName: node
+  linkType: hard
+
 "@types/nodemailer@npm:^6":
   version: 6.4.7
   resolution: "@types/nodemailer@npm:6.4.7"
@@ -4801,7 +4810,7 @@ __metadata:
   resolution: "apoyo@workspace:."
   dependencies:
     "@jujulego/jill": ^2.3.3
-    "@types/node": ^16.18.0
+    "@types/node": ^18.0.0
     "@types/prettier": 1.10.0
     "@typescript-eslint/eslint-plugin": ^5.30.0
     "@typescript-eslint/parser": ^5.30.0
@@ -11762,6 +11771,13 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 9096d8f6c16cb80ef3bf96fcbbd055bf1c4a43bd14f3b7be45a9fbe7ada46ec977f604d5feed3263b4f2aa7d4c7477ce5f9cd87de0d6feedec69a983f3a4f93e
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~5.26.4":
+  version: 5.26.5
+  resolution: "undici-types@npm:5.26.5"
+  checksum: 3192ef6f3fd5df652f2dc1cd782b49d6ff14dc98e5dced492aa8a8c65425227da5da6aafe22523c67f035a272c599bb89cfe803c1db6311e44bed3042fc25487
   languageName: node
   linkType: hard
 
