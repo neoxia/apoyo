@@ -78,7 +78,8 @@ To setup this project locally, you will need to:
 ### Setup
 
 1. Run `yarn install`
-2. And you're ready !
+2. Run docker compose : `docker-compose up -d`
+3. And you're ready !
 
 This repository uses [PNP (Plug'n'Play)](https://yarnpkg.com/features/pnp) instead of node_modules.
 As such, you may also need to install SDKs to add PNP (Plug'n'Play) support to your editor:
