@@ -1,5 +1,6 @@
 import getStream from 'get-stream'
 import { format } from 'url'
+import { Readable } from 'stream'
 
 import {
   CannotCopyFileException,
@@ -50,7 +51,7 @@ export class S3Drive implements Drive {
   /**
    * Name of the driver
    */
-  public name: 's3' = 's3'
+  public name = 's3' as const
 
   constructor(private _config: S3DriveConfig) {
     /**
@@ -147,13 +148,14 @@ export class S3Drive implements Drive {
    * converting the buffer to a string.
    */
   public async get(location: string): Promise<Buffer> {
-    return getStream.buffer(await this.getStream(location))
+    const stream = await this.getStream(location)
+    return getStream.buffer(stream)
   }
 
   /**
    * Returns the file contents as a stream
    */
-  public async getStream(location: string): Promise<NodeJS.ReadableStream> {
+  public async getStream(location: string): Promise<Readable> {
     const absolutePath = this.makePath(location)
     try {
       const response = await this.adapter.send(

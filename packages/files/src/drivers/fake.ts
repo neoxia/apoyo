@@ -39,7 +39,7 @@ export class FakeDrive implements Drive {
   /**
    * Name of the driver
    */
-  public name: 'fake' = 'fake'
+  public name = 'fake' as const
 
   constructor(private _config: FakeDriveConfig = {}) {}
 
